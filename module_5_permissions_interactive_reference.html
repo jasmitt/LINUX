@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 5: Linux Permissions — Interactive Animated Beginner Reference</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg2: #0d1b33;
+      --panel: rgba(255,255,255,.085);
+      --panel-2: rgba(255,255,255,.13);
+      --text: #eef6ff;
+      --muted: #b8c7d9;
+      --accent: #4dd4ff;
+      --accent2: #8fffca;
+      --accent3: #c084fc;
+      --warn: #ffd166;
+      --danger: #ff6b6b;
+      --ok: #77dd77;
+      --ink: #07111f;
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+      --soft-shadow: 0 10px 30px rgba(0,0,0,.18);
+      --radius: 22px;
+      --mono: "Cascadia Code", "SFMono-Regular", Consolas, Menlo, monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body.light {
+      --bg: #f7fbff;
+      --bg2: #e8f2ff;
+      --panel: rgba(255,255,255,.78);
+      --panel-2: rgba(255,255,255,.94);
+      --text: #102033;
+      --muted: #50627a;
+      --accent: #0077ff;
+      --accent2: #00a878;
+      --accent3: #7c3aed;
+      --warn: #b97700;
+      --danger: #d62828;
+      --ok: #218838;
+      --ink: #ffffff;
+      --shadow: 0 16px 45px rgba(33,72,120,.14);
+      --soft-shadow: 0 8px 25px rgba(33,72,120,.11);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 25%, transparent), transparent 35%),
+        radial-gradient(circle at 80% 15%, color-mix(in srgb, var(--accent2) 18%, transparent), transparent 28%),
+        linear-gradient(135deg, var(--bg) 0%, var(--bg2) 52%, var(--bg) 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      opacity: .22;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mask-image: linear-gradient(to bottom, black, transparent 88%);
+      z-index: -3;
+    }
+    body.light .bg-grid { background-image: linear-gradient(rgba(0,0,0,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.055) 1px, transparent 1px); }
+
+    .orb {
+      position: fixed;
+      width: 220px;
+      height: 220px;
+      border-radius: 999px;
+      filter: blur(42px);
+      opacity: .18;
+      animation: drift 12s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: -2;
+    }
+    .orb.one { background: var(--accent); top: 10%; left: -70px; }
+    .orb.two { background: var(--accent2); right: -80px; top: 32%; animation-delay: -4s; }
+    .orb.three { background: var(--warn); left: 35%; bottom: -95px; animation-delay: -8s; }
+    @keyframes drift { from { transform: translate3d(0,0,0) scale(1); } to { transform: translate3d(45px,-35px,0) scale(1.15); } }
+
+    .progress {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 4px;
+      width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--warn));
+      z-index: 99;
+      box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 60%, transparent);
+    }
+
+    header {
+      position: relative;
+      padding: 48px 20px 26px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--accent2);
+      font-weight: 800;
+      letter-spacing: .3px;
+      box-shadow: var(--soft-shadow);
+      animation: popIn .7s ease both;
+    }
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 4.8rem);
+      line-height: .96;
+      margin: 22px auto 16px;
+      max-width: 1050px;
+      letter-spacing: -2.8px;
+      animation: slideUp .75s ease .08s both;
+    }
+    .subtitle {
+      max-width: 930px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: clamp(1rem, 2vw, 1.24rem);
+      line-height: 1.65;
+      animation: slideUp .75s ease .18s both;
+    }
+    .top-actions {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+      animation: slideUp .75s ease .28s both;
+    }
+    .btn, button.btn {
+      border: 0;
+      cursor: pointer;
+      padding: 12px 17px;
+      border-radius: 14px;
+      font-weight: 850;
+      color: var(--ink);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 12px 30px color-mix(in srgb, var(--accent) 23%, transparent);
+      transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+    }
+    .btn.secondary {
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: none;
+    }
+    .btn.danger { background: linear-gradient(135deg, var(--danger), #ffb703); color: #1d1010; }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 36px color-mix(in srgb, var(--accent) 30%, transparent); }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(18px);
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
+      border-top: 1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .nav-inner {
+      max-width: 1210px;
+      margin: 0 auto;
+      display: flex;
+      gap: 10px;
+      padding: 12px 18px;
+      overflow-x: auto;
+    }
+    .nav-inner a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 9px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      transition: .2s ease;
+      font-weight: 750;
+      font-size: .94rem;
+    }
+    .nav-inner a:hover, .nav-inner a.active {
+      color: var(--text);
+      border-color: rgba(255,255,255,.18);
+      background: var(--panel);
+    }
+
+    main { max-width: 1210px; margin: 0 auto; padding: 28px 18px 80px; }
+    section { margin: 30px 0; scroll-margin-top: 86px; }
+    .section-head {
+      margin-bottom: 18px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .section-head h2 { margin: 0; font-size: clamp(1.55rem, 3vw, 2.35rem); letter-spacing: -.8px; }
+    .section-head p { margin: 6px 0 0; color: var(--muted); line-height: 1.6; }
+
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+    .card {
+      position: relative;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transform: translateY(18px);
+      opacity: 0;
+      animation: reveal .72s ease forwards;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background: radial-gradient(circle at 15% 0%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 28%);
+      pointer-events: none;
+      opacity: .75;
+    }
+    .card > * { position: relative; z-index: 1; }
+    .card h3 { margin: 0 0 10px; font-size: 1.25rem; }
+    .card p, .card li { color: var(--muted); line-height: 1.62; }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    @keyframes reveal { to { transform: translateY(0); opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes popIn { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes wiggle { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+    @keyframes pulseGlow { 0%,100% { box-shadow: 0 0 0 rgba(77,212,255,0); } 50% { box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 35%, transparent); } }
+    @keyframes scan { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+    .story-card {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .detective-board {
+      min-height: 260px;
+      border-radius: 20px;
+      border: 1px dashed rgba(255,255,255,.25);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
+        repeating-linear-gradient(-45deg, rgba(255,255,255,.035) 0 8px, transparent 8px 16px);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .case-note {
+      background: rgba(0,0,0,.22);
+      border-left: 4px solid var(--warn);
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-family: var(--mono);
+      color: #fff4cd;
+      line-height: 1.5;
+      box-shadow: var(--soft-shadow);
+    }
+    body.light .case-note { color: #4d3400; background: rgba(255,220,135,.26); }
+    .avatar-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .mini-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      display: grid;
+      place-items: center;
+      font-size: 1.9rem;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      animation: wiggle 4s ease-in-out infinite;
+    }
+    .mini-avatar:nth-child(2) { animation-delay: -1s; }
+    .mini-avatar:nth-child(3) { animation-delay: -2s; }
+
+    .terminal {
+      background: #07111f;
+      color: #d5f6df;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: var(--soft-shadow);
+      font-family: var(--mono);
+      line-height: 1.55;
+    }
+    body.light .terminal { background: #101827; color: #e5fff0; }
+    .terminal-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 13px;
+      background: rgba(255,255,255,.08);
+      color: #b7c5d8;
+      font-family: var(--sans);
+      font-size: .88rem;
+    }
+    .dot { width: 11px; height: 11px; border-radius: 999px; display: inline-block; }
+    .red { background:#ff5f56; } .yellow { background:#ffbd2e; } .green { background:#27c93f; }
+    pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
+    .terminal-body { padding: 15px; position: relative; }
+    .terminal-body::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 110px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+      animation: scan 5s linear infinite;
+      pointer-events: none;
+    }
+    code, .mono { font-family: var(--mono); }
+    .cmdline { color: #9bf6ff; }
+    .comment { color: #9ca3af; }
+    .good { color: #a7f3d0; }
+    .bad { color: #fecaca; }
+    .warn { color: #fde68a; }
+
+    .copy-row { position: relative; margin: 10px 0; }
+    .copy-btn {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.1);
+      color: #e5eefc;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: .78rem;
+      z-index: 3;
+    }
+    .copy-row pre { padding-right: 90px; }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .pill {
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.09);
+      border: 1px solid rgba(255,255,255,.13);
+      color: var(--text);
+      font-weight: 760;
+      font-size: .9rem;
+    }
+
+    .perm-strip {
+      display: grid;
+      grid-template-columns: .8fr repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .perm-box {
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      padding: 13px;
+      min-height: 106px;
+      transition: transform .2s ease, background .2s ease;
+    }
+    .perm-box:hover { transform: translateY(-4px); background: rgba(255,255,255,.12); }
+    .perm-label { color: var(--muted); font-size: .82rem; font-weight: 850; text-transform: uppercase; letter-spacing: .08em; }
+    .perm-token { display: block; font-family: var(--mono); font-size: clamp(1.25rem, 3vw, 2.1rem); font-weight: 900; margin-top: 8px; color: var(--accent2); }
+    .perm-desc { color: var(--muted); font-size: .9rem; margin-top: 4px; }
+
+    .big-mode {
+      font-family: var(--mono);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      font-size: clamp(1.25rem, 3.5vw, 2.45rem);
+      font-weight: 950;
+      margin: 14px 0 6px;
+    }
+    .mode-char {
+      display: inline-grid;
+      place-items: center;
+      min-width: 1.45em;
+      padding: .15em .25em;
+      border-radius: 12px;
+      background: rgba(255,255,255,.09);
+      border: 1px solid rgba(255,255,255,.14);
+    }
+    .mode-char.type { color: var(--warn); }
+    .mode-char.owner { color: var(--accent2); }
+    .mode-char.group { color: var(--accent); }
+    .mode-char.other { color: var(--accent3); }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+    .legend span { display: inline-flex; align-items:center; gap: 7px; color: var(--muted); font-size: .92rem; }
+    .swatch { width: 13px; height: 13px; border-radius: 4px; display:inline-block; }
+    .sw-owner { background: var(--accent2); } .sw-group { background: var(--accent); } .sw-other { background: var(--accent3); } .sw-type { background: var(--warn); }
+
+    .rwx-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .rwx-card {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      min-height: 180px;
+      transition: .2s ease;
+    }
+    .rwx-card:hover { transform: translateY(-4px) rotate(-.5deg); }
+    .rwx-card .icon { font-size: 2.6rem; display:block; margin-bottom: 8px; }
+    .rwx-card strong { color: var(--text); font-size: 1.15rem; }
+    .rwx-card em { color: var(--accent2); font-style: normal; font-weight: 850; }
+
+    .calculator {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .check-grid { display: grid; gap: 10px; }
+    .check-row {
+      display: grid;
+      grid-template-columns: 90px repeat(3, minmax(76px, 1fr));
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .check-row strong { color: var(--text); }
+    label.tick {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 9px 8px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.13);
+      color: var(--muted);
+      font-weight: 850;
+      cursor: pointer;
+      user-select: none;
+      border: 1px solid rgba(255,255,255,.1);
+    }
+    body.light label.tick { background: rgba(0,0,0,.04); }
+    label.tick input { accent-color: var(--accent2); }
+    .result-box {
+      border-radius: 20px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(circle at 30% 0%, color-mix(in srgb, var(--accent2) 20%, transparent), transparent 35%),
+        rgba(255,255,255,.08);
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+    .result-number { font-family: var(--mono); font-size: clamp(2.4rem, 6vw, 4.1rem); font-weight: 950; letter-spacing: -.05em; color: var(--accent2); }
+    .result-mode { font-family: var(--mono); font-size: clamp(1.4rem, 4vw, 2.5rem); font-weight: 950; color: var(--accent); }
+    .math-row { font-family: var(--mono); color: var(--muted); margin-top: 8px; }
+
+    .symbolic-playground {
+      display: grid;
+      grid-template-columns: .95fr 1.05fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .button-grid { display:flex; flex-wrap:wrap; gap:9px; }
+    .small-btn {
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 13px;
+      cursor: pointer;
+      font-weight: 850;
+      font-family: var(--mono);
+      transition: .2s ease;
+    }
+    .small-btn:hover, .small-btn.active { transform: translateY(-2px); background: color-mix(in srgb, var(--accent) 22%, transparent); }
+    .fake-file {
+      border-radius: 16px;
+      padding: 14px;
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.14);
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      margin: 10px 0;
+    }
+    body.light .fake-file { background: rgba(0,0,0,.04); }
+
+    .table-wrap { overflow-x: auto; border-radius: 18px; border: 1px solid rgba(255,255,255,.12); }
+    table { width: 100%; border-collapse: collapse; min-width: 680px; background: rgba(255,255,255,.04); }
+    th, td { padding: 13px 14px; border-bottom: 1px solid rgba(255,255,255,.1); text-align: left; vertical-align: top; }
+    th { color: var(--text); background: rgba(255,255,255,.09); }
+    td { color: var(--muted); line-height: 1.55; }
+    tr:last-child td { border-bottom: 0; }
+
+    .lab-step {
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 14px;
+      align-items: start;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.13);
+      margin: 12px 0;
+    }
+    .step-num {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      display:grid;
+      place-items:center;
+      color: var(--ink);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      font-weight: 950;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .callout {
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.08);
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 14px 0;
+    }
+    .callout strong { color: var(--text); }
+    .callout.ok { border-color: color-mix(in srgb, var(--ok) 42%, transparent); background: color-mix(in srgb, var(--ok) 12%, transparent); }
+    .callout.warn { border-color: color-mix(in srgb, var(--warn) 45%, transparent); background: color-mix(in srgb, var(--warn) 13%, transparent); }
+    .callout.danger { border-color: color-mix(in srgb, var(--danger) 50%, transparent); background: color-mix(in srgb, var(--danger) 13%, transparent); }
+
+    .case-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .case-card {
+      border-radius: 20px;
+      padding: 18px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      transition: .2s ease;
+      min-height: 240px;
+    }
+    .case-card:hover { transform: translateY(-4px); }
+    .case-card .monster { font-size: 2.7rem; display:block; margin-bottom: 10px; }
+
+    .quiz-card {
+      border-radius: 20px;
+      padding: 18px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      margin: 12px 0;
+    }
+    .quiz-options { display:grid; gap: 9px; margin-top: 10px; }
+    .quiz-options button {
+      text-align: left;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.07);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 11px 12px;
+      cursor: pointer;
+      font-weight: 750;
+      font-family: inherit;
+    }
+    .quiz-options button.correct { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 18%, transparent); }
+    .quiz-options button.wrong { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 16%, transparent); }
+    .feedback { margin-top: 10px; color: var(--muted); min-height: 28px; }
+
+    .flashcards { display:grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .flashcard {
+      min-height: 190px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+    .flash-inner {
+      position: relative;
+      width:100%; height:100%; min-height:190px;
+      transition: transform .6s;
+      transform-style: preserve-3d;
+    }
+    .flashcard.flipped .flash-inner { transform: rotateY(180deg); }
+    .flash-front, .flash-back {
+      position:absolute; inset:0;
+      border-radius: 20px;
+      border:1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.08);
+      box-shadow: var(--soft-shadow);
+      padding: 18px;
+      backface-visibility:hidden;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+    }
+    .flash-front strong { font-size: 2rem; font-family: var(--mono); color: var(--accent2); }
+    .flash-back { transform: rotateY(180deg); color: var(--muted); line-height:1.55; }
+
+    .trainer-flow { counter-reset: trainer; }
+    .trainer-item {
+      counter-increment: trainer;
+      display:grid;
+      grid-template-columns: 50px 1fr;
+      gap: 12px;
+      padding: 13px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      margin: 10px 0;
+    }
+    .trainer-item::before {
+      content: counter(trainer);
+      width: 40px; height: 40px;
+      border-radius: 14px;
+      display:grid; place-items:center;
+      background: linear-gradient(135deg, var(--accent3), var(--accent));
+      color: white; font-weight: 950;
+    }
+
+    .sticky-help {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 50;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .round-btn {
+      width: 48px; height:48px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.18);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: var(--ink);
+      display:grid; place-items:center;
+      font-size: 1.25rem;
+      cursor:pointer;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(120px);
+      background: #101827;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      padding: 12px 16px;
+      z-index: 100;
+      box-shadow: var(--shadow);
+      transition: transform .25s ease;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .mini-note { font-size: .92rem; color: var(--muted); margin-top: 8px; }
+    .nowrap { white-space: nowrap; }
+
+    @media (max-width: 920px) {
+      .span-3, .span-4, .span-5, .span-6, .span-7, .span-8 { grid-column: span 12; }
+      .story-card, .calculator, .symbolic-playground { grid-template-columns: 1fr; }
+      .perm-strip { grid-template-columns: 1fr; }
+      .rwx-cards, .case-grid, .flashcards { grid-template-columns: 1fr; }
+      .check-row { grid-template-columns: 1fr; }
+      .section-head { align-items: start; flex-direction: column; }
+      .sticky-help { right: 12px; bottom: 12px; }
+    }
+
+    @media print {
+      .bg-grid, .orb, nav, .top-actions, .sticky-help, .progress, .copy-btn, .terminal-body::after { display:none !important; }
+      body { background: white; color: black; }
+      .card, .terminal, .callout, .case-card, .quiz-card { break-inside: avoid; box-shadow:none; color:black; }
+      .card p, .card li, td, .callout { color:#222; }
+      main { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+  <div class="bg-grid"></div>
+  <div class="orb one"></div><div class="orb two"></div><div class="orb three"></div>
+
+  <header id="top">
+    <div class="badge">🔐 Module 5 · Beginner Linux Permissions</div>
+    <h1>Permissions: Who Can Read, Write, and Run?</h1>
+    <p class="subtitle">A fun, interactive, animated reference for learning Linux file permissions using detective cases, permission cards, chmod calculators, guided labs, quizzes, and real terminal-style examples.</p>
+    <div class="top-actions">
+      <a class="btn" href="#lab">🚀 Start the Lab</a>
+      <a class="btn secondary" href="#calculator">🧮 Try chmod Calculator</a>
+      <button class="btn secondary" onclick="toggleTheme()">🌗 Light/Dark</button>
+      <button class="btn secondary" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-inner" id="navLinks">
+      <a href="#mission">Mission</a>
+      <a href="#rwx">r/w/x</a>
+      <a href="#decoder">ls -l Decoder</a>
+      <a href="#owners">Owner Group Others</a>
+      <a href="#calculator">chmod 755</a>
+      <a href="#symbolic">Symbolic Mode</a>
+      <a href="#ownership">chown/chgrp</a>
+      <a href="#defaults">Defaults</a>
+      <a href="#troubleshooting">Permission Denied</a>
+      <a href="#lab">Lab</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#cheatsheet">Cheatsheet</a>
+    </div>
+  </nav>
+
+  <main>
+    <section id="mission">
+      <div class="card span-12 story-card">
+        <div>
+          <div class="section-head">
+            <div>
+              <h2>🕵️ Permission Detective Mission</h2>
+              <p>Your job: investigate why files can be opened, edited, executed, or blocked.</p>
+            </div>
+          </div>
+          <p>Linux permissions are like a security desk for every file and directory. The desk checks three things:</p>
+          <div class="pill-row">
+            <span class="pill">👤 Who owns it?</span>
+            <span class="pill">👥 Which group can use it?</span>
+            <span class="pill">🌍 What can everyone else do?</span>
+            <span class="pill">🔑 Is read/write/execute allowed?</span>
+          </div>
+          <div class="callout ok"><strong>Main conclusion:</strong> permissions decide <span class="mono">who</span> can perform <span class="mono">read</span>, <span class="mono">write</span>, and <span class="mono">execute</span> actions on files and directories.</div>
+        </div>
+        <div class="detective-board">
+          <div class="case-note">Case #005<br>File: demo.sh<br>Problem: Script exists, but learner says: “Permission denied!”</div>
+          <div class="avatar-row" aria-label="permission detectives">
+            <div class="mini-avatar" title="Owner">👤</div>
+            <div class="mini-avatar" title="Group">👥</div>
+            <div class="mini-avatar" title="Others">🌍</div>
+          </div>
+          <div class="case-note">Clue: Look at <span class="mono">ls -l demo.sh</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="rwx">
+      <div class="section-head">
+        <div>
+          <h2>1) Read, Write, Execute</h2>
+          <p>The three permission powers. Same letters, slightly different meaning for files and directories.</p>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card span-12">
+          <div class="rwx-cards">
+            <div class="rwx-card">
+              <span class="icon">📖</span>
+              <strong>Read <span class="mono">r</span></strong>
+              <p><em>File:</em> view file contents. Example: <span class="mono">cat notes.txt</span></p>
+              <p><em>Directory:</em> list names inside it. Example: <span class="mono">ls folder</span></p>
+            </div>
+            <div class="rwx-card">
+              <span class="icon">✍️</span>
+              <strong>Write <span class="mono">w</span></strong>
+              <p><em>File:</em> modify file contents. Example: edit with <span class="mono">vim</span>.</p>
+              <p><em>Directory:</em> create, delete, or rename entries inside it.</p>
+            </div>
+            <div class="rwx-card">
+              <span class="icon">🏃</span>
+              <strong>Execute <span class="mono">x</span></strong>
+              <p><em>File:</em> run it as a program/script. Example: <span class="mono">./demo.sh</span></p>
+              <p><em>Directory:</em> enter/traverse it. Example: <span class="mono">cd folder</span></p>
+            </div>
+          </div>
+          <div class="callout warn"><strong>Beginner trap:</strong> execute on a directory does not mean “run the directory.” It means you can enter or access items inside that directory.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="decoder">
+      <div class="section-head">
+        <div>
+          <h2>2) Decode <span class="mono">ls -l</span> Like a Pro</h2>
+          <p>Click the command, then read the output as four blocks: file type, owner, group, others.</p>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card span-6">
+          <h3>Terminal view</h3>
+          <div class="terminal copy-row">
+            <button class="copy-btn" onclick="copyText('cmd-ls')">Copy</button>
+            <div class="terminal-head"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>permission-lab</div>
+            <div class="terminal-body"><pre id="cmd-ls"><span class="cmdline">$ ls -l demo.sh</span>
+-rwxr-xr-x 1 jp jp 42 Aug 03 10:10 demo.sh</pre></div>
+          </div>
+          <p class="mini-note">The date, time, size, owner, and group can differ on your VM. Focus on the left side: <span class="mono">-rwxr-xr-x</span>.</p>
+        </div>
+        <div class="card span-6">
+          <h3>Animated permission strip</h3>
+          <div class="big-mode" aria-label="permission mode">
+            <span class="mode-char type">-</span>
+            <span class="mode-char owner">r</span><span class="mode-char owner">w</span><span class="mode-char owner">x</span>
+            <span class="mode-char group">r</span><span class="mode-char group">-</span><span class="mode-char group">x</span>
+            <span class="mode-char other">r</span><span class="mode-char other">-</span><span class="mode-char other">x</span>
+          </div>
+          <div class="legend">
+            <span><i class="swatch sw-type"></i> file type</span>
+            <span><i class="swatch sw-owner"></i> owner</span>
+            <span><i class="swatch sw-group"></i> group</span>
+            <span><i class="swatch sw-other"></i> others</span>
+          </div>
+          <div class="perm-strip">
+            <div class="perm-box"><span class="perm-label">Type</span><span class="perm-token">-</span><div class="perm-desc">regular file</div></div>
+            <div class="perm-box"><span class="perm-label">Owner</span><span class="perm-token">rwx</span><div class="perm-desc">read, write, execute</div></div>
+            <div class="perm-box"><span class="perm-label">Group</span><span class="perm-token">r-x</span><div class="perm-desc">read and execute</div></div>
+            <div class="perm-box"><span class="perm-label">Others</span><span class="perm-token">r-x</span><div class="perm-desc">read and execute</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="owners">
+      <div class="section-head">
+        <div>
+          <h2>3) Owner, Group, Others</h2>
+          <p>Linux asks: “Which identity bucket does this user fall into?” Then it applies that permission set.</p>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card span-4">
+          <h3>👤 Owner</h3>
+          <p>The user who owns the file. In <span class="mono">ls -l</span>, this is usually the first name after the link count.</p>
+          <div class="terminal"><div class="terminal-body"><pre>-rwxr-xr-x 1 <span class="good">jp</span> jp ... demo.sh</pre></div></div>
+        </div>
+        <div class="card span-4">
+          <h3>👥 Group</h3>
+          <p>A team of users. Group permissions apply when the user is a member of that file's group.</p>
+          <div class="terminal"><div class="terminal-body"><pre>-rwxr-xr-x 1 jp <span class="good">devops</span> ... demo.sh</pre></div></div>
+        </div>
+        <div class="card span-4">
+          <h3>🌍 Others</h3>
+          <p>Everyone else who is not the owner and not covered by the file's group.</p>
+          <div class="terminal"><div class="terminal-body"><pre>-rwxr-x<span class="good">r-x</span> 1 jp devops ... demo.sh</pre></div></div>
+        </div>
+      </div>
+      <div class="callout ok"><strong>Decision order:</strong> Linux checks owner first. If not owner, it checks group membership. If not matched there, it applies others permissions.</div>
+    </section>
+
+    <section id="calculator">
+      <div class="section-head">
+        <div>
+          <h2>4) chmod Numeric Mode Calculator</h2>
+          <p>Tick permissions below and watch the numeric mode and symbolic string update instantly.</p>
+        </div>
+      </div>
+      <div class="card span-12 calculator">
+        <div>
+          <h3>Permission switches</h3>
+          <div class="check-grid" id="permChecks">
+            <div class="check-row" data-role="owner">
+              <strong>Owner</strong>
+              <label class="tick"><input type="checkbox" data-role="owner" data-bit="r" checked> r=4</label>
+              <label class="tick"><input type="checkbox" data-role="owner" data-bit="w" checked> w=2</label>
+              <label class="tick"><input type="checkbox" data-role="owner" data-bit="x" checked> x=1</label>
+            </div>
+            <div class="check-row" data-role="group">
+              <strong>Group</strong>
+              <label class="tick"><input type="checkbox" data-role="group" data-bit="r" checked> r=4</label>
+              <label class="tick"><input type="checkbox" data-role="group" data-bit="w"> w=2</label>
+              <label class="tick"><input type="checkbox" data-role="group" data-bit="x" checked> x=1</label>
+            </div>
+            <div class="check-row" data-role="other">
+              <strong>Others</strong>
+              <label class="tick"><input type="checkbox" data-role="other" data-bit="r" checked> r=4</label>
+              <label class="tick"><input type="checkbox" data-role="other" data-bit="w"> w=2</label>
+              <label class="tick"><input type="checkbox" data-role="other" data-bit="x" checked> x=1</label>
+            </div>
+          </div>
+          <div class="pill-row">
+            <button class="small-btn" onclick="setMode('755')">Set 755</button>
+            <button class="small-btn" onclick="setMode('644')">Set 644</button>
+            <button class="small-btn" onclick="setMode('600')">Set 600</button>
+            <button class="small-btn" onclick="setMode('700')">Set 700</button>
+          </div>
+        </div>
+        <div class="result-box">
+          <div class="mini-note">Numeric permission</div>
+          <div class="result-number" id="numResult">755</div>
+          <div class="mini-note">Symbolic permission</div>
+          <div class="result-mode" id="modeResult">-rwxr-xr-x</div>
+          <div class="math-row" id="mathResult">owner: 4+2+1=7 · group: 4+1=5 · others: 4+1=5</div>
+          <div class="terminal copy-row" style="margin-top:14px">
+            <button class="copy-btn" onclick="copyText('calcCmd')">Copy</button>
+            <div class="terminal-body"><pre id="calcCmd">chmod 755 demo.sh</pre></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card span-12">
+          <h3>Numeric memory trick</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Permission</th><th>Value</th><th>Meaning</th><th>Example digit</th></tr></thead>
+              <tbody>
+                <tr><td><span class="mono">r</span></td><td>4</td><td>Read</td><td><span class="mono">4 = r--</span></td></tr>
+                <tr><td><span class="mono">w</span></td><td>2</td><td>Write</td><td><span class="mono">6 = rw-</span></td></tr>
+                <tr><td><span class="mono">x</span></td><td>1</td><td>Execute</td><td><span class="mono">5 = r-x</span></td></tr>
+                <tr><td><span class="mono">rwx</span></td><td>7</td><td>Full permission for that class</td><td><span class="mono">7 = rwx</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="symbolic">
+      <div class="section-head">
+        <div>
+          <h2>5) chmod Symbolic Mode Playground</h2>
+          <p>Symbolic mode is excellent when you want to add or remove a permission without calculating numbers.</p>
+        </div>
+      </div>
+      <div class="card span-12 symbolic-playground">
+        <div>
+          <h3>Try common symbolic commands</h3>
+          <div class="button-grid">
+            <button class="small-btn" onclick="symbolicDemo('chmod +x demo.sh','Adds execute to owner, group, and others based on current umask rules. Common quick fix for scripts.','-rwxr-xr-x')">chmod +x</button>
+            <button class="small-btn" onclick="symbolicDemo('chmod u+x demo.sh','Adds execute only for the owner/user. Safer than giving execute to everyone.','-rwxr--r--')">chmod u+x</button>
+            <button class="small-btn" onclick="symbolicDemo('chmod g-w demo.sh','Removes write permission from the group.','-rwxr-xr--')">chmod g-w</button>
+            <button class="small-btn" onclick="symbolicDemo('chmod o-r demo.sh','Removes read permission from others.','-rwxr-x---')">chmod o-r</button>
+            <button class="small-btn" onclick="symbolicDemo('chmod u=rwx,g=rx,o=rx demo.sh','Sets exact permissions: owner full, group read/execute, others read/execute. Equivalent to chmod 755.','-rwxr-xr-x')">exact 755</button>
+          </div>
+          <div class="callout warn"><strong>Symbols:</strong> <span class="mono">u</span>=user/owner, <span class="mono">g</span>=group, <span class="mono">o</span>=others, <span class="mono">a</span>=all. Operators: <span class="mono">+</span> add, <span class="mono">-</span> remove, <span class="mono">=</span> set exactly.</div>
+        </div>
+        <div>
+          <h3>Result</h3>
+          <div class="fake-file" id="symFile">Starting mode: -rw-r--r-- demo.sh</div>
+          <div class="terminal copy-row">
+            <button class="copy-btn" onclick="copyText('symCmd')">Copy</button>
+            <div class="terminal-body"><pre id="symCmd">chmod +x demo.sh</pre></div>
+          </div>
+          <div class="callout ok" id="symExplain">Adds execute to owner, group, and others based on current umask rules. Common quick fix for scripts.</div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card span-12">
+          <h3>Symbolic vs Numeric</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Task</th><th>Symbolic mode</th><th>Numeric mode</th><th>When to prefer</th></tr></thead>
+              <tbody>
+                <tr><td>Add execute bit</td><td><span class="mono">chmod +x demo.sh</span></td><td>Depends on current mode</td><td>Symbolic is easier</td></tr>
+                <tr><td>Set standard script permission</td><td><span class="mono">chmod u=rwx,g=rx,o=rx demo.sh</span></td><td><span class="mono">chmod 755 demo.sh</span></td><td>Numeric is shorter</td></tr>
+                <tr><td>Private file</td><td><span class="mono">chmod u=rw,go= secret.txt</span></td><td><span class="mono">chmod 600 secret.txt</span></td><td>Numeric is common</td></tr>
+                <tr><td>Remove access from others</td><td><span class="mono">chmod o-rwx file</span></td><td>Depends on current mode</td><td>Symbolic is safer</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ownership">
+      <div class="section-head">
+        <div>
+          <h2>6) chown and chgrp</h2>
+          <p>Permissions decide allowed actions. Ownership decides which permission bucket applies.</p>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card span-6">
+          <h3>Change owner/group with <span class="mono">chown</span></h3>
+          <p><span class="mono">chown</span> changes file ownership. It usually needs <span class="mono">sudo</span> because ownership is security-sensitive.</p>
+          <div class="terminal copy-row">
+            <button class="copy-btn" onclick="copyText('chown1')">Copy</button>
+            <div class="terminal-body"><pre id="chown1"><span class="cmdline">sudo chown root:root demo.sh</span>
+<span class="cmdline">ls -l demo.sh</span>
+-rwxr-xr-x 1 root root 42 Aug 03 10:10 demo.sh</pre></div>
+          </div>
+          <div class="callout warn"><strong>After this:</strong> root owns the file. A normal user may still execute it if others have <span class="mono">x</span>, but cannot edit it unless write permission applies or they use sudo.</div>
+        </div>
+        <div class="card span-6">
+          <h3>Change only group with <span class="mono">chgrp</span></h3>
+          <p><span class="mono">chgrp</span> changes the group owner. Useful when a team should share access.</p>
+          <div class="terminal copy-row">
+            <button class="copy-btn" onclick="copyText('chgrp1')">Copy</button>
+            <div class="terminal-body"><pre id="chgrp1"><span class="cmdline">sudo groupadd devops</span>
+<span class="cmdline">sudo chgrp devops demo.sh</span>
+<span class="cmdline">ls -l demo.sh</span>
+-rwxr-xr-x 1 root devops 42 Aug 03 10:10 demo.sh</pre></div>
+          </div>
+          <div class="callout ok"><strong>Team idea:</strong> use groups when many users need the same access. Avoid giving “others” too much permission.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="defaults">
+      <div class="section-head">
+        <div>
+          <h2>7) Default Permissions and umask</h2>
+          <p>New files and directories do not start from the same base permission.</p>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card span-5">
+          <h3>Default idea</h3>
+          <p>Linux applies a permission mask called <span class="mono">umask</span> when creating new files and directories.</p>
+          <div class="terminal copy-row">
+            <button class="copy-btn" onclick="copyText('umaskcmd')">Copy</button>
+            <div class="terminal-body"><pre id="umaskcmd"><span class="cmdline">umask</span>
+0022
+<span class="cmdline">touch file.txt</span>
+<span class="cmdline">mkdir folder</span>
+<span class="cmdline">ls -ld file.txt folder</span>
+-rw-r--r-- 1 jp jp ... file.txt
+drwxr-xr-x 2 jp jp ... folder</pre></div>
+          </div>
+        </div>
+        <div class="card span-7">
+          <h3>How default math works</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Object</th><th>Base permission</th><th>Typical umask</th><th>Common result</th><th>Why</th></tr></thead>
+              <tbody>
+                <tr><td>New file</td><td><span class="mono">666</span></td><td><span class="mono">022</span></td><td><span class="mono">644</span> / <span class="mono">rw-r--r--</span></td><td>Files are not executable by default for safety.</td></tr>
+                <tr><td>New directory</td><td><span class="mono">777</span></td><td><span class="mono">022</span></td><td><span class="mono">755</span> / <span class="mono">rwxr-xr-x</span></td><td>Directories need execute permission so users can enter them.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout warn"><strong>Do not over-teach the math initially:</strong> for beginners, remember this practical rule: new files often become <span class="mono">644</span>; new directories often become <span class="mono">755</span>.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="troubleshooting">
+      <div class="section-head">
+        <div>
+          <h2>8) Permission Denied Monster Clinic</h2>
+          <p>Common beginner errors, likely cause, and clean fix.</p>
+        </div>
+      </div>
+      <div class="case-grid">
+        <div class="case-card">
+          <span class="monster">👾</span>
+          <h3>Script will not run</h3>
+          <div class="terminal"><div class="terminal-body"><pre><span class="cmdline">./demo.sh</span>
+bash: ./demo.sh: Permission denied</pre></div></div>
+          <p><strong>Likely cause:</strong> missing execute bit.</p>
+          <p><strong>Fix:</strong> <span class="mono">chmod +x demo.sh</span> or <span class="mono">chmod 755 demo.sh</span></p>
+        </div>
+        <div class="case-card">
+          <span class="monster">🧟</span>
+          <h3>Cannot edit file</h3>
+          <div class="terminal"><div class="terminal-body"><pre>demo.sh: Permission denied</pre></div></div>
+          <p><strong>Likely cause:</strong> you do not own it or lack write permission.</p>
+          <p><strong>Check:</strong> <span class="mono">ls -l demo.sh</span></p>
+        </div>
+        <div class="case-card">
+          <span class="monster">🐉</span>
+          <h3>Directory access blocked</h3>
+          <div class="terminal"><div class="terminal-body"><pre><span class="cmdline">cd logs</span>
+bash: cd: logs: Permission denied</pre></div></div>
+          <p><strong>Likely cause:</strong> missing execute permission on directory.</p>
+          <p><strong>Fix idea:</strong> add <span class="mono">x</span> for the correct user/group.</p>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card span-12">
+          <h3>🚨 Danger Zone: commands learners should not blindly run</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Command</th><th>Why dangerous</th><th>Safer thinking</th></tr></thead>
+              <tbody>
+                <tr><td><span class="mono">chmod 777 file</span></td><td>Everyone can read, write, and execute. It “fixes” by weakening security.</td><td>Give only the required permission to owner/group.</td></tr>
+                <tr><td><span class="mono">chmod -R 777 /path</span></td><td>Recursively opens many files/directories. Easy to create a major security mess.</td><td>Apply to a specific lab folder only after understanding impact.</td></tr>
+                <tr><td><span class="mono">sudo chown -R root:root /</span></td><td>Can damage the entire system ownership layout.</td><td>Never run ownership changes on <span class="mono">/</span> in training.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="lab">
+      <div class="section-head">
+        <div>
+          <h2>9) Guided Hands-on Lab</h2>
+          <p>Use a safe lab directory. Commands match the requested module lab and include expected output.</p>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card span-12">
+          <div class="lab-step">
+            <div class="step-num">1</div>
+            <div>
+              <h3>Create a safe lab folder</h3>
+              <p>This keeps the practice clean and easy to delete.</p>
+              <div class="terminal copy-row"><button class="copy-btn" onclick="copyText('lab1')">Copy</button><div class="terminal-body"><pre id="lab1">mkdir -p ~/permission-lab
+cd ~/permission-lab</pre></div></div>
+            </div>
+          </div>
+          <div class="lab-step">
+            <div class="step-num">2</div>
+            <div>
+              <h3>Create the file</h3>
+              <div class="terminal copy-row"><button class="copy-btn" onclick="copyText('lab2')">Copy</button><div class="terminal-body"><pre id="lab2">touch demo.sh
+ls -l demo.sh</pre></div></div>
+              <div class="callout ok"><strong>Expected pattern:</strong> usually <span class="mono">-rw-r--r--</span>. A new file normally does not have execute permission.</div>
+            </div>
+          </div>
+          <div class="lab-step">
+            <div class="step-num">3</div>
+            <div>
+              <h3>Make it executable with numeric chmod</h3>
+              <div class="terminal copy-row"><button class="copy-btn" onclick="copyText('lab3')">Copy</button><div class="terminal-body"><pre id="lab3">chmod 755 demo.sh
+ls -l demo.sh</pre></div></div>
+              <div class="terminal"><div class="terminal-body"><pre><span class="comment">Expected permission pattern:</span>
+-rwxr-xr-x ... demo.sh</pre></div></div>
+              <p><span class="mono">755</span> means owner=<span class="mono">rwx</span>, group=<span class="mono">r-x</span>, others=<span class="mono">r-x</span>.</p>
+            </div>
+          </div>
+          <div class="lab-step">
+            <div class="step-num">4</div>
+            <div>
+              <h3>Change ownership to root</h3>
+              <div class="terminal copy-row"><button class="copy-btn" onclick="copyText('lab4')">Copy</button><div class="terminal-body"><pre id="lab4">sudo chown root:root demo.sh
+ls -l demo.sh</pre></div></div>
+              <div class="terminal"><div class="terminal-body"><pre><span class="comment">Expected pattern:</span>
+-rwxr-xr-x 1 root root ... demo.sh</pre></div></div>
+              <div class="callout warn"><strong>Important:</strong> this changes owner and group to <span class="mono">root</span>. It does not change the <span class="mono">755</span> permission bits.</div>
+            </div>
+          </div>
+          <div class="lab-step">
+            <div class="step-num">5</div>
+            <div>
+              <h3>Optional: add content and test execution</h3>
+              <p><span class="mono">touch demo.sh</span> creates an empty file, so running it gives no visible output. Add a small echo line to make the demo more satisfying.</p>
+              <div class="terminal copy-row"><button class="copy-btn" onclick="copyText('lab5')">Copy</button><div class="terminal-body"><pre id="lab5">sudo bash -c 'printf "#!/bin/bash\necho Permission lab works!\n" > demo.sh'
+sudo chmod 755 demo.sh
+./demo.sh</pre></div></div>
+              <div class="terminal"><div class="terminal-body"><pre><span class="comment">Expected output:</span>
+Permission lab works!</pre></div></div>
+            </div>
+          </div>
+          <div class="lab-step">
+            <div class="step-num">6</div>
+            <div>
+              <h3>Clean up</h3>
+              <div class="terminal copy-row"><button class="copy-btn" onclick="copyText('lab6')">Copy</button><div class="terminal-body"><pre id="lab6">cd ~
+sudo rm -rf ~/permission-lab</pre></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="simulator">
+      <div class="section-head">
+        <div>
+          <h2>10) Mini Terminal Simulator</h2>
+          <p>Click through the lab flow without touching your VM yet.</p>
+        </div>
+      </div>
+      <div class="card span-12">
+        <div class="terminal">
+          <div class="terminal-head"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>simulated terminal</div>
+          <div class="terminal-body"><pre id="simOut">$ Ready. Click “Next lab step”.</pre></div>
+        </div>
+        <div class="top-actions" style="justify-content:flex-start; margin-top:16px">
+          <button class="btn" onclick="nextSim()">▶️ Next lab step</button>
+          <button class="btn secondary" onclick="resetSim()">↩️ Reset</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="quiz">
+      <div class="section-head">
+        <div>
+          <h2>11) Quick Quiz</h2>
+          <p>Instant feedback. Good for a 5-minute classroom recap.</p>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card span-7">
+          <div class="quiz-card" data-answer="B">
+            <h3>Q1. Which command gives <span class="mono">rwxr-xr-x</span>?</h3>
+            <div class="quiz-options">
+              <button onclick="answerQuiz(this,'A')">A. chmod 644 demo.sh</button>
+              <button onclick="answerQuiz(this,'B')">B. chmod 755 demo.sh</button>
+              <button onclick="answerQuiz(this,'C')">C. chmod 777 demo.sh</button>
+              <button onclick="answerQuiz(this,'D')">D. chmod 600 demo.sh</button>
+            </div>
+            <div class="feedback"></div>
+          </div>
+          <div class="quiz-card" data-answer="C">
+            <h3>Q2. What does execute permission mean for a directory?</h3>
+            <div class="quiz-options">
+              <button onclick="answerQuiz(this,'A')">A. It runs the directory</button>
+              <button onclick="answerQuiz(this,'B')">B. It deletes the directory</button>
+              <button onclick="answerQuiz(this,'C')">C. It allows entering/traversing the directory</button>
+              <button onclick="answerQuiz(this,'D')">D. It compresses the directory</button>
+            </div>
+            <div class="feedback"></div>
+          </div>
+          <div class="quiz-card" data-answer="A">
+            <h3>Q3. What does <span class="mono">chown</span> change?</h3>
+            <div class="quiz-options">
+              <button onclick="answerQuiz(this,'A')">A. Owner and optionally group</button>
+              <button onclick="answerQuiz(this,'B')">B. Only execute permission</button>
+              <button onclick="answerQuiz(this,'C')">C. File size</button>
+              <button onclick="answerQuiz(this,'D')">D. Shell history</button>
+            </div>
+            <div class="feedback"></div>
+          </div>
+        </div>
+        <div class="card span-5">
+          <h3>Flashcards: click to flip</h3>
+          <div class="flashcards">
+            <div class="flashcard" onclick="this.classList.toggle('flipped')"><div class="flash-inner"><div class="flash-front"><strong>7</strong><span>click</span></div><div class="flash-back">4+2+1 = read + write + execute = <span class="mono">rwx</span></div></div></div>
+            <div class="flashcard" onclick="this.classList.toggle('flipped')"><div class="flash-inner"><div class="flash-front"><strong>6</strong><span>click</span></div><div class="flash-back">4+2 = read + write = <span class="mono">rw-</span></div></div></div>
+            <div class="flashcard" onclick="this.classList.toggle('flipped')"><div class="flash-inner"><div class="flash-front"><strong>5</strong><span>click</span></div><div class="flash-back">4+1 = read + execute = <span class="mono">r-x</span></div></div></div>
+            <div class="flashcard" onclick="this.classList.toggle('flipped')"><div class="flash-inner"><div class="flash-front"><strong>0</strong><span>click</span></div><div class="flash-back">No permission = <span class="mono">---</span></div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="trainer">
+      <div class="section-head">
+        <div>
+          <h2>12) Trainer Delivery Flow</h2>
+          <p>A simple sequence to make the topic interactive in class.</p>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card span-12 trainer-flow">
+          <div class="trainer-item"><div><strong>Start with the story:</strong> “A script exists but refuses to run. Which clue should we inspect first?” Expected answer: <span class="mono">ls -l</span>.</div></div>
+          <div class="trainer-item"><div><strong>Use body movement:</strong> ask three learners to be Owner, Group, Others. Give each read/write/execute cards.</div></div>
+          <div class="trainer-item"><div><strong>Run the lab live:</strong> show <span class="mono">touch</span>, <span class="mono">chmod 755</span>, <span class="mono">ls -l</span>, and <span class="mono">sudo chown root:root</span>.</div></div>
+          <div class="trainer-item"><div><strong>Break it intentionally:</strong> run <span class="mono">chmod 644 demo.sh</span>, then <span class="mono">./demo.sh</span>, and let learners diagnose the error.</div></div>
+          <div class="trainer-item"><div><strong>End with quiz:</strong> make learners decode <span class="mono">640</span>, <span class="mono">700</span>, <span class="mono">755</span>, and <span class="mono">777</span>.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cheatsheet">
+      <div class="section-head">
+        <div>
+          <h2>13) One-page Cheatsheet</h2>
+          <p>Quick recap for learners after the session.</p>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card span-12">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Need</th><th>Command / Concept</th><th>Beginner note</th></tr></thead>
+              <tbody>
+                <tr><td>Show permissions</td><td><span class="mono">ls -l file</span></td><td>Read the leftmost permission string.</td></tr>
+                <tr><td>Create empty file</td><td><span class="mono">touch demo.sh</span></td><td>New files commonly start as <span class="mono">644</span>.</td></tr>
+                <tr><td>Make script executable</td><td><span class="mono">chmod 755 demo.sh</span></td><td>Owner full, others can read/run.</td></tr>
+                <tr><td>Add execute only</td><td><span class="mono">chmod +x demo.sh</span></td><td>Fast fix for a script.</td></tr>
+                <tr><td>Change owner and group</td><td><span class="mono">sudo chown root:root demo.sh</span></td><td>Changes ownership, not permission bits.</td></tr>
+                <tr><td>Change group only</td><td><span class="mono">sudo chgrp devops demo.sh</span></td><td>Useful for team access.</td></tr>
+                <tr><td>Check default mask</td><td><span class="mono">umask</span></td><td>Common value: <span class="mono">0022</span>.</td></tr>
+                <tr><td>Avoid bad habit</td><td><span class="mono">chmod 777</span></td><td>Usually too open. Use least privilege.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout ok"><strong>Final memory line:</strong> <span class="mono">755</span> = owner gets full power, group and others can read and run, but cannot edit.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="sticky-help">
+    <button class="round-btn" title="Back to top" onclick="location.hash='top'">⬆️</button>
+    <button class="round-btn" title="Light/Dark" onclick="toggleTheme()">🌗</button>
+  </div>
+  <div class="toast" id="toast">Copied</div>
+
+  <script>
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+    function toast(msg) {
+      const el = $('#toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 1400);
+    }
+
+    function copyText(id) {
+      const text = document.getElementById(id).innerText.replace(/^\$ /gm, '').trim();
+      navigator.clipboard?.writeText(text).then(() => toast('Copied command ✅')).catch(() => toast('Copy unavailable'));
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      localStorage.setItem('permTheme', document.body.classList.contains('light') ? 'light' : 'dark');
+    }
+    if (localStorage.getItem('permTheme') === 'light') document.body.classList.add('light');
+
+    function calcRole(role) {
+      const bits = { r:4, w:2, x:1 };
+      let n = 0, s = '';
+      ['r','w','x'].forEach(bit => {
+        const checked = $(`input[data-role="${role}"][data-bit="${bit}"]`).checked;
+        if (checked) { n += bits[bit]; s += bit; } else { s += '-'; }
+      });
+      return {n, s};
+    }
+
+    function updateCalculator() {
+      const owner = calcRole('owner'), group = calcRole('group'), other = calcRole('other');
+      const num = `${owner.n}${group.n}${other.n}`;
+      const mode = `-${owner.s}${group.s}${other.s}`;
+      $('#numResult').textContent = num;
+      $('#modeResult').textContent = mode;
+      $('#calcCmd').textContent = `chmod ${num} demo.sh`;
+      const math = [ ['owner', owner], ['group', group], ['others', other] ].map(([name, obj]) => {
+        const parts = [];
+        if (obj.s[0] === 'r') parts.push('4');
+        if (obj.s[1] === 'w') parts.push('2');
+        if (obj.s[2] === 'x') parts.push('1');
+        return `${name}: ${parts.length ? parts.join('+') : '0'}=${obj.n}`;
+      }).join(' · ');
+      $('#mathResult').textContent = math;
+    }
+
+    function setMode(mode) {
+      const roles = ['owner','group','other'];
+      const bitVals = { r:4, w:2, x:1 };
+      roles.forEach((role, idx) => {
+        const digit = parseInt(mode[idx], 10);
+        Object.entries(bitVals).forEach(([bit,val]) => {
+          $(`input[data-role="${role}"][data-bit="${bit}"]`).checked = (digit & val) === val;
+        });
+      });
+      updateCalculator();
+      toast(`Mode set to ${mode}`);
+    }
+
+    $$('#permChecks input').forEach(input => input.addEventListener('change', updateCalculator));
+    updateCalculator();
+
+    function symbolicDemo(cmd, explanation, mode) {
+      $('#symCmd').textContent = cmd;
+      $('#symExplain').innerHTML = explanation;
+      $('#symFile').textContent = `Result mode: ${mode} demo.sh`;
+      toast('Symbolic command applied in demo ✨');
+    }
+
+    function answerQuiz(btn, chosen) {
+      const card = btn.closest('.quiz-card');
+      const correct = card.dataset.answer;
+      $$('.quiz-options button', card).forEach(b => b.classList.remove('correct','wrong'));
+      if (chosen === correct) {
+        btn.classList.add('correct');
+        $('.feedback', card).innerHTML = '✅ Correct. Nice permission detective work.';
+      } else {
+        btn.classList.add('wrong');
+        const correctBtn = $$('.quiz-options button', card)[correct.charCodeAt(0)-65];
+        correctBtn?.classList.add('correct');
+        $('.feedback', card).innerHTML = '❌ Not quite. Check the highlighted answer and decode it slowly.';
+      }
+    }
+
+    const simSteps = [
+`$ mkdir -p ~/permission-lab
+$ cd ~/permission-lab
+# Safe practice folder created.`,
+`$ touch demo.sh
+$ ls -l demo.sh
+-rw-r--r-- 1 jp jp 0 Aug 03 10:10 demo.sh
+# New file: read/write for owner, read-only for group/others.`,
+`$ chmod 755 demo.sh
+$ ls -l demo.sh
+-rwxr-xr-x 1 jp jp 0 Aug 03 10:11 demo.sh
+# Now it has execute permission.`,
+`$ sudo chown root:root demo.sh
+$ ls -l demo.sh
+-rwxr-xr-x 1 root root 0 Aug 03 10:12 demo.sh
+# Ownership changed to root:root. Permission bits stayed 755.`,
+`$ sudo bash -c 'printf "#!/bin/bash\\necho Permission lab works!\\n" > demo.sh'
+$ sudo chmod 755 demo.sh
+$ ./demo.sh
+Permission lab works!
+# Lab complete. 🎉`
+    ];
+    let simIndex = 0;
+    function nextSim() {
+      $('#simOut').textContent = simSteps[simIndex];
+      simIndex = (simIndex + 1) % simSteps.length;
+    }
+    function resetSim() { simIndex = 0; $('#simOut').textContent = '$ Ready. Click “Next lab step”.'; }
+
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement;
+      const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+      $('#progress').style.width = `${scrolled}%`;
+      const sections = $$('main section');
+      let current = '';
+      sections.forEach(sec => {
+        const top = sec.offsetTop - 110;
+        if (scrollY >= top) current = sec.id;
+      });
+      $$('#navLinks a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${current}`));
+    });
+  </script>
+</body>
+</html>

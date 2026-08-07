@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 1: Linux Introduction - Beginner Animated Reference</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #111827;
+    --panel2: #1e293b;
+    --card: #ffffff;
+    --text: #e5e7eb;
+    --muted: #cbd5e1;
+    --accent: #38bdf8;
+    --accent2: #22c55e;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --cmd: #020617;
+    --shadow: 0 15px 40px rgba(0,0,0,.25);
+    --radius: 18px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(56,189,248,.20), transparent 35%),
+      radial-gradient(circle at bottom right, rgba(34,197,94,.15), transparent 30%),
+      var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  header {
+    padding: 42px 22px 28px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .linux-orbit {
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    border: 2px dashed rgba(56,189,248,.35);
+    border-radius: 50%;
+    left: 50%;
+    top: -140px;
+    transform: translateX(-50%);
+    animation: spin 22s linear infinite;
+  }
+
+  .linux-orbit::before,
+  .linux-orbit::after {
+    content: "";
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 25px rgba(56,189,248,.7);
+  }
+
+  .linux-orbit::before { left: 20px; top: 35px; }
+  .linux-orbit::after { right: 18px; bottom: 42px; background: var(--accent2); }
+
+  @keyframes spin {
+    to { transform: translateX(-50%) rotate(360deg); }
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 8px 14px;
+    background: rgba(56,189,248,.12);
+    border: 1px solid rgba(56,189,248,.4);
+    border-radius: 999px;
+    color: #bae6fd;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    margin: 8px auto;
+    font-size: clamp(30px, 5vw, 54px);
+    line-height: 1.1;
+    max-width: 1000px;
+  }
+
+  .subtitle {
+    max-width: 880px;
+    margin: 14px auto 0;
+    color: var(--muted);
+    font-size: 18px;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(15,23,42,.92);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255,255,255,.08);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+
+  nav .nav-inner {
+    max-width: 1180px;
+    margin: auto;
+    display: flex;
+    gap: 10px;
+    padding: 10px 16px;
+    overflow-x: auto;
+  }
+
+  nav a {
+    color: #e0f2fe;
+    text-decoration: none;
+    padding: 8px 12px;
+    white-space: nowrap;
+    border-radius: 999px;
+    font-size: 14px;
+    background: rgba(255,255,255,.06);
+    transition: .25s ease;
+  }
+
+  nav a:hover {
+    background: rgba(56,189,248,.22);
+    transform: translateY(-2px);
+  }
+
+  main {
+    max-width: 1180px;
+    margin: auto;
+    padding: 26px 16px 60px;
+  }
+
+  section {
+    margin: 26px 0;
+    padding: 26px;
+    background: rgba(17,24,39,.84);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    animation: fadeUp .8s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  h2 {
+    margin: 0 0 14px;
+    font-size: 30px;
+    color: #f8fafc;
+  }
+
+  h3 {
+    color: #bfdbfe;
+    margin-top: 0;
+  }
+
+  .grid {
+    display: grid;
+    gap: 18px;
+  }
+
+  .grid.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .grid.three { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .grid.four { grid-template-columns: repeat(4, minmax(0,1fr)); }
+
+  @media (max-width: 900px) {
+    .grid.two, .grid.three, .grid.four { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: linear-gradient(145deg, rgba(30,41,59,.96), rgba(15,23,42,.96));
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 16px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+    min-height: 140px;
+    transition: transform .25s ease, border-color .25s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(56,189,248,.55);
+  }
+
+  .card::after {
+    content: "";
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    right: -30px;
+    bottom: -30px;
+    background: rgba(56,189,248,.09);
+    border-radius: 50%;
+  }
+
+  .icon {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(56,189,248,.16);
+    margin-bottom: 12px;
+    font-size: 24px;
+  }
+
+  .simple {
+    color: var(--muted);
+  }
+
+  .compare {
+    overflow-x: auto;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 720px;
+    background: rgba(2,6,23,.35);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  th, td {
+    padding: 14px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    vertical-align: top;
+    text-align: left;
+  }
+
+  th {
+    background: rgba(56,189,248,.18);
+    color: #e0f2fe;
+  }
+
+  .terminal {
+    background: var(--cmd);
+    border: 1px solid rgba(148,163,184,.35);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+  }
+
+  .terminal-bar {
+    background: #111827;
+    padding: 10px 14px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ef4444;
+  }
+  .dot.yellow { background: #f59e0b; }
+  .dot.green { background: #22c55e; }
+
+  pre {
+    margin: 0;
+    padding: 18px;
+    overflow-x: auto;
+    color: #d1fae5;
+    font-size: 15px;
+  }
+
+  code {
+    font-family: Consolas, Monaco, "Courier New", monospace;
+  }
+
+  .prompt-line {
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 3px solid var(--accent2);
+    width: 0;
+    animation: typing 5s steps(62, end) infinite, cursor .8s step-end infinite;
+  }
+
+  @keyframes typing {
+    0% { width: 0; }
+    45% { width: 100%; }
+    80% { width: 100%; }
+    100% { width: 0; }
+  }
+
+  @keyframes cursor {
+    50% { border-color: transparent; }
+  }
+
+  .flow {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .flow-step {
+    flex: 1 1 190px;
+    background: rgba(2,6,23,.42);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 15px;
+    padding: 16px;
+    position: relative;
+  }
+
+  .flow-step span {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #00111d;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(34,197,94,.16);
+    color: #bbf7d0;
+    font-size: 13px;
+    margin: 3px;
+  }
+
+  .warning {
+    background: rgba(245,158,11,.12);
+    border: 1px solid rgba(245,158,11,.45);
+    color: #fde68a;
+    padding: 14px 16px;
+    border-radius: 14px;
+  }
+
+  .danger {
+    background: rgba(239,68,68,.12);
+    border: 1px solid rgba(239,68,68,.45);
+    color: #fecaca;
+    padding: 14px 16px;
+    border-radius: 14px;
+  }
+
+  .success {
+    background: rgba(34,197,94,.12);
+    border: 1px solid rgba(34,197,94,.45);
+    color: #bbf7d0;
+    padding: 14px 16px;
+    border-radius: 14px;
+  }
+
+  details {
+    background: rgba(2,6,23,.36);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin: 12px 0;
+  }
+
+  summary {
+    cursor: pointer;
+    color: #e0f2fe;
+    font-weight: bold;
+  }
+
+  .command-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 14px;
+  }
+
+  @media (max-width: 760px) {
+    .command-grid { grid-template-columns: 1fr; }
+  }
+
+  .cmd-card {
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(2,6,23,.45);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .cmd-card code {
+    color: #86efac;
+    font-size: 16px;
+  }
+
+  .mini-title {
+    color: #f8fafc;
+    font-weight: bold;
+    margin-bottom: 6px;
+  }
+
+  .quiz {
+    counter-reset: q;
+  }
+
+  .quiz details summary::before {
+    counter-increment: q;
+    content: "Q" counter(q) ". ";
+  }
+
+  footer {
+    text-align: center;
+    color: #94a3b8;
+    padding: 25px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+
+  .tagline {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .linux-stack {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .stack-layer {
+    background: rgba(56,189,248,.12);
+    border: 1px solid rgba(56,189,248,.30);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    animation: pulseLayer 3s infinite ease-in-out;
+  }
+
+  .stack-layer:nth-child(2) { animation-delay: .3s; }
+  .stack-layer:nth-child(3) { animation-delay: .6s; }
+  .stack-layer:nth-child(4) { animation-delay: .9s; }
+
+  @keyframes pulseLayer {
+    0%, 100% { transform: scale(1); background: rgba(56,189,248,.12); }
+    50% { transform: scale(1.015); background: rgba(34,197,94,.14); }
+  }
+
+  .distros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .distro {
+    flex: 1 1 150px;
+    background: rgba(255,255,255,.06);
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.09);
+    text-align: center;
+    transition: .25s;
+  }
+
+  .distro:hover {
+    background: rgba(56,189,248,.15);
+    transform: translateY(-4px);
+  }
+
+  .lab-checklist li {
+    margin: 10px 0;
+  }
+
+  .kbd {
+    border: 1px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.09);
+    padding: 2px 8px;
+    border-radius: 7px;
+    font-family: Consolas, monospace;
+  }
+
+  .print-note {
+    display: none;
+  }
+
+  @media print {
+    body { background: #fff; color: #111; }
+    nav, .linux-orbit { display: none; }
+    section { box-shadow: none; background: #fff; color: #111; border: 1px solid #ccc; }
+    .card, .cmd-card, details, .terminal { background: #fff; color: #111; border: 1px solid #ccc; }
+    pre { color: #111; background: #f3f4f6; }
+    .simple, .subtitle { color: #333; }
+    .print-note { display: block; }
+  }
+
+
+  /* ===== FUN INTERACTIVE UPGRADE ===== */
+  body.light-mode {
+    --bg: #eef7ff;
+    --panel: #ffffff;
+    --panel2: #f2f8ff;
+    --card: #ffffff;
+    --text: #12243a;
+    --muted: #4d627a;
+    --cmd: #10233c;
+    --shadow: 0 15px 40px rgba(41, 87, 135, .15);
+    background:
+      radial-gradient(circle at top left, rgba(56,189,248,.19), transparent 35%),
+      radial-gradient(circle at bottom right, rgba(34,197,94,.13), transparent 30%),
+      #eef7ff;
+  }
+
+  body.large-text { font-size: 18px; }
+  body.reduced-motion *,
+  body.reduced-motion *::before,
+  body.reduced-motion *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reading-progress {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 4px;
+    width: 0;
+    background: linear-gradient(90deg, #38bdf8, #22c55e, #facc15);
+    z-index: 1000;
+  }
+
+  .fun-toolbar {
+    position: fixed;
+    right: 16px;
+    top: 72px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fun-tool {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.15);
+    background: rgba(15,23,42,.92);
+    color: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,.22);
+    font-weight: bold;
+    cursor: pointer;
+    transition: .2s ease;
+  }
+
+  .fun-tool:hover { transform: translateY(-3px) scale(1.04); border-color: #38bdf8; }
+
+  .tux-coach {
+    position: fixed;
+    left: 18px;
+    bottom: 18px;
+    z-index: 55;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+  }
+
+  .tux-avatar {
+    width: 66px;
+    height: 66px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #e0f2fe, #7dd3fc);
+    border: 3px solid rgba(255,255,255,.8);
+    box-shadow: 0 12px 28px rgba(0,0,0,.3);
+    font-size: 39px;
+    cursor: pointer;
+    animation: tuxBounce 3.2s ease-in-out infinite;
+  }
+
+  @keyframes tuxBounce {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+  }
+
+  .tux-bubble {
+    max-width: 260px;
+    padding: 12px 14px;
+    border-radius: 18px 18px 18px 4px;
+    background: rgba(15,23,42,.96);
+    border: 1px solid rgba(56,189,248,.38);
+    color: #e0f2fe;
+    box-shadow: 0 14px 35px rgba(0,0,0,.28);
+    font-size: 14px;
+    transition: .25s;
+  }
+
+  .course-dashboard {
+    margin: 8px auto 25px;
+    max-width: 1180px;
+    padding: 16px;
+    background: rgba(15,23,42,.78);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+  }
+
+  .course-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .course-progress-track {
+    flex: 1;
+    height: 14px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+
+  .course-progress-fill {
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #38bdf8, #22c55e, #facc15);
+    transition: width .4s ease;
+  }
+
+  .journey-map {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(110px, 1fr));
+    gap: 9px;
+    overflow-x: auto;
+  }
+
+  .journey-node {
+    border: 1px solid rgba(255,255,255,.1);
+    background: rgba(30,41,59,.82);
+    color: #cbd5e1;
+    padding: 10px;
+    border-radius: 13px;
+    text-align: center;
+    font-size: 13px;
+    min-width: 110px;
+  }
+
+  .journey-node.completed {
+    color: #bbf7d0;
+    border-color: rgba(34,197,94,.52);
+    background: rgba(34,197,94,.12);
+  }
+
+  .level-complete {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+    border: 0;
+    border-radius: 13px;
+    padding: 11px 15px;
+    color: #032119;
+    background: linear-gradient(135deg, #6ee7b7, #38bdf8);
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(34,197,94,.18);
+  }
+
+  .level-complete:disabled { opacity: .7; cursor: default; }
+
+  .adventure-grid {
+    display: grid;
+    grid-template-columns: minmax(0, .8fr) minmax(0, 1.3fr);
+    gap: 18px;
+  }
+
+  @media (max-width: 900px) {
+    .adventure-grid { grid-template-columns: 1fr; }
+    .fun-toolbar { top: auto; bottom: 95px; right: 10px; }
+    .tux-bubble { display: none; }
+  }
+
+  .mission-board {
+    background: linear-gradient(145deg, rgba(30,41,59,.95), rgba(15,23,42,.95));
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 18px;
+    padding: 18px;
+  }
+
+  .mission-item {
+    display: flex;
+    gap: 11px;
+    align-items: flex-start;
+    margin: 9px 0;
+    padding: 11px;
+    background: rgba(2,6,23,.35);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+  }
+
+  .mission-item input { margin-top: 5px; transform: scale(1.25); accent-color: #22c55e; }
+
+  .sim-terminal {
+    background: #020617;
+    border: 1px solid rgba(148,163,184,.36);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 18px 35px rgba(0,0,0,.28);
+  }
+
+  .sim-output {
+    height: 330px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    padding: 16px;
+    color: #d1fae5;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 14px;
+  }
+
+  .sim-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 0 15px 15px;
+  }
+
+  .sim-prompt { color: #86efac; white-space: nowrap; font-family: Consolas, monospace; }
+
+  #simInput {
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid rgba(255,255,255,.22);
+    outline: none;
+    padding: 8px;
+    background: transparent;
+    color: white;
+    font-family: Consolas, monospace;
+  }
+
+  .quick-command-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    padding: 0 15px 15px;
+  }
+
+  .quick-command-row button {
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 9px;
+    padding: 7px 9px;
+    background: #13213a;
+    color: #dbeafe;
+    cursor: pointer;
+    font-family: Consolas, monospace;
+  }
+
+  .game-card {
+    background: linear-gradient(145deg, rgba(30,41,59,.96), rgba(15,23,42,.96));
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 17px;
+    padding: 17px;
+  }
+
+  .game-options { display: flex; gap: 9px; flex-wrap: wrap; }
+
+  .game-options button {
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 11px;
+    background: rgba(2,6,23,.5);
+    color: #e5e7eb;
+    padding: 9px 13px;
+    cursor: pointer;
+  }
+
+  .game-feedback { min-height: 27px; margin-top: 10px; font-weight: bold; }
+
+  .prompt-game {
+    text-align: center;
+    font-family: Consolas, monospace;
+    font-size: clamp(18px, 3vw, 27px);
+    background: #020617;
+    padding: 20px;
+    border-radius: 14px;
+    margin-bottom: 12px;
+  }
+
+  .prompt-part {
+    display: inline-block;
+    padding: 4px 6px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .prompt-part:hover, .prompt-part.active { background: rgba(56,189,248,.25); color: #7dd3fc; }
+
+  .distro-finder-result {
+    padding: 15px;
+    min-height: 105px;
+    margin-top: 12px;
+    border-radius: 14px;
+    border: 1px dashed rgba(56,189,248,.4);
+    background: rgba(56,189,248,.07);
+  }
+
+  .assessment-question {
+    margin: 13px 0;
+    padding: 15px;
+    background: rgba(2,6,23,.34);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+  }
+
+  .assessment-question label { display: block; padding: 6px 0; cursor: pointer; }
+
+  .score-panel, .badge-panel {
+    margin-top: 17px;
+    padding: 20px;
+    text-align: center;
+    border-radius: 18px;
+    border: 1px solid rgba(250,204,21,.4);
+    background: linear-gradient(135deg, rgba(250,204,21,.12), rgba(196,167,255,.12));
+  }
+
+  .badge-panel { display: none; }
+  .badge-medal { font-size: 70px; animation: badgeSpin 2.8s ease-in-out infinite; }
+
+  @keyframes badgeSpin {
+    50% { transform: rotate(-7deg) scale(1.08); }
+  }
+
+  .fun-toast {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 200;
+    max-width: 320px;
+    padding: 13px 16px;
+    border-radius: 14px;
+    background: rgba(15,23,42,.97);
+    border: 1px solid rgba(56,189,248,.4);
+    color: #e0f2fe;
+    box-shadow: 0 18px 40px rgba(0,0,0,.3);
+    transform: translateY(120px);
+    opacity: 0;
+    transition: .3s ease;
+  }
+
+  .fun-toast.show { transform: translateY(0); opacity: 1; }
+
+  .confetti-layer { position: fixed; inset: 0; pointer-events: none; z-index: 500; overflow: hidden; }
+  .confetti-piece { position: absolute; top: -20px; width: 10px; height: 16px; animation: confettiFall 2.8s linear forwards; }
+  @keyframes confettiFall { to { transform: translateY(110vh) rotate(760deg); } }
+
+  @media print {
+    .fun-toolbar, .tux-coach, .course-dashboard, .reading-progress,
+    .level-complete, .quick-command-row, .sim-input-row, .game-options,
+    #assessmentSubmit, .fun-toast, .confetti-layer { display: none !important; }
+    .sim-output { height: auto; color: #111; }
+    .sim-terminal, .game-card, .mission-board { background: #fff; color: #111; }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="reading-progress" id="readingProgress"></div>
+<div class="fun-toolbar" aria-label="Reading controls">
+  <button class="fun-tool" id="themeToggle" title="Toggle light or dark mode">☀️</button>
+  <button class="fun-tool" id="fontToggle" title="Increase or reset text size">A+</button>
+  <button class="fun-tool" id="motionToggle" title="Reduce or enable animations">🎞️</button>
+  <button class="fun-tool" id="soundToggle" title="Enable or mute fun sounds">🔇</button>
+</div>
+<div class="tux-coach">
+  <div class="tux-avatar" id="tuxAvatar" role="button" tabindex="0" aria-label="Ask Tux for another tip">🐧</div>
+  <div class="tux-bubble" id="tuxBubble">Welcome, explorer! The terminal is not angry—it is simply very direct.</div>
+</div>
+<div class="fun-toast" id="funToast"></div>
+<div class="confetti-layer" id="confettiLayer"></div>
+
+
+<header>
+  <div class="linux-orbit"></div>
+  <div class="badge">Beginner Linux Training Reference</div>
+  <h1>Module 1: Linux Introduction</h1>
+  <p class="subtitle">
+    A beginner-friendly, animated HTML guide covering Linux basics, Linux vs Windows,
+    distributions, CLI/GUI, shell/terminal, root vs normal user, and the first hands-on lab.
+  </p>
+  <div class="tagline">
+    <span class="pill">Beginner Level</span>
+    <span class="pill">Trainer Ready</span>
+    <span class="pill">Hands-on Lab</span>
+    <span class="pill">VM Friendly</span>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#objectives">Objectives</a>
+    <a href="#what-linux">What is Linux?</a>
+    <a href="#linux-windows">Linux vs Windows</a>
+    <a href="#distros">Distributions</a>
+    <a href="#usage">Where Used</a>
+    <a href="#cli-gui">CLI vs GUI</a>
+    <a href="#shell-terminal">Shell & Terminal</a>
+    <a href="#root-user">Root vs User</a>
+    <a href="#lab">Lab</a>
+    <a href="#playground">Playground</a>
+    <a href="#assessment">Badge Quiz</a>
+    <a href="#quiz">Review</a>
+  </div>
+</nav>
+
+<main>
+
+<div class="course-dashboard" id="courseDashboard">
+  <div class="course-progress-row">
+    <strong id="courseProgressText">Adventure progress: 0%</strong>
+    <div class="course-progress-track"><div class="course-progress-fill" id="courseProgressFill"></div></div>
+    <button class="btn" id="resumeAdventure">Resume</button>
+  </div>
+  <div class="journey-map">
+    <div class="journey-node" data-level="linux">🐧 Meet Linux</div>
+    <div class="journey-node" data-level="windows">🪟 Compare OS</div>
+    <div class="journey-node" data-level="distros">🎨 Distros</div>
+    <div class="journey-node" data-level="interfaces">⌨️ CLI & GUI</div>
+    <div class="journey-node" data-level="users">🔐 User Power</div>
+    <div class="journey-node" data-level="mission">🧪 Mission Lab</div>
+    <div class="journey-node" data-level="assessment">🏆 Badge</div>
+  </div>
+</div>
+
+
+<section id="objectives">
+  <h2>Learning Objectives</h2>
+  <div class="grid four">
+    <div class="card"><div class="icon">🐧</div><h3>Understand Linux</h3><p class="simple">Know what Linux is and why it is widely used in IT environments.</p></div>
+    <div class="card"><div class="icon">🖥️</div><h3>Compare OS Types</h3><p class="simple">Understand basic differences between Linux and Windows from a user/admin view.</p></div>
+    <div class="card"><div class="icon">⌨️</div><h3>Use Terminal</h3><p class="simple">Open a terminal and run first commands safely.</p></div>
+    <div class="card"><div class="icon">🔐</div><h3>Know User Roles</h3><p class="simple">Understand the difference between root user and normal user.</p></div>
+  </div>
+</section>
+
+<section id="what-linux">
+  <h2>1. What is Linux?</h2>
+  <div class="grid two">
+    <div>
+      <p>
+        Linux is an operating system family based on the Linux kernel. An operating system is the main software
+        that helps applications talk to hardware such as CPU, memory, disk, keyboard, mouse, and network devices.
+      </p>
+      <p>
+        In simple words: <strong>Linux is the software layer that manages a computer and allows users to run commands,
+        applications, services, and servers.</strong>
+      </p>
+      <div class="success">
+        Beginner definition: Linux is like the manager of the computer. It controls resources and allows users and programs to work safely.
+      </div>
+    </div>
+    <div class="card">
+      <h3>Linux System Layers</h3>
+      <div class="linux-stack">
+        <div class="stack-layer">User / Applications</div>
+        <div class="stack-layer">Shell / GUI</div>
+        <div class="stack-layer">Linux Kernel</div>
+        <div class="stack-layer">Hardware</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="linux-windows">
+  <h2>2. Linux vs Windows</h2>
+  <p class="simple">Both Linux and Windows are operating systems. The difference is mainly in usage style, licensing, administration, customization, and server adoption.</p>
+  <div class="compare">
+    <table>
+      <thead>
+        <tr>
+          <th>Point</th>
+          <th>Linux</th>
+          <th>Windows</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Common Use</td>
+          <td>Servers, cloud, DevOps, security tools, embedded systems, desktops</td>
+          <td>Desktops, office systems, gaming, enterprise workstations, Windows servers</td>
+        </tr>
+        <tr>
+          <td>Interface</td>
+          <td>CLI is heavily used; GUI is optional/common on desktop editions</td>
+          <td>GUI-first for most users; PowerShell/CMD used for administration</td>
+        </tr>
+        <tr>
+          <td>Software Installation</td>
+          <td>Package managers like apt, dnf, yum, zypper, pacman</td>
+          <td>Installers, Microsoft Store, winget, enterprise deployment tools</td>
+        </tr>
+        <tr>
+          <td>Customization</td>
+          <td>Highly customizable</td>
+          <td>Customizable, but more controlled</td>
+        </tr>
+        <tr>
+          <td>File Paths</td>
+          <td><code>/home/user/file.txt</code></td>
+          <td><code>C:\Users\User\file.txt</code></td>
+        </tr>
+        <tr>
+          <td>Admin User</td>
+          <td><code>root</code> or sudo-enabled user</td>
+          <td>Administrator account / elevated privileges</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="distros">
+  <h2>3. Linux Distributions</h2>
+  <p>
+    Linux itself is the kernel. A <strong>Linux distribution</strong>, also called a distro, packages the kernel with tools,
+    software repositories, package manager, installer, desktop environment, and support model.
+  </p>
+
+  <div class="distros">
+    <div class="distro"><strong>Ubuntu</strong><br><span class="simple">Beginner-friendly, cloud, desktop</span></div>
+    <div class="distro"><strong>Debian</strong><br><span class="simple">Stable base, servers</span></div>
+    <div class="distro"><strong>RHEL</strong><br><span class="simple">Enterprise Linux</span></div>
+    <div class="distro"><strong>Rocky Linux</strong><br><span class="simple">RHEL-compatible</span></div>
+    <div class="distro"><strong>Fedora</strong><br><span class="simple">Modern features</span></div>
+    <div class="distro"><strong>SUSE / SLES</strong><br><span class="simple">Enterprise environments</span></div>
+    <div class="distro"><strong>Kali Linux</strong><br><span class="simple">Security testing</span></div>
+    <div class="distro"><strong>Arch Linux</strong><br><span class="simple">Advanced customization</span></div>
+  </div>
+
+  <details>
+    <summary>Trainer note: how to explain distro simply</summary>
+    <p>
+      Compare Linux distributions to different car models using the same engine concept. The Linux kernel is the engine.
+      The distro adds dashboard, seats, tools, support, and user experience.
+    </p>
+  </details>
+</section>
+
+<section id="usage">
+  <h2>4. Where Linux is Used</h2>
+  <div class="grid three">
+    <div class="card"><div class="icon">☁️</div><h3>Cloud Servers</h3><p class="simple">AWS, Azure, Google Cloud, private cloud, web servers, application servers.</p></div>
+    <div class="card"><div class="icon">🧰</div><h3>DevOps</h3><p class="simple">CI/CD runners, Docker hosts, Kubernetes nodes, automation servers.</p></div>
+    <div class="card"><div class="icon">🔒</div><h3>Cybersecurity</h3><p class="simple">Security tools, forensics, penetration testing, monitoring platforms.</p></div>
+    <div class="card"><div class="icon">📱</div><h3>Mobile / Embedded</h3><p class="simple">Android is based on the Linux kernel; routers and IoT devices often use Linux.</p></div>
+    <div class="card"><div class="icon">🏦</div><h3>Enterprise Systems</h3><p class="simple">Banking, telecom, insurance, databases, middleware, high availability systems.</p></div>
+    <div class="card"><div class="icon">🧪</div><h3>Labs & Learning</h3><p class="simple">Virtual machines, test environments, scripting, and automation practice.</p></div>
+  </div>
+</section>
+
+<section id="cli-gui">
+  <h2>5. CLI vs GUI</h2>
+  <div class="grid two">
+    <div class="card">
+      <div class="icon">⌨️</div>
+      <h3>CLI - Command Line Interface</h3>
+      <p class="simple">
+        CLI means using commands typed in a terminal. It is fast, scriptable, remote-friendly, and commonly used by Linux administrators.
+      </p>
+      <div class="terminal">
+        <div class="terminal-bar"><span class="dot"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+        <pre><code>ls
+pwd
+cd /tmp
+whoami
+hostname</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="icon">🖱️</div>
+      <h3>GUI - Graphical User Interface</h3>
+      <p class="simple">
+        GUI means using windows, icons, menus, and mouse clicks. It is easy for beginners but not always available on servers.
+      </p>
+      <div class="flow">
+        <div class="flow-step"><span>1</span><strong>Click</strong><br>Open file manager</div>
+        <div class="flow-step"><span>2</span><strong>Browse</strong><br>Navigate folders</div>
+        <div class="flow-step"><span>3</span><strong>Open</strong><br>Run apps visually</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="warning" style="margin-top:16px;">
+    In real Linux administration, CLI is essential because many production servers do not run a desktop GUI.
+  </div>
+</section>
+
+<section id="shell-terminal">
+  <h2>6. Shell and Terminal</h2>
+  <div class="grid two">
+    <div>
+      <p>
+        Beginners often mix up <strong>terminal</strong> and <strong>shell</strong>. They are related, but not exactly the same.
+      </p>
+
+      <div class="command-grid">
+        <div class="cmd-card">
+          <div class="mini-title">Terminal</div>
+          <p class="simple">The application window where you type commands.</p>
+        </div>
+        <div class="cmd-card">
+          <div class="mini-title">Shell</div>
+          <p class="simple">The command interpreter that reads your command and runs it.</p>
+        </div>
+      </div>
+
+      <p>
+        Common Linux shells include <code>bash</code>, <code>sh</code>, <code>zsh</code>, and <code>fish</code>.
+        For beginner Linux administration, <code>bash</code> is the most common starting point.
+      </p>
+    </div>
+
+    <div class="terminal">
+      <div class="terminal-bar"><span class="dot"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+      <pre><code><span class="prompt-line">student@linux-vm:~$ echo "Hello Linux"</span>
+
+Hello Linux</code></pre>
+    </div>
+  </div>
+
+  <details>
+    <summary>Easy analogy</summary>
+    <p>
+      Terminal is like the phone device. Shell is like the person listening and responding to your instructions.
+    </p>
+  </details>
+</section>
+
+<section id="root-user">
+  <h2>7. Root vs Normal User</h2>
+  <div class="grid two">
+    <div class="card">
+      <div class="icon">👤</div>
+      <h3>Normal User</h3>
+      <p class="simple">
+        A normal user can work in their own home directory and run normal commands.
+        This is safer for daily work.
+      </p>
+      <div class="terminal">
+        <div class="terminal-bar"><span class="dot"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+        <pre><code>student@linux-vm:~$ whoami
+student
+
+student@linux-vm:~$ pwd
+/home/student</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="icon">🛡️</div>
+      <h3>Root User</h3>
+      <p class="simple">
+        Root is the superuser. Root can modify system files, install software, create users,
+        stop services, and change security settings.
+      </p>
+      <div class="terminal">
+        <div class="terminal-bar"><span class="dot"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+        <pre><code>root@linux-vm:~# whoami
+root
+
+root@linux-vm:~# systemctl status ssh</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="danger" style="margin-top:16px;">
+    Do not use root casually. A wrong command as root can damage the system. Use normal user for learning and use <code>sudo</code> only when required.
+  </div>
+
+  <details>
+    <summary>Prompt symbol hint</summary>
+    <p>
+      In many Linux systems, a normal user prompt ends with <code>$</code>, while a root prompt ends with <code>#</code>.
+      This is a useful hint, but do not rely on it blindly. Always check with <code>whoami</code>.
+    </p>
+  </details>
+</section>
+
+<section id="lab">
+  <h2>Hands-on Lab: First Login and Basic Commands</h2>
+  <p class="simple">
+    Lab goal: login to a Linux VM, open the terminal, run basic commands, and understand the command prompt.
+  </p>
+
+  <h3>Lab Requirements</h3>
+  <div class="grid three">
+    <div class="card"><div class="icon">💻</div><h3>Linux VM</h3><p class="simple">Ubuntu, Rocky Linux, RHEL, Debian, or similar.</p></div>
+    <div class="card"><div class="icon">🔑</div><h3>Credentials</h3><p class="simple">Username and password or SSH key access.</p></div>
+    <div class="card"><div class="icon">🌐</div><h3>Access Method</h3><p class="simple">VM console, SSH, VMware, VirtualBox, cloud console, or terminal client.</p></div>
+  </div>
+
+  <h3>Lab Flow</h3>
+  <div class="flow">
+    <div class="flow-step"><span>1</span><strong>Login</strong><br>Access the Linux VM.</div>
+    <div class="flow-step"><span>2</span><strong>Open Terminal</strong><br>Use GUI terminal or SSH.</div>
+    <div class="flow-step"><span>3</span><strong>Run Commands</strong><br>Try safe beginner commands.</div>
+    <div class="flow-step"><span>4</span><strong>Read Prompt</strong><br>Identify user, host, path, and symbol.</div>
+  </div>
+
+  <h3>Step 1: Login to Linux VM</h3>
+  <details open>
+    <summary>Option A: Login using VM console</summary>
+    <ol class="lab-checklist">
+      <li>Start the Linux VM.</li>
+      <li>Click inside the VM console window.</li>
+      <li>Enter username, for example <code>student</code>.</li>
+      <li>Enter password.</li>
+      <li>After login, open the terminal application.</li>
+    </ol>
+  </details>
+
+  <details>
+    <summary>Option B: Login using SSH</summary>
+    <p>From your laptop terminal:</p>
+    <div class="terminal">
+      <div class="terminal-bar"><span class="dot"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+      <pre><code>ssh student@192.168.1.50</code></pre>
+    </div>
+    <p class="simple">Replace <code>student</code> and <code>192.168.1.50</code> with your actual VM username and IP address.</p>
+  </details>
+
+  <h3>Step 2: Open Terminal</h3>
+  <div class="command-grid">
+    <div class="cmd-card">
+      <div class="mini-title">Ubuntu / GNOME shortcut</div>
+      <p>Press <span class="kbd">Ctrl</span> + <span class="kbd">Alt</span> + <span class="kbd">T</span></p>
+    </div>
+    <div class="cmd-card">
+      <div class="mini-title">GUI method</div>
+      <p>Applications menu → Terminal</p>
+    </div>
+  </div>
+
+  <h3>Step 3: Run First Basic Commands</h3>
+  <div class="command-grid">
+    <div class="cmd-card">
+      <div class="mini-title">Check current user</div>
+      <code>whoami</code>
+      <p class="simple">Shows the logged-in username.</p>
+    </div>
+    <div class="cmd-card">
+      <div class="mini-title">Check current directory</div>
+      <code>pwd</code>
+      <p class="simple">Prints the present working directory.</p>
+    </div>
+    <div class="cmd-card">
+      <div class="mini-title">List files</div>
+      <code>ls</code>
+      <p class="simple">Lists files and folders in current location.</p>
+    </div>
+    <div class="cmd-card">
+      <div class="mini-title">List with details</div>
+      <code>ls -l</code>
+      <p class="simple">Shows permissions, owner, size, and date.</p>
+    </div>
+    <div class="cmd-card">
+      <div class="mini-title">Show hidden files</div>
+      <code>ls -la</code>
+      <p class="simple">Shows hidden files starting with dot.</p>
+    </div>
+    <div class="cmd-card">
+      <div class="mini-title">Change directory</div>
+      <code>cd /tmp</code>
+      <p class="simple">Moves to the /tmp directory.</p>
+    </div>
+    <div class="cmd-card">
+      <div class="mini-title">Go to home directory</div>
+      <code>cd ~</code>
+      <p class="simple">Returns to your user's home directory.</p>
+    </div>
+    <div class="cmd-card">
+      <div class="mini-title">Show system name</div>
+      <code>hostname</code>
+      <p class="simple">Displays the system hostname.</p>
+    </div>
+  </div>
+
+  <h3>Step 4: Understand the Prompt</h3>
+  <div class="terminal">
+    <div class="terminal-bar"><span class="dot"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+    <pre><code>student@linux-vm:~$</code></pre>
+  </div>
+
+  <div class="grid four" style="margin-top:16px;">
+    <div class="card"><h3><code>student</code></h3><p class="simple">Current logged-in user.</p></div>
+    <div class="card"><h3><code>linux-vm</code></h3><p class="simple">Hostname of the machine.</p></div>
+    <div class="card"><h3><code>~</code></h3><p class="simple">Current directory. Tilde means user's home directory.</p></div>
+    <div class="card"><h3><code>$</code></h3><p class="simple">Normal user prompt. Root often shows <code>#</code>.</p></div>
+  </div>
+
+  <h3>Expected Practice Output</h3>
+  <div class="terminal">
+    <div class="terminal-bar"><span class="dot"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+    <pre><code>student@linux-vm:~$ whoami
+student
+
+student@linux-vm:~$ pwd
+/home/student
+
+student@linux-vm:~$ hostname
+linux-vm
+
+student@linux-vm:~$ cd /tmp
+
+student@linux-vm:/tmp$ pwd
+/tmp
+
+student@linux-vm:/tmp$ cd ~
+
+student@linux-vm:~$ pwd
+/home/student</code></pre>
+  </div>
+
+  <h3>Lab Tasks for Trainees</h3>
+  <ol class="lab-checklist">
+    <li>Login to the Linux VM.</li>
+    <li>Open terminal.</li>
+    <li>Run <code>whoami</code> and write down the username.</li>
+    <li>Run <code>hostname</code> and write down the hostname.</li>
+    <li>Run <code>pwd</code> and identify current directory.</li>
+    <li>Run <code>ls</code>, <code>ls -l</code>, and <code>ls -la</code>. Observe the difference.</li>
+    <li>Move to <code>/tmp</code> using <code>cd /tmp</code>.</li>
+    <li>Return to home directory using <code>cd ~</code>.</li>
+    <li>Identify the four parts of the prompt: user, hostname, directory, prompt symbol.</li>
+  </ol>
+
+  <div class="warning">
+    Safe beginner rule: In Module 1, avoid destructive commands such as <code>rm -rf</code>, disk commands, formatting commands, or changing system files.
+  </div>
+</section>
+
+
+<section id="playground">
+  <h2>🎮 Linux Adventure Playground</h2>
+  <p class="simple">Practice safely inside a browser-based simulation. No real commands are executed on your computer.</p>
+
+  <div class="adventure-grid">
+    <div class="mission-board">
+      <h3>🧪 Mission 1: Meet Your Linux Machine</h3>
+      <p class="simple">Complete these tasks in the simulator or your real training VM.</p>
+      <label class="mission-item"><input type="checkbox" data-mission="login"> Login to the Linux VM</label>
+      <label class="mission-item"><input type="checkbox" data-mission="terminal"> Open the terminal</label>
+      <label class="mission-item"><input type="checkbox" data-mission="whoami"> Discover the username with <code>whoami</code></label>
+      <label class="mission-item"><input type="checkbox" data-mission="hostname"> Discover the hostname with <code>hostname</code></label>
+      <label class="mission-item"><input type="checkbox" data-mission="pwd"> Find the current directory with <code>pwd</code></label>
+      <label class="mission-item"><input type="checkbox" data-mission="tmp"> Visit <code>/tmp</code></label>
+      <label class="mission-item"><input type="checkbox" data-mission="home"> Return home using <code>cd ~</code></label>
+      <label class="mission-item"><input type="checkbox" data-mission="prompt"> Decode all parts of the prompt</label>
+      <div class="success" id="missionStatus">Mission status: ready for launch.</div>
+    </div>
+
+    <div>
+      <div class="sim-terminal">
+        <div class="terminal-bar"><span class="dot"></span><span class="dot yellow"></span><span class="dot green"></span><strong style="margin-left:8px">Tux Terminal Simulator</strong></div>
+        <div class="sim-output" id="simOutput">Welcome to the Tux Terminal Simulator!\nType help and press Enter.\n\n</div>
+        <div class="sim-input-row">
+          <span class="sim-prompt" id="simPrompt">student@linux-vm:~$</span>
+          <input id="simInput" aria-label="Simulated terminal command" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="quick-command-row">
+          <button data-simcmd="help">help</button>
+          <button data-simcmd="whoami">whoami</button>
+          <button data-simcmd="pwd">pwd</button>
+          <button data-simcmd="ls -la">ls -la</button>
+          <button data-simcmd="hostname">hostname</button>
+          <button data-simcmd="cd /tmp">cd /tmp</button>
+          <button data-simcmd="cd ~">cd ~</button>
+          <button data-simcmd="clear">clear</button>
+          <button id="resetSimulator">reset</button>
+        </div>
+      </div>
+      <p class="simple">Keyboard bonus: use the <kbd>↑</kbd> and <kbd>↓</kbd> arrow keys to browse simulated command history.</p>
+    </div>
+  </div>
+
+  <div class="grid three" style="margin-top:18px">
+    <div class="game-card">
+      <h3>🕵️ Command Detective</h3>
+      <p>Which command produced this output?</p>
+      <div class="prompt-game">/home/student</div>
+      <div class="game-options">
+        <button data-detective="hostname">hostname</button>
+        <button data-detective="pwd">pwd</button>
+        <button data-detective="whoami">whoami</button>
+      </div>
+      <div class="game-feedback" id="detectiveFeedback"></div>
+    </div>
+
+    <div class="game-card">
+      <h3>🧩 Prompt Puzzle</h3>
+      <p>Click each part to decode it.</p>
+      <div class="prompt-game"><span class="prompt-part" data-prompt="user">student</span>@<span class="prompt-part" data-prompt="host">linux-vm</span>:<span class="prompt-part" data-prompt="path">/tmp</span><span class="prompt-part" data-prompt="symbol">$</span></div>
+      <div class="game-feedback" id="promptGameFeedback">Choose a prompt part.</div>
+    </div>
+
+    <div class="game-card">
+      <h3>🎨 Which Distro Fits?</h3>
+      <p>Choose your main goal.</p>
+      <div class="game-options">
+        <button data-distrofit="beginner">First Linux system</button>
+        <button data-distrofit="enterprise">Enterprise server</button>
+        <button data-distrofit="security">Security lab</button>
+        <button data-distrofit="custom">Build and customize</button>
+      </div>
+      <div class="distro-finder-result" id="distroFinderResult">Your recommendation will appear here.</div>
+    </div>
+  </div>
+
+  <button class="level-complete" data-complete-level="mission">Complete Mission Level ✓</button>
+</section>
+
+<section id="quiz">
+  <h2>Quick Review Questions</h2>
+  <div class="quiz">
+    <details>
+      <summary>What is Linux?</summary>
+      <p>Linux is an operating system family based on the Linux kernel. It manages hardware and allows users and applications to run.</p>
+    </details>
+    <details>
+      <summary>What is the difference between CLI and GUI?</summary>
+      <p>CLI uses typed commands. GUI uses windows, icons, menus, and mouse clicks.</p>
+    </details>
+    <details>
+      <summary>What is a Linux distribution?</summary>
+      <p>A distribution packages the Linux kernel with tools, package manager, installer, repositories, and support model.</p>
+    </details>
+    <details>
+      <summary>What command shows the current user?</summary>
+      <p><code>whoami</code></p>
+    </details>
+    <details>
+      <summary>What command shows the current directory?</summary>
+      <p><code>pwd</code></p>
+    </details>
+    <details>
+      <summary>What does <code>~</code> mean in the prompt?</summary>
+      <p>It represents the current user's home directory.</p>
+    </details>
+    <details>
+      <summary>What is the root user?</summary>
+      <p>Root is the superuser with full administrative control over the Linux system.</p>
+    </details>
+    <details>
+      <summary>Why should beginners avoid using root casually?</summary>
+      <p>Because root can modify or damage important system files and settings.</p>
+    </details>
+  </div>
+</section>
+
+
+<section id="assessment">
+  <h2>🏁 Final Assessment and Badge</h2>
+  <p class="simple">Score at least 70% to unlock the <strong>Terminal Explorer</strong> badge.</p>
+  <form id="assessmentForm">
+    <div class="assessment-question">
+      <strong>1. What is the Linux kernel?</strong>
+      <label><input type="radio" name="aq1" value="a"> A desktop wallpaper</label>
+      <label><input type="radio" name="aq1" value="b"> The core that manages hardware and system resources</label>
+      <label><input type="radio" name="aq1" value="c"> A text editor</label>
+    </div>
+    <div class="assessment-question">
+      <strong>2. Which command shows the current user?</strong>
+      <label><input type="radio" name="aq2" value="a"> whoami</label>
+      <label><input type="radio" name="aq2" value="b"> pwd</label>
+      <label><input type="radio" name="aq2" value="c"> hostname</label>
+    </div>
+    <div class="assessment-question">
+      <strong>3. What does <code>~</code> usually represent?</strong>
+      <label><input type="radio" name="aq3" value="a"> Current user's home directory</label>
+      <label><input type="radio" name="aq3" value="b"> Root directory</label>
+      <label><input type="radio" name="aq3" value="c"> Temporary directory</label>
+    </div>
+    <div class="assessment-question">
+      <strong>4. Which prompt symbol commonly suggests the root user?</strong>
+      <label><input type="radio" name="aq4" value="a"> $</label>
+      <label><input type="radio" name="aq4" value="b"> @</label>
+      <label><input type="radio" name="aq4" value="c"> #</label>
+    </div>
+    <div class="assessment-question">
+      <strong>5. Which statement is correct?</strong>
+      <label><input type="radio" name="aq5" value="a"> Terminal and shell always mean exactly the same thing</label>
+      <label><input type="radio" name="aq5" value="b"> The terminal is the window; the shell interprets commands</label>
+      <label><input type="radio" name="aq5" value="c"> Linux cannot use a GUI</label>
+    </div>
+    <button type="submit" class="btn" id="assessmentSubmit">Check Score</button>
+  </form>
+  <div class="score-panel" id="assessmentScore">Your result will appear here.</div>
+  <div class="badge-panel" id="badgePanel">
+    <div class="badge-medal">🏆</div>
+    <h2>Badge Unlocked: Terminal Explorer</h2>
+    <p>You completed Module 1 and proved that the terminal is no longer a mysterious black rectangle.</p>
+  </div>
+  <button class="level-complete" data-complete-level="assessment">Mark Assessment Level Complete ✓</button>
+</section>
+
+<section>
+  <h2>Trainer Delivery Notes</h2>
+  <div class="grid two">
+    <div class="card">
+      <h3>Suggested Duration</h3>
+      <p class="simple">45 to 60 minutes including lab practice.</p>
+      <span class="pill">Theory: 30 min</span>
+      <span class="pill">Lab: 20 min</span>
+      <span class="pill">Review: 10 min</span>
+    </div>
+    <div class="card">
+      <h3>Beginner Teaching Tips</h3>
+      <ul class="simple">
+        <li>Do not start with heavy internals.</li>
+        <li>First make trainees comfortable with login and terminal.</li>
+        <li>Explain prompt before commands become complex.</li>
+        <li>Repeat safe command practice several times.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>Module 1: Linux Introduction | Beginner Animated HTML Reference</p>
+  <p class="print-note">Printed version: animations and sticky navigation are disabled for readability.</p>
+</footer>
+
+<script>
+  const sections = document.querySelectorAll("section");
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting) {
+        entry.target.style.animation = "fadeUp .8s ease both";
+      }
+    });
+  }, { threshold: .12 });
+
+  sections.forEach(section => observer.observe(section));
+
+  document.querySelectorAll(".cmd-card code").forEach(code => {
+    code.title = "Click to copy";
+    code.style.cursor = "pointer";
+    code.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(code.innerText);
+        const old = code.innerText;
+        code.innerText = "Copied!";
+        setTimeout(() => code.innerText = old, 900);
+      } catch(e) {
+        alert("Copy failed. Select and copy manually.");
+      }
+    });
+  });
+</script>
+
+
+<script>
+(() => {
+  const STORAGE_KEY = 'linux_module_1_fun_state_v1';
+  const defaultState = { completed: [], missions: {}, theme: 'dark', largeText: false, reducedMotion: false, sound: false };
+  let state;
+  try { state = Object.assign({}, defaultState, JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')); }
+  catch (_) { state = {...defaultState}; }
+
+  const levelTargets = {
+    linux: 'what-linux', windows: 'linux-windows', distros: 'distros', interfaces: 'cli-gui',
+    users: 'root-user', mission: 'playground', assessment: 'assessment'
+  };
+  const levelOrder = Object.keys(levelTargets);
+  const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+  function toast(message) {
+    const el = document.getElementById('funToast');
+    el.textContent = message;
+    el.classList.add('show');
+    clearTimeout(window.__linuxToastTimer);
+    window.__linuxToastTimer = setTimeout(() => el.classList.remove('show'), 1900);
+  }
+
+  function beep(frequency = 650, duration = .08) {
+    if (!state.sound) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = frequency;
+    gain.gain.value = .045;
+    osc.connect(gain); gain.connect(ctx.destination); osc.start();
+    gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + duration);
+    osc.stop(ctx.currentTime + duration);
+  }
+
+  function confetti() {
+    const layer = document.getElementById('confettiLayer');
+    const colors = ['#38bdf8','#22c55e','#facc15','#c4a7ff','#fb7185'];
+    layer.innerHTML = '';
+    for (let i = 0; i < 60; i++) {
+      const piece = document.createElement('i');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + '%';
+      piece.style.animationDelay = Math.random() * .55 + 's';
+      piece.style.background = colors[i % colors.length];
+      layer.appendChild(piece);
+    }
+    setTimeout(() => layer.innerHTML = '', 3500);
+  }
+
+  function applySettings() {
+    document.body.classList.toggle('light-mode', state.theme === 'light');
+    document.body.classList.toggle('large-text', !!state.largeText);
+    document.body.classList.toggle('reduced-motion', !!state.reducedMotion);
+    document.getElementById('themeToggle').textContent = state.theme === 'dark' ? '☀️' : '🌙';
+    document.getElementById('fontToggle').textContent = state.largeText ? 'A↺' : 'A+';
+    document.getElementById('motionToggle').textContent = state.reducedMotion ? '🚫' : '🎞️';
+    document.getElementById('soundToggle').textContent = state.sound ? '🔊' : '🔇';
+  }
+
+  function updateProgress() {
+    const percent = Math.round((state.completed.length / levelOrder.length) * 100);
+    document.getElementById('courseProgressFill').style.width = percent + '%';
+    document.getElementById('courseProgressText').textContent = 'Adventure progress: ' + percent + '%';
+    document.querySelectorAll('.journey-node').forEach(node => {
+      node.classList.toggle('completed', state.completed.includes(node.dataset.level));
+    });
+    document.querySelectorAll('[data-complete-level]').forEach(button => {
+      if (state.completed.includes(button.dataset.completeLevel)) {
+        button.disabled = true;
+        button.textContent = 'Level Completed ✓';
+      }
+    });
+  }
+
+  function completeLevel(level) {
+    if (!state.completed.includes(level)) state.completed.push(level);
+    save(); updateProgress(); beep(850, .12);
+    toast('Level complete! +10 penguin points 🐧');
+  }
+
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark'; save(); applySettings();
+  });
+  document.getElementById('fontToggle').addEventListener('click', () => {
+    state.largeText = !state.largeText; save(); applySettings(); toast(state.largeText ? 'Larger text enabled' : 'Normal text restored');
+  });
+  document.getElementById('motionToggle').addEventListener('click', () => {
+    state.reducedMotion = !state.reducedMotion; save(); applySettings(); toast(state.reducedMotion ? 'Reduced motion enabled' : 'Animations enabled');
+  });
+  document.getElementById('soundToggle').addEventListener('click', () => {
+    state.sound = !state.sound; save(); applySettings(); toast(state.sound ? 'Sound enabled' : 'Sound muted'); beep();
+  });
+
+  document.querySelectorAll('[data-complete-level]').forEach(btn => btn.addEventListener('click', () => completeLevel(btn.dataset.completeLevel)));
+
+  document.getElementById('resumeAdventure').addEventListener('click', () => {
+    const next = levelOrder.find(level => !state.completed.includes(level)) || 'assessment';
+    document.getElementById(levelTargets[next]).scrollIntoView({ behavior: 'smooth' });
+  });
+
+  const tuxTips = [
+    'Linux is not only for hackers. Your router may already use it.',
+    'The terminal is not angry—it is simply very direct.',
+    'Root power unlocked. Please do not destroy the kingdom.',
+    'whoami is one of the rare commands that answers exactly what it says.',
+    'A distro is Linux wearing a particular outfit and carrying particular tools.',
+    'When lost, run pwd. Even experienced administrators do this.',
+    'A blank successful output is sometimes Linux saying: done, no drama.'
+  ];
+  let tipIndex = 0;
+  const nextTip = () => {
+    document.getElementById('tuxBubble').textContent = tuxTips[tipIndex++ % tuxTips.length];
+    beep(720, .06);
+  };
+  document.getElementById('tuxAvatar').addEventListener('click', nextTip);
+  document.getElementById('tuxAvatar').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') nextTip(); });
+  setInterval(nextTip, 6200);
+
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    document.getElementById('readingProgress').style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  });
+
+  // Automatically add level buttons to major concept sections.
+  const autoLevels = [
+    ['what-linux','linux'], ['linux-windows','windows'], ['distros','distros'],
+    ['cli-gui','interfaces'], ['root-user','users']
+  ];
+  autoLevels.forEach(([sectionId, level]) => {
+    const section = document.getElementById(sectionId);
+    if (section && !section.querySelector('[data-complete-level]')) {
+      const button = document.createElement('button');
+      button.className = 'level-complete';
+      button.dataset.completeLevel = level;
+      button.textContent = 'Mark Level Complete ✓';
+      button.addEventListener('click', () => completeLevel(level));
+      section.appendChild(button);
+    }
+  });
+
+  // Mission checklist.
+  function refreshMissionStatus() {
+    const boxes = [...document.querySelectorAll('[data-mission]')];
+    const done = boxes.filter(box => box.checked).length;
+    const status = document.getElementById('missionStatus');
+    status.textContent = `Mission status: ${done}/${boxes.length} tasks completed.`;
+    if (done === boxes.length) {
+      status.innerHTML = '<strong>🏆 Mission complete: Terminal Explorer skills activated!</strong>';
+      completeLevel('mission'); confetti();
+    }
+  }
+  document.querySelectorAll('[data-mission]').forEach(box => {
+    box.checked = !!state.missions[box.dataset.mission];
+    box.addEventListener('change', () => {
+      state.missions[box.dataset.mission] = box.checked; save(); refreshMissionStatus();
+    });
+  });
+  refreshMissionStatus();
+
+  function markMission(name) {
+    const box = document.querySelector(`[data-mission="${name}"]`);
+    if (!box) return;
+    box.checked = true; state.missions[name] = true; save(); refreshMissionStatus();
+  }
+
+  // Terminal simulator.
+  const simOutput = document.getElementById('simOutput');
+  const simInput = document.getElementById('simInput');
+  const simPrompt = document.getElementById('simPrompt');
+  let currentDir = '~';
+  let commandHistory = [];
+  let historyIndex = 0;
+  const appendOutput = text => { simOutput.textContent += text + '\n'; simOutput.scrollTop = simOutput.scrollHeight; };
+  const updatePrompt = () => { simPrompt.textContent = `student@linux-vm:${currentDir}$`; };
+
+  function runSimCommand(rawCommand) {
+    const command = rawCommand.trim();
+    if (!command) return;
+    appendOutput(`${simPrompt.textContent} ${command}`);
+    commandHistory.push(command); historyIndex = commandHistory.length;
+    switch (command) {
+      case 'help':
+        appendOutput('Available commands: whoami, pwd, hostname, ls, ls -l, ls -la, cd /tmp, cd ~, date, uptime, uname -r, history, clear');
+        break;
+      case 'whoami': appendOutput('student'); markMission('whoami'); break;
+      case 'pwd': appendOutput(currentDir === '~' ? '/home/student' : currentDir); markMission('pwd'); break;
+      case 'hostname': appendOutput('linux-vm'); markMission('hostname'); break;
+      case 'ls': appendOutput(currentDir === '~' ? 'Desktop  Documents  Downloads  notes.txt' : 'cache  temp-data.txt'); break;
+      case 'ls -l': appendOutput('drwxr-xr-x 2 student student 4096 Documents\n-rw-r--r-- 1 student student  128 notes.txt'); break;
+      case 'ls -la': appendOutput('.  ..  .bashrc  .profile  Desktop  Documents  Downloads  notes.txt'); break;
+      case 'cd /tmp': currentDir = '/tmp'; updatePrompt(); appendOutput(''); markMission('tmp'); break;
+      case 'cd ~':
+      case 'cd': currentDir = '~'; updatePrompt(); appendOutput(''); markMission('home'); break;
+      case 'date': appendOutput('Sun Aug 02 23:32:00 IST 2026'); break;
+      case 'uptime': appendOutput('up 42 minutes, 1 user, load average: 0.08, 0.05, 0.01'); break;
+      case 'uname -r': appendOutput('6.8.0-generic'); break;
+      case 'history': commandHistory.forEach((item, index) => appendOutput(`${index + 1}  ${item}`)); break;
+      case 'clear': simOutput.textContent = ''; break;
+      default:
+        appendOutput(`bash: ${command.split(' ')[0]}: command not found\nTux hint: type help`);
+        beep(220, .1);
+    }
+  }
+
+  simInput.addEventListener('focus', () => markMission('terminal'));
+  simInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter') { runSimCommand(simInput.value); simInput.value = ''; }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (historyIndex > 0) simInput.value = commandHistory[--historyIndex] || '';
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (historyIndex < commandHistory.length - 1) simInput.value = commandHistory[++historyIndex] || '';
+      else { historyIndex = commandHistory.length; simInput.value = ''; }
+    }
+  });
+  document.querySelectorAll('[data-simcmd]').forEach(button => button.addEventListener('click', () => runSimCommand(button.dataset.simcmd)));
+  document.getElementById('resetSimulator').addEventListener('click', () => {
+    currentDir = '~'; commandHistory = []; historyIndex = 0; updatePrompt();
+    simOutput.textContent = 'Welcome to the Tux Terminal Simulator!\nType help and press Enter.\n\n';
+    simInput.focus();
+  });
+
+  // Mini games.
+  document.querySelectorAll('[data-detective]').forEach(button => button.addEventListener('click', () => {
+    const correct = button.dataset.detective === 'pwd';
+    document.getElementById('detectiveFeedback').textContent = correct ? '✅ Correct! pwd prints the present working directory.' : '❌ Try again. The output is a directory path.';
+    beep(correct ? 820 : 220, .1);
+  }));
+
+  const promptMeaning = {
+    user: '👤 student = current logged-in username.',
+    host: '🖥️ linux-vm = hostname of the machine.',
+    path: '📁 /tmp = current working directory.',
+    symbol: '🔐 $ = commonly a normal-user prompt.'
+  };
+  const promptSeen = new Set();
+  document.querySelectorAll('[data-prompt]').forEach(part => part.addEventListener('click', () => {
+    document.querySelectorAll('[data-prompt]').forEach(item => item.classList.remove('active'));
+    part.classList.add('active'); promptSeen.add(part.dataset.prompt);
+    document.getElementById('promptGameFeedback').textContent = promptMeaning[part.dataset.prompt];
+    if (promptSeen.size === 4) markMission('prompt');
+  }));
+
+  const distroFits = {
+    beginner: '<strong>Ubuntu</strong> — friendly setup, extensive learning material, and a strong first lab choice.',
+    enterprise: '<strong>RHEL or Rocky Linux</strong> — enterprise-style administration with the dnf package ecosystem.',
+    security: '<strong>Kali Linux</strong> — a specialized security toolkit; learn general Linux basics first.',
+    custom: '<strong>Arch Linux</strong> — highly customizable and educational, but not the easiest first installation.'
+  };
+  document.querySelectorAll('[data-distrofit]').forEach(button => button.addEventListener('click', () => {
+    document.getElementById('distroFinderResult').innerHTML = distroFits[button.dataset.distrofit]; beep(720, .07);
+  }));
+
+  // Assessment.
+  document.getElementById('assessmentForm').addEventListener('submit', event => {
+    event.preventDefault();
+    const answers = { aq1: 'b', aq2: 'a', aq3: 'a', aq4: 'c', aq5: 'b' };
+    let score = 0;
+    Object.entries(answers).forEach(([name, correct]) => {
+      const checked = document.querySelector(`input[name="${name}"]:checked`);
+      if (checked && checked.value === correct) score++;
+    });
+    const percent = score * 20;
+    document.getElementById('assessmentScore').innerHTML = `<h3>${score}/5 — ${percent}%</h3><p>${percent >= 70 ? 'Passed! Tux approves. 🐧' : 'Review the concepts and try again.'}</p>`;
+    if (percent >= 70) {
+      document.getElementById('badgePanel').style.display = 'block';
+      completeLevel('assessment'); confetti(); beep(940, .18);
+    } else beep(220, .15);
+  });
+
+  // Simulate the two physical setup items through explicit user action.
+  const loginBox = document.querySelector('[data-mission="login"]');
+  loginBox.addEventListener('change', refreshMissionStatus);
+
+  applySettings();
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>

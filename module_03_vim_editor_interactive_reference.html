@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vim Dojo: Interactive Animated Vim Editor Reference</title>
+<style>
+  :root {
+    --bg: #07111f;
+    --bg2: #0b1728;
+    --panel: rgba(16,29,49,.88);
+    --panel-solid: #101d31;
+    --panel2: rgba(19,38,63,.92);
+    --ink: #ecf4ff;
+    --muted: #b8c6d8;
+    --soft: rgba(255,255,255,.075);
+    --line: rgba(135, 180, 220, .25);
+    --accent: #58d68d;
+    --accent2: #5dade2;
+    --warn: #f5b041;
+    --danger: #ec7063;
+    --purple: #c39bd3;
+    --code: #06101b;
+    --terminal: #020b13;
+    --shadow: 0 20px 60px rgba(0,0,0,.35);
+    --radius: 20px;
+    --font-scale: 1;
+  }
+  body.light {
+    --bg: #f6f8fc;
+    --bg2: #eef4fb;
+    --panel: rgba(255,255,255,.94);
+    --panel-solid: #ffffff;
+    --panel2: #f6faff;
+    --ink: #172033;
+    --muted: #45566f;
+    --soft: rgba(6,16,27,.06);
+    --line: rgba(36, 75, 115, .18);
+    --code: #f3f7fb;
+    --terminal: #0b1422;
+    --shadow: 0 16px 40px rgba(24,48,76,.13);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: calc(16px * var(--font-scale));
+    background:
+      radial-gradient(circle at 8% 0%, rgba(88,214,141,.20), transparent 32%),
+      radial-gradient(circle at 92% 8%, rgba(93,173,226,.18), transparent 28%),
+      radial-gradient(circle at 45% 90%, rgba(195,155,211,.13), transparent 32%),
+      linear-gradient(135deg, var(--bg), var(--bg2));
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  a { color: #8fd8ff; }
+  body.light a { color: #0b69a8; }
+  h1, h2, h3, h4 { color: var(--ink); }
+  h1 { font-size: clamp(2.6rem, 5.6vw, 5.8rem); line-height: .94; margin: 0 0 1rem; letter-spacing: -0.07em; }
+  h2 { font-size: clamp(1.75rem, 3vw, 2.65rem); margin: 0 0 .8rem; letter-spacing: -0.045em; }
+  h3 { font-size: 1.2rem; margin: 0 0 .5rem; }
+  h4 { margin: 1rem 0 .35rem; }
+  p { color: var(--muted); margin: .35rem 0 1rem; }
+  .lead { font-size: 1.16rem; max-width: 72ch; }
+  .tiny { font-size: .86rem; color: var(--muted); }
+  .progress-wrap { position: fixed; left: 0; right: 0; top: 0; height: 5px; background: transparent; z-index: 100; }
+  .progress { height: 5px; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2), var(--purple)); }
+
+  header.hero {
+    min-height: 94vh;
+    display: grid;
+    grid-template-columns: 1.03fr .97fr;
+    gap: 2.2rem;
+    align-items: center;
+    padding: 4.5rem 7vw 3rem;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: "ESC :wq dd yy p / n u";
+    position: absolute;
+    bottom: .6rem;
+    right: -3rem;
+    color: rgba(255,255,255,.04);
+    font-size: clamp(3.5rem, 9vw, 9rem);
+    font-weight: 950;
+    letter-spacing: .05em;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  body.light .hero::after { color: rgba(10,30,55,.055); }
+  .eyebrow { color: var(--accent); font-weight: 900; letter-spacing: .13em; text-transform: uppercase; font-size: .84rem; }
+  .badge-row { display: flex; flex-wrap: wrap; gap: .55rem; margin: 1.2rem 0; }
+  .badge {
+    display: inline-flex; align-items: center; gap: .42rem;
+    border: 1px solid var(--line);
+    background: var(--soft);
+    color: var(--ink); padding: .52rem .8rem; border-radius: 999px;
+    font-size: .9rem;
+  }
+  .hero-actions { display:flex; flex-wrap:wrap; gap:.7rem; margin-top:1.35rem; }
+  .btn, .small-btn {
+    border: 1px solid transparent; border-radius: 999px; padding: .86rem 1.08rem;
+    color: #06101b; background: var(--accent); font-weight: 850; cursor: pointer;
+    text-decoration: none; box-shadow: var(--shadow); transition: transform .18s ease, filter .18s ease, background .18s ease;
+  }
+  .btn:hover, .small-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+  .btn.secondary, .small-btn.secondary, .small-btn {
+    background: var(--soft); color: var(--ink); border-color: var(--line); box-shadow: none;
+  }
+  .small-btn { padding: .52rem .72rem; font-size: .9rem; }
+  .small-btn.active { background: rgba(88,214,141,.18); border-color: rgba(88,214,141,.6); }
+  .panic-btn { background: var(--danger); color: #fff; }
+
+  .layout { display: grid; grid-template-columns: 292px 1fr; gap: 2rem; padding: 2rem 7vw; }
+  aside.toc {
+    position: sticky; top: 1rem; align-self: start; max-height: calc(100vh - 2rem); overflow: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 1rem; box-shadow: var(--shadow); backdrop-filter: blur(14px);
+  }
+  .toc strong { display:block; margin:.15rem 0 .55rem; }
+  .toc a { display:block; color: var(--muted); text-decoration:none; padding:.46rem .55rem; border-radius: 12px; font-size:.92rem; }
+  .toc a:hover { color: var(--ink); background: var(--soft); }
+  .toc .tools { display:grid; grid-template-columns:1fr 1fr; gap:.45rem; margin:.7rem 0 1rem; }
+  .xp-card { border:1px solid var(--line); background: var(--soft); border-radius:16px; padding:.8rem; margin:.6rem 0 1rem; }
+  .xpbar { height: 10px; border-radius:999px; background:rgba(125,125,125,.18); overflow:hidden; }
+  .xpfill { width:0%; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .3s ease; }
+  main { min-width: 0; }
+  section.card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: clamp(1.1rem, 2vw, 2rem); margin-bottom: 1.5rem; box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+  }
+  .grid-2 { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:1rem; }
+  .grid-3 { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:1rem; }
+  .grid-4 { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:1rem; }
+  .mini-card, .mission, .recipe, .quiz-card, .practice, .dojo-card {
+    background: var(--soft); border:1px solid var(--line); border-radius: 18px; padding:1rem;
+  }
+  .mini-card p, .recipe p { margin-bottom: 0; }
+  .stat-card { display:flex; align-items:center; gap:.8rem; }
+  .stat-icon { width: 46px; height:46px; display:grid; place-items:center; border-radius:15px; background:rgba(88,214,141,.17); font-size:1.5rem; }
+
+  code, kbd {
+    font-family: "Cascadia Code", "SFMono-Regular", Consolas, Monaco, monospace;
+    background: rgba(0,0,0,.30); border: 1px solid rgba(255,255,255,.10); color: #dcf8e7;
+    padding: .12rem .38rem; border-radius: 7px;
+  }
+  body.light code, body.light kbd { background:#eaf2fb; border-color:#c9d9ea; color:#0d3d2a; }
+  pre {
+    background: var(--code); color: #d5f5e3; padding: 1rem; border-radius: 16px;
+    border: 1px solid var(--line); overflow: auto; position: relative;
+  }
+  body.light pre { color:#12263a; }
+  pre .copy { position:absolute; right:.55rem; top:.55rem; }
+  table { width:100%; border-collapse: collapse; margin:1rem 0; overflow:hidden; border-radius:14px; }
+  th, td { border:1px solid var(--line); padding:.75rem; vertical-align: top; }
+  th { background: rgba(93,173,226,.16); color:var(--ink); text-align:left; }
+  td { color:var(--muted); }
+  ul, ol { color: var(--muted); }
+
+  .terminal { background:var(--terminal); border:1px solid #1f3c59; border-radius:18px; overflow:hidden; box-shadow: var(--shadow); }
+  .term-top { display:flex; gap:.45rem; align-items:center; padding:.7rem .9rem; background:#071421; border-bottom:1px solid #1f3c59; }
+  .dot { width:.72rem; height:.72rem; border-radius:50%; background:#ec7063; box-shadow:1.1rem 0 #f5b041,2.2rem 0 #58d68d; flex:0 0 auto; }
+  .term-title { margin-left:2.8rem; color:#aebbd0; font-size:.85rem; }
+  .vim-screen { min-height: 365px; padding: 1rem; font-family:"Cascadia Code", Consolas, monospace; font-size:.94rem; position:relative; overflow:hidden; background:#020b13; }
+  .vim-line { display:grid; grid-template-columns:3ch 1fr; gap:.7rem; white-space:pre-wrap; min-height:1.45rem; }
+  .ln { color:#64748b; text-align:right; user-select:none; }
+  .text { color:#cde7ff; }
+  .statusline { display:flex; justify-content:space-between; gap:.7rem; padding:.35rem .7rem; background:#18324d; color:#eff6ff; font-family:Consolas, monospace; font-size:.88rem; }
+  .cmdline { padding:.45rem .7rem; min-height:2rem; color:#dcf8e7; font-family:Consolas, monospace; background:#06101b; border-top:1px solid #1f3c59; }
+  .cursor { display:inline-block; width:.65ch; height:1.05rem; background:var(--accent); vertical-align:-0.15rem; animation:blink .9s step-start infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  .mode-pill { display:inline-block; padding:.18rem .55rem; border-radius:999px; background:var(--accent); color:#06101b; font-weight:950; }
+  .mode-pill.insert { background:var(--accent2); }
+  .mode-pill.visual { background:var(--warn); }
+  .mode-pill.command { background:var(--purple); }
+  .screen-controls { display:flex; flex-wrap:wrap; gap:.55rem; margin-top:.8rem; }
+  .highlight { background:rgba(245,176,65,.38); border-radius:4px; }
+  .ghost { opacity:.56; }
+
+  .mode-diagram { position:relative; height:420px; background:rgba(0,0,0,.16); border:1px solid var(--line); border-radius:20px; overflow:hidden; }
+  .mode-node {
+    position:absolute; width:170px; min-height:86px; border-radius:20px; padding:.8rem; border:1px solid var(--line);
+    background:rgba(255,255,255,.07); display:grid; place-items:center; text-align:center; font-weight:950;
+    box-shadow:var(--shadow); transition: transform .25s ease, background .25s ease, border-color .25s ease;
+  }
+  body.light .mode-node { background:rgba(5,30,60,.05); }
+  .mode-node small { display:block; color:var(--muted); font-weight:650; margin-top:.22rem; }
+  .mode-node.active { transform:scale(1.08); border-color:var(--accent); background:rgba(88,214,141,.17); }
+  .node-normal { left:calc(50% - 85px); top:26px; }
+  .node-insert { left:7%; top:214px; }
+  .node-visual { right:7%; top:214px; }
+  .node-command { left:calc(50% - 85px); top:292px; }
+  .arrow { position:absolute; color:rgba(255,255,255,.48); font-family:Consolas, monospace; font-weight:900; }
+  body.light .arrow { color:rgba(10,30,55,.42); }
+  .a1 { left:25%; top:145px; transform:rotate(-30deg); } .a2 { right:25%; top:145px; transform:rotate(30deg); }
+  .a3 { left:calc(50% - 18px); top:197px; } .a4 { left:calc(50% - 18px); top:122px; }
+  .mode-note { min-height: 162px; }
+
+  .callout { border-left:5px solid var(--accent2); padding:.95rem 1rem; background:rgba(93,173,226,.11); border-radius:14px; margin:1rem 0; }
+  .warning { border-left-color:var(--warn); background:rgba(245,176,65,.12); }
+  .danger { border-left-color:var(--danger); background:rgba(236,112,99,.12); }
+  .success { border-left-color:var(--accent); background:rgba(88,214,141,.12); }
+  .panic-box { border:2px solid rgba(236,112,99,.55); background:linear-gradient(135deg, rgba(236,112,99,.16), rgba(245,176,65,.11)); }
+  .panic-output { display:none; margin-top: .8rem; }
+  .panic-output.show { display:block; animation: fadeUp .28s ease both; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
+
+  details.lab { border:1px solid var(--line); border-radius:18px; background:var(--soft); margin:1rem 0; overflow:hidden; }
+  details.lab summary { cursor:pointer; padding:1rem; font-weight:950; color:var(--ink); background:rgba(255,255,255,.04); }
+  details.lab .lab-body { padding:0 1rem 1.1rem; }
+  .lab-meta { display:flex; flex-wrap:wrap; gap:.5rem; margin:.5rem 0 1rem; }
+  .pill { display:inline-flex; align-items:center; gap:.35rem; padding:.34rem .58rem; border-radius:999px; background:rgba(93,173,226,.14); border:1px solid var(--line); color:var(--muted); font-size:.84rem; }
+
+  .flash-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:.8rem; perspective:900px; }
+  .flash-card { min-height:112px; position:relative; transform-style:preserve-3d; transition:transform .5s ease; cursor:pointer; }
+  .flash-card.flip { transform: rotateY(180deg); }
+  .flash-face { position:absolute; inset:0; backface-visibility:hidden; display:grid; place-items:center; text-align:center; border-radius:18px; border:1px solid var(--line); background:var(--soft); padding:.8rem; }
+  .flash-front strong { font-family:Consolas, monospace; font-size:1.8rem; color:#dcf8e7; }
+  body.light .flash-front strong { color:#0d3d2a; }
+  .flash-back { transform:rotateY(180deg); color:var(--muted); }
+
+  .operator-lab { display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:.75rem; align-items:center; }
+  select, input[type="text"] { width:100%; background:#071421; color:#ecf4ff; border:1px solid #284766; border-radius:12px; padding:.78rem; font:inherit; }
+  body.light select, body.light input[type="text"] { background:#ffffff; color:#172033; border-color:#c9d9ea; }
+  .equation-result { min-height:72px; }
+  .practice { display:grid; grid-template-columns:1fr auto; gap:.6rem; align-items:center; margin:.75rem 0; }
+  .practice .feedback, .quiz-card .feedback { grid-column:1 / -1; min-height:1.2rem; color:var(--muted); font-size:.92rem; }
+  .correct { color:#8ff0b3; font-weight:900; } .wrong { color:#ffaaa2; font-weight:900; }
+  body.light .correct { color:#167245; } body.light .wrong { color:#b33b32; }
+
+  .checklist { display:grid; gap:.6rem; }
+  .check-item { display:flex; align-items:flex-start; gap:.65rem; padding:.75rem; background:var(--soft); border:1px solid var(--line); border-radius:14px; }
+  .check-item input { transform:scale(1.2); margin-top:.25rem; }
+  .check-item span { color:var(--muted); }
+  .boss { background:linear-gradient(135deg, rgba(195,155,211,.18), rgba(88,214,141,.12)); border:1px solid rgba(195,155,211,.45); }
+  .kbd-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(185px, 1fr)); gap:.65rem; }
+  .kbd-item { padding:.75rem; background:var(--soft); border:1px solid var(--line); border-radius:14px; }
+  .kbd-item strong { display:block; color:var(--ink); font-family:Consolas, monospace; margin-bottom:.25rem; }
+  .split-demo { display:grid; grid-template-columns:1fr 1fr; gap:.55rem; min-height:260px; background:#020b13; border:1px solid #1f3c59; border-radius:18px; padding:.55rem; }
+  .pane { border:1px solid #284766; border-radius:13px; padding:.8rem; font-family:Consolas, monospace; color:#cde7ff; background:#06101b; position:relative; overflow:hidden; }
+  .pane::before { content:attr(data-title); position:absolute; top:.35rem; right:.55rem; color:#7f8fa6; font-size:.78rem; }
+  .floating-top { position:fixed; right:1rem; bottom:1rem; z-index:30; display:none; }
+  .footer { text-align:center; color:var(--muted); padding:2.2rem 7vw 4rem; }
+
+  @media (max-width: 1050px) {
+    header.hero { grid-template-columns:1fr; min-height:auto; }
+    .layout { grid-template-columns:1fr; padding:1rem; }
+    aside.toc { position:relative; top:auto; max-height:none; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr; }
+    .operator-lab { grid-template-columns:1fr; }
+    .operator-lab .symbol { display:none; }
+  }
+  @media print {
+    body { background:#fff !important; color:#111 !important; }
+    aside, .hero-actions, .screen-controls, .floating-top, .progress-wrap, .toc-tools, .flash-grid { display:none !important; }
+    header.hero, .layout { display:block; padding:1rem; }
+    section.card, .mini-card, details.lab, .recipe, .dojo-card, .mission { break-inside:avoid; box-shadow:none; background:#fff !important; color:#111; border-color:#ccc; }
+    p, td, ul, ol, .tiny { color:#222 !important; }
+    pre { white-space:pre-wrap; color:#111 !important; background:#f5f5f5 !important; }
+  }
+</style>
+</head>
+<body>
+<div class="progress-wrap"><div id="progress" class="progress"></div></div>
+<a href="#top" id="topBtn" class="btn floating-top">↑ Top</a>
+
+<header id="top" class="hero">
+  <div>
+    <div class="eyebrow">Linux Learning • Vim Editor</div>
+    <h1>Vim Dojo<br/>Interactive Reference</h1>
+    <p class="lead">A beginner-to-intermediate Vim training document designed for classroom delivery: animated mode visuals, panic rescue, guided labs, mini simulator, flashcards, quizzes, and a final boss lab.</p>
+    <div class="badge-row">
+      <span class="badge">🥷 Survival-first learning</span>
+      <span class="badge">⌨️ Muscle-memory drills</span>
+      <span class="badge">🧪 Labs with verification</span>
+      <span class="badge">🎮 Progress + XP tracker</span>
+      <span class="badge">🖨️ Printable cheat sheet</span>
+    </div>
+    <div class="hero-actions">
+      <a class="btn" href="#panic">Emergency Vim Rescue</a>
+      <a class="btn secondary" href="#labs">Start Labs</a>
+      <a class="btn secondary" href="#cheatsheet">Open Cheat Sheet</a>
+    </div>
+  </div>
+  <div class="terminal" aria-label="Animated Vim terminal demo">
+    <div class="term-top"><span class="dot"></span><span class="term-title">vim notes.txt — animated mode tour</span></div>
+    <div class="vim-screen" id="heroScreen"></div>
+    <div class="statusline"><span id="heroMode"><span class="mode-pill">NORMAL</span></span><span>notes.txt [+]</span><span id="heroPos">1,1 All</span></div>
+    <div class="cmdline" id="heroCmd">Press <kbd>i</kbd> to insert, <kbd>Esc</kbd> to return, <kbd>:wq</kbd> to save and quit.</div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="toc">
+    <strong>Vim Dojo Map</strong>
+    <div class="tools toc-tools">
+      <button class="small-btn" onclick="toggleTheme()">Theme</button>
+      <button class="small-btn" onclick="window.print()">Print</button>
+      <button class="small-btn" onclick="fontChange(.05)">A+</button>
+      <button class="small-btn" onclick="fontChange(-.05)">A−</button>
+    </div>
+    <div class="xp-card">
+      <strong>Training XP</strong>
+      <p class="tiny"><span id="xpText">0%</span> completed. Checks are saved in this browser.</p>
+      <div class="xpbar"><div class="xpfill" id="xpFill"></div></div>
+    </div>
+    <nav>
+      <a href="#overview">1. Journey Overview</a>
+      <a href="#why">2. Why Vim Matters</a>
+      <a href="#panic">3. Panic Button</a>
+      <a href="#modes">4. Vim Modes</a>
+      <a href="#simulator">5. Mini Simulator</a>
+      <a href="#movement">6. Movement</a>
+      <a href="#editing">7. Editing Grammar</a>
+      <a href="#recipes">8. Command Recipes</a>
+      <a href="#flashcards">9. Flashcards</a>
+      <a href="#search">10. Search & Replace</a>
+      <a href="#visual">11. Visual Mode</a>
+      <a href="#files">12. Files & Windows</a>
+      <a href="#config">13. .vimrc</a>
+      <a href="#admin">14. Admin Use Cases</a>
+      <a href="#labs">15. Hands-on Labs</a>
+      <a href="#traps">16. Common Traps</a>
+      <a href="#quiz">17. Quiz</a>
+      <a href="#cheatsheet">18. Cheat Sheet</a>
+    </nav>
+  </aside>
+
+  <main>
+    <section id="overview" class="card">
+      <h2>1. Welcome to the Vim Dojo 🥷</h2>
+      <p>Vim feels strange at first because it is a <strong>modal editor</strong>. In most editors, every key types text. In Vim, keys can be commands, movements, text input, selections, or file commands depending on the current mode.</p>
+      <div class="grid-4">
+        <div class="mini-card stat-card"><div class="stat-icon">🛟</div><div><h3>Level 1</h3><p>Escape, save, quit, type text.</p></div></div>
+        <div class="mini-card stat-card"><div class="stat-icon">🧭</div><div><h3>Level 2</h3><p>Move without arrow-key dependency.</p></div></div>
+        <div class="mini-card stat-card"><div class="stat-icon">⚔️</div><div><h3>Level 3</h3><p>Delete, copy, paste, change, undo.</p></div></div>
+        <div class="mini-card stat-card"><div class="stat-icon">🧙</div><div><h3>Level 4</h3><p>Search, replace, macros, config.</p></div></div>
+      </div>
+      <div class="callout success">
+        <strong>Main idea:</strong> Do not try to memorize every Vim command. Learn the grammar: <code>operator</code> + <code>motion</code>. Example: <code>d</code> means delete, <code>w</code> means word, so <code>dw</code> deletes a word.
+      </div>
+    </section>
+
+    <section id="why" class="card">
+      <h2>2. Why Vim Matters on Linux Servers</h2>
+      <div class="grid-2">
+        <div class="mini-card">
+          <h3>Where you will use it</h3>
+          <table>
+            <tr><th>Task</th><th>Typical command</th></tr>
+            <tr><td>Edit SSH config</td><td><code>sudo vim /etc/ssh/sshd_config</code></td></tr>
+            <tr><td>Edit hosts file</td><td><code>sudo vim /etc/hosts</code></td></tr>
+            <tr><td>Edit cron jobs</td><td><code>crontab -e</code></td></tr>
+            <tr><td>Edit sudoers safely</td><td><code>sudo visudo</code></td></tr>
+            <tr><td>Edit systemd service</td><td><code>sudo systemctl edit app.service</code></td></tr>
+          </table>
+        </div>
+        <div class="mini-card">
+          <h3>Vim vs Nano vs VS Code</h3>
+          <table>
+            <tr><th>Editor</th><th>Best for</th><th>Simple analogy</th></tr>
+            <tr><td>Nano</td><td>Simple quick edits</td><td>Notebook</td></tr>
+            <tr><td>Vim</td><td>Remote servers and fast edits</td><td>Swiss army knife</td></tr>
+            <tr><td>VS Code</td><td>Large project development</td><td>Full workshop</td></tr>
+          </table>
+          <p>Vim wins on servers because it is keyboard-driven, fast over SSH, scriptable, and commonly available even on minimal systems.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="panic" class="card panic-box">
+      <h2>3. Vim Panic Button 🚨</h2>
+      <p>Beginners do not hate Vim. They hate being trapped inside Vim. Keep this rescue card visible during training.</p>
+      <div class="grid-3">
+        <div class="mini-card"><h3>Quit without saving</h3><p><kbd>Esc</kbd> then <code>:q!</code> then <kbd>Enter</kbd></p></div>
+        <div class="mini-card"><h3>Save and quit</h3><p><kbd>Esc</kbd> then <code>:wq</code> then <kbd>Enter</kbd></p></div>
+        <div class="mini-card"><h3>Save only</h3><p><kbd>Esc</kbd> then <code>:w</code> then <kbd>Enter</kbd></p></div>
+      </div>
+      <button class="btn panic-btn" onclick="panicReveal()">I am stuck in Vim 😭</button>
+      <div id="panicOutput" class="panic-output">
+        <pre><code>Step 1: Press Esc several times.
+Step 2: Type one of these:
+  :q!   quit without saving
+  :wq   save and quit
+  :w    save only
+Step 3: Press Enter.</code></pre>
+      </div>
+    </section>
+
+    <section id="modes" class="card">
+      <h2>4. Vim Modes: The Secret Door System</h2>
+      <p>Vim is not one room. It is a set of rooms. The same key can do different things depending on the room you are standing in.</p>
+      <div class="grid-2">
+        <div>
+          <div class="mode-diagram">
+            <div class="mode-node node-normal active" id="node-normal">NORMAL<small>move, delete, copy</small></div>
+            <div class="mode-node node-insert" id="node-insert">INSERT<small>type actual text</small></div>
+            <div class="mode-node node-visual" id="node-visual">VISUAL<small>select text</small></div>
+            <div class="mode-node node-command" id="node-command">COMMAND<small>save, quit, replace</small></div>
+            <div class="arrow a1">i / a / o ↙</div>
+            <div class="arrow a2">↘ v / V</div>
+            <div class="arrow a3">:</div>
+            <div class="arrow a4">Esc</div>
+          </div>
+          <div class="screen-controls">
+            <button class="small-btn active" onclick="showMode('normal')">Normal</button>
+            <button class="small-btn" onclick="showMode('insert')">Insert</button>
+            <button class="small-btn" onclick="showMode('visual')">Visual</button>
+            <button class="small-btn" onclick="showMode('command')">Command</button>
+          </div>
+        </div>
+        <div>
+          <div class="mini-card mode-note" id="modeText"></div>
+          <div class="mini-card" style="margin-top:1rem">
+            <h3>Mode sequence trainer</h3>
+            <p>Click the sequence and watch the explanation.</p>
+            <div class="screen-controls">
+              <button class="small-btn" onclick="runSequence('i text esc wq')">i → type → Esc → :wq</button>
+              <button class="small-btn" onclick="runSequence('dd u')">dd → u</button>
+              <button class="small-btn" onclick="runSequence('slash n')">/word → n</button>
+              <button class="small-btn" onclick="runSequence('v y p')">v → y → p</button>
+            </div>
+            <p id="sequenceOutput" class="callout">Pick a sequence above.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="simulator" class="card">
+      <h2>5. Mini Vim Simulator</h2>
+      <p>This is not a real Vim engine, but it helps learners visualize the mental model before touching the terminal.</p>
+      <div class="terminal">
+        <div class="term-top"><span class="dot"></span><span class="term-title">training.conf — simulator</span></div>
+        <div class="vim-screen" id="simScreen"></div>
+        <div class="statusline"><span id="simMode"><span class="mode-pill">NORMAL</span></span><span>training.conf</span><span id="simPos">1,1</span></div>
+        <div class="cmdline" id="simCmd">Normal mode. Try i, type, Esc, dd, u, /error, :wq.</div>
+      </div>
+      <div class="screen-controls">
+        <button class="small-btn" onclick="sim('i')">i</button>
+        <button class="small-btn" onclick="sim('text')">type line</button>
+        <button class="small-btn" onclick="sim('esc')">Esc</button>
+        <button class="small-btn" onclick="sim('dd')">dd</button>
+        <button class="small-btn" onclick="sim('yy')">yy</button>
+        <button class="small-btn" onclick="sim('p')">p</button>
+        <button class="small-btn" onclick="sim('u')">u</button>
+        <button class="small-btn" onclick="sim('search')">/error</button>
+        <button class="small-btn" onclick="sim('wq')">:wq</button>
+        <button class="small-btn" onclick="sim('reset')">reset</button>
+      </div>
+    </section>
+
+    <section id="movement" class="card">
+      <h2>6. Movement: Stop Crawling, Start Jumping 🧭</h2>
+      <div class="grid-3">
+        <div class="mini-card"><h3>Small moves</h3><p><code>h</code> left, <code>j</code> down, <code>k</code> up, <code>l</code> right.</p></div>
+        <div class="mini-card"><h3>Word moves</h3><p><code>w</code> next word, <code>b</code> previous word, <code>e</code> end of word.</p></div>
+        <div class="mini-card"><h3>Line moves</h3><p><code>0</code> beginning, <code>^</code> first non-blank, <code>$</code> end.</p></div>
+        <div class="mini-card"><h3>File moves</h3><p><code>gg</code> top, <code>G</code> bottom, <code>25G</code> line 25.</p></div>
+        <div class="mini-card"><h3>Screen moves</h3><p><code>Ctrl-f</code> page down, <code>Ctrl-b</code> page up, <code>zz</code> center current line.</p></div>
+        <div class="mini-card"><h3>Find on line</h3><p><code>fx</code> find next x, <code>tx</code> till x, <code>;</code> repeat.</p></div>
+      </div>
+      <div class="callout">Training tip: make learners use only <code>h j k l</code>, <code>w</code>, <code>b</code>, <code>0</code>, <code>$</code>, <code>gg</code>, and <code>G</code> for 10 minutes. It feels silly, then it clicks.</div>
+    </section>
+
+    <section id="editing" class="card">
+      <h2>7. Editing Grammar: Operator + Motion</h2>
+      <p>Vim commands combine like Lego. This is the breakthrough concept.</p>
+      <div class="operator-lab">
+        <select id="operatorSelect" onchange="updateEquation()">
+          <option value="d|delete">d = delete</option>
+          <option value="c|change">c = change</option>
+          <option value="y|yank/copy">y = yank/copy</option>
+        </select>
+        <strong class="symbol">+</strong>
+        <select id="motionSelect" onchange="updateEquation()">
+          <option value="w|next word">w = next word</option>
+          <option value="$|to end of line">$ = to end of line</option>
+          <option value="}|to next paragraph">} = to next paragraph</option>
+          <option value="i&quot;|inside quotes">i&quot; = inside quotes</option>
+        </select>
+        <strong class="symbol">=</strong>
+        <div class="mini-card equation-result" id="equationResult"></div>
+      </div>
+      <div class="grid-3" style="margin-top:1rem">
+        <div class="mini-card"><h3>Delete</h3><p><code>dd</code> line, <code>dw</code> word, <code>d$</code> to line end.</p></div>
+        <div class="mini-card"><h3>Change</h3><p><code>cw</code> change word, <code>cc</code> change whole line, <code>ci&quot;</code> change inside quotes.</p></div>
+        <div class="mini-card"><h3>Repeat</h3><p><code>.</code> repeats the last change. This is Vim’s little productivity cheat code.</p></div>
+      </div>
+    </section>
+
+    <section id="recipes" class="card">
+      <h2>8. Command Recipes: Do This, Press That 🍳</h2>
+      <div class="grid-3">
+        <div class="recipe"><h3>Delete a line</h3><p><kbd>Esc</kbd> <code>dd</code></p></div>
+        <div class="recipe"><h3>Copy 3 lines</h3><p><kbd>Esc</kbd> <code>3yy</code></p></div>
+        <div class="recipe"><h3>Paste below</h3><p><kbd>Esc</kbd> <code>p</code></p></div>
+        <div class="recipe"><h3>Undo / redo</h3><p><code>u</code> / <code>Ctrl-r</code></p></div>
+        <div class="recipe"><h3>Go to line 50</h3><p><code>:50</code> or <code>50G</code></p></div>
+        <div class="recipe"><h3>Replace dev → prod</h3><p><code>:%s/dev/prod/g</code></p></div>
+        <div class="recipe"><h3>Replace with confirmation</h3><p><code>:%s/dev/prod/gc</code></p></div>
+        <div class="recipe"><h3>Show line numbers</h3><p><code>:set number</code></p></div>
+        <div class="recipe"><h3>Clear search highlight</h3><p><code>:noh</code></p></div>
+      </div>
+    </section>
+
+    <section id="flashcards" class="card">
+      <h2>9. Shortcut Flashcards</h2>
+      <p>Click each card. Use these for quick classroom recall games.</p>
+      <div class="flash-grid" id="flashGrid"></div>
+    </section>
+
+    <section id="search" class="card">
+      <h2>10. Search and Replace Hunter 🔎</h2>
+      <div class="grid-2">
+        <div>
+          <table>
+            <tr><th>Need</th><th>Command</th></tr>
+            <tr><td>Search forward</td><td><code>/word</code></td></tr>
+            <tr><td>Search backward</td><td><code>?word</code></td></tr>
+            <tr><td>Next / previous match</td><td><code>n</code> / <code>N</code></td></tr>
+            <tr><td>Replace first match on line</td><td><code>:s/old/new/</code></td></tr>
+            <tr><td>Replace all in file</td><td><code>:%s/old/new/g</code></td></tr>
+            <tr><td>Replace all with confirmation</td><td><code>:%s/old/new/gc</code></td></tr>
+          </table>
+          <div class="practice" data-answer=":%s/8080/9090/gc">
+            <input type="text" oninput="checkPractice(this)" placeholder="Practice: replace every 8080 with 9090, ask confirmation" />
+            <button class="small-btn" onclick="revealPractice(this)">Reveal</button>
+            <div class="feedback"></div>
+          </div>
+        </div>
+        <div>
+          <div class="terminal">
+            <div class="term-top"><span class="dot"></span><span class="term-title">replace animation</span></div>
+            <div class="vim-screen" id="replaceScreen"></div>
+            <div class="cmdline" id="replaceCmd">Click replay to simulate confirmed replacement.</div>
+          </div>
+          <div class="screen-controls"><button class="small-btn" onclick="animateReplace()">Replay replace animation</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="visual" class="card">
+      <h2>11. Visual Mode: Select First, Act Later</h2>
+      <div class="grid-3">
+        <div class="mini-card"><h3>Character visual</h3><p><code>v</code> selects characters. Useful for small selections.</p></div>
+        <div class="mini-card"><h3>Line visual</h3><p><code>V</code> selects full lines. Best for config blocks.</p></div>
+        <div class="mini-card"><h3>Block visual</h3><p><code>Ctrl-v</code> selects columns. Useful for adding/removing prefixes.</p></div>
+      </div>
+      <div class="callout">Common pattern: select with <code>V</code>, move with <code>j/k</code>, then press <code>d</code> to delete, <code>y</code> to copy, <code>></code> to indent, or <code>&lt;</code> to unindent.</div>
+    </section>
+
+    <section id="files" class="card">
+      <h2>12. Files, Buffers, Windows, Tabs</h2>
+      <div class="grid-2">
+        <div>
+          <table>
+            <tr><th>Action</th><th>Command</th></tr>
+            <tr><td>Open another file</td><td><code>:e filename</code></td></tr>
+            <tr><td>List buffers</td><td><code>:ls</code></td></tr>
+            <tr><td>Next / previous buffer</td><td><code>:bn</code> / <code>:bp</code></td></tr>
+            <tr><td>Horizontal split</td><td><code>:split file</code></td></tr>
+            <tr><td>Vertical split</td><td><code>:vsplit file</code></td></tr>
+            <tr><td>Move between windows</td><td><code>Ctrl-w w</code></td></tr>
+            <tr><td>Open tab</td><td><code>:tabnew file</code></td></tr>
+            <tr><td>Next tab</td><td><code>gt</code></td></tr>
+          </table>
+        </div>
+        <div class="split-demo">
+          <div class="pane" data-title="app.conf">APP_ENV=prod<br/>PORT=9090<br/>LOG_LEVEL=info</div>
+          <div class="pane" data-title="backup.conf">APP_ENV=dev<br/>PORT=8080<br/>LOG_LEVEL=debug</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="config" class="card">
+      <h2>13. Beginner-friendly <code>~/.vimrc</code></h2>
+      <p>The <code>~/.vimrc</code> file stores personal Vim settings. Keep it small at first.</p>
+      <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>set number
+set relativenumber
+set ruler
+set showcmd
+set ignorecase
+set smartcase
+set incsearch
+set hlsearch
+set autoindent
+set tabstop=4
+set shiftwidth=4
+set expandtab
+syntax on</code></pre>
+      <div class="callout warning"><strong>Trainer note:</strong> Do not begin with plugin managers. First teach plain Vim: modes, movement, editing, search, replace, buffers, and safe admin editing.</div>
+    </section>
+
+    <section id="admin" class="card">
+      <h2>14. Real Linux Admin Use Cases</h2>
+      <div class="grid-2">
+        <div class="mini-card">
+          <h3>Safe edit checklist</h3>
+          <ol>
+            <li>Backup the file first: <code>cp file file.bak.$(date +%F)</code>.</li>
+            <li>Open with needed permission only.</li>
+            <li>Make small changes.</li>
+            <li>Validate syntax with the service’s checker.</li>
+            <li>Reload, do not restart blindly.</li>
+          </ol>
+        </div>
+        <div class="mini-card">
+          <h3>Danger zones</h3>
+          <table>
+            <tr><th>File/task</th><th>Safe approach</th></tr>
+            <tr><td><code>/etc/sudoers</code></td><td>Use <code>sudo visudo</code></td></tr>
+            <tr><td>crontab</td><td>Use <code>crontab -e</code></td></tr>
+            <tr><td>systemd override</td><td>Use <code>sudo systemctl edit name.service</code></td></tr>
+            <tr><td>SSH daemon config</td><td>Run <code>sudo sshd -t</code> before reload</td></tr>
+            <tr><td>nginx config</td><td>Run <code>sudo nginx -t</code> before reload</td></tr>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="labs" class="card">
+      <h2>15. Hands-on Labs: Vim Dojo Missions 🧪</h2>
+      <p>Each lab includes setup, objective, commands, expected behavior, and verification. Run labs on a Linux VM or local Linux workstation.</p>
+
+      <details class="lab" open>
+        <summary>Mission 0 — Prepare the Lab Workspace</summary>
+        <div class="lab-body">
+          <div class="lab-meta"><span class="pill">Level: Beginner</span><span class="pill">Time: 5 min</span><span class="pill">Goal: safe practice directory</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>mkdir -p ~/vim-dojo
+cd ~/vim-dojo
+printf 'Vim Dojo ready\n' > README.txt
+ls -la</code></pre>
+          <h4>Expected output</h4>
+          <pre><code>README.txt should be visible in ~/vim-dojo.</code></pre>
+          <label class="check-item"><input type="checkbox" data-xp="workspace" onchange="saveXP()"><span>I created the Vim practice directory.</span></label>
+        </div>
+      </details>
+
+      <details class="lab">
+        <summary>Mission 1 — Open, Insert, Save, Quit</summary>
+        <div class="lab-body">
+          <div class="lab-meta"><span class="pill">Level: Beginner</span><span class="pill">Skills: i, Esc, :wq</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cd ~/vim-dojo
+vim notes.txt</code></pre>
+          <ol>
+            <li>Press <code>i</code>.</li>
+            <li>Type: <code>Vim is useful for Linux administration.</code></li>
+            <li>Press <kbd>Esc</kbd>.</li>
+            <li>Type <code>:wq</code> and press <kbd>Enter</kbd>.</li>
+          </ol>
+          <h4>Verify</h4>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cat notes.txt</code></pre>
+          <pre><code>Vim is useful for Linux administration.</code></pre>
+          <label class="check-item"><input type="checkbox" data-xp="savequit" onchange="saveXP()"><span>I can insert text and save/quit.</span></label>
+        </div>
+      </details>
+
+      <details class="lab">
+        <summary>Mission 2 — Panic Recovery</summary>
+        <div class="lab-body">
+          <div class="lab-meta"><span class="pill">Level: Beginner</span><span class="pill">Skills: :q!, :wq</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cd ~/vim-dojo
+cp notes.txt panic.txt
+vim panic.txt</code></pre>
+          <ol>
+            <li>Press <code>i</code> and type a random test line.</li>
+            <li>Press <kbd>Esc</kbd>.</li>
+            <li>Quit without saving: <code>:q!</code>.</li>
+          </ol>
+          <h4>Verify</h4>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cat panic.txt</code></pre>
+          <p>The random test line should not be present.</p>
+          <label class="check-item"><input type="checkbox" data-xp="panic" onchange="saveXP()"><span>I can escape from Vim without saving.</span></label>
+        </div>
+      </details>
+
+      <details class="lab">
+        <summary>Mission 3 — Movement Ninja</summary>
+        <div class="lab-body">
+          <div class="lab-meta"><span class="pill">Level: Beginner</span><span class="pill">Skills: hjkl, w, b, 0, $, gg, G</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cd ~/vim-dojo
+cat > movement.txt <<'EOF'
+line one has several words
+line two is for navigation
+line three has another target
+line four is near the bottom
+line five ends here
+EOF
+vim movement.txt</code></pre>
+          <p>Practice these without using arrow keys: <code>j</code>, <code>k</code>, <code>w</code>, <code>b</code>, <code>0</code>, <code>$</code>, <code>gg</code>, <code>G</code>, <code>3G</code>.</p>
+          <label class="check-item"><input type="checkbox" data-xp="movement" onchange="saveXP()"><span>I can move around without arrow keys.</span></label>
+        </div>
+      </details>
+
+      <details class="lab">
+        <summary>Mission 4 — Delete, Undo, Redo</summary>
+        <div class="lab-body">
+          <div class="lab-meta"><span class="pill">Level: Beginner</span><span class="pill">Skills: dd, dw, u, Ctrl-r</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cd ~/vim-dojo
+cat > edit.txt <<'EOF'
+keep this line
+delete this line
+change this word
+keep this final line
+EOF
+vim edit.txt</code></pre>
+          <ol>
+            <li>Move to line 2 and press <code>dd</code>.</li>
+            <li>Press <code>u</code> to undo.</li>
+            <li>Press <code>Ctrl-r</code> to redo.</li>
+            <li>On line 3, try <code>dw</code> on a word.</li>
+          </ol>
+          <label class="check-item"><input type="checkbox" data-xp="deleteundo" onchange="saveXP()"><span>I can delete, undo, and redo safely.</span></label>
+        </div>
+      </details>
+
+      <details class="lab">
+        <summary>Mission 5 — Copy and Paste Lines</summary>
+        <div class="lab-body">
+          <div class="lab-meta"><span class="pill">Level: Beginner</span><span class="pill">Skills: yy, p, P, 3yy</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cd ~/vim-dojo
+cat > copy-paste.txt <<'EOF'
+server01
+server02
+server03
+EOF
+vim copy-paste.txt</code></pre>
+          <ol>
+            <li>Move to <code>server01</code>.</li>
+            <li>Copy line: <code>yy</code>.</li>
+            <li>Paste below: <code>p</code>.</li>
+            <li>Try <code>3yy</code> to copy 3 lines.</li>
+          </ol>
+          <label class="check-item"><input type="checkbox" data-xp="copy" onchange="saveXP()"><span>I can copy and paste lines.</span></label>
+        </div>
+      </details>
+
+      <details class="lab">
+        <summary>Mission 6 — Search and Replace Config Values</summary>
+        <div class="lab-body">
+          <div class="lab-meta"><span class="pill">Level: Intermediate</span><span class="pill">Skills: /, n, :%s</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cd ~/vim-dojo
+cat > app.conf <<'EOF'
+APP_ENV=dev
+APP_PORT=8080
+BACKEND_URL=http://127.0.0.1:8080/api
+LOG_LEVEL=debug
+EOF
+vim app.conf</code></pre>
+          <ol>
+            <li>Search for <code>8080</code> using <code>/8080</code>.</li>
+            <li>Use <code>n</code> for next match.</li>
+            <li>Replace all <code>8080</code> with <code>9090</code>: <code>:%s/8080/9090/g</code>.</li>
+            <li>Replace <code>dev</code> with <code>prod</code>: <code>:%s/dev/prod/g</code>.</li>
+            <li>Save and quit.</li>
+          </ol>
+          <h4>Verify</h4>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cat app.conf</code></pre>
+          <pre><code>APP_ENV=prod
+APP_PORT=9090
+BACKEND_URL=http://127.0.0.1:9090/api
+LOG_LEVEL=debug</code></pre>
+          <label class="check-item"><input type="checkbox" data-xp="replace" onchange="saveXP()"><span>I can search and replace safely.</span></label>
+        </div>
+      </details>
+
+      <details class="lab">
+        <summary>Mission 7 — Visual Mode Block Editing</summary>
+        <div class="lab-body">
+          <div class="lab-meta"><span class="pill">Level: Intermediate</span><span class="pill">Skills: V, Ctrl-v, I, d</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cd ~/vim-dojo
+cat > hosts.txt <<'EOF'
+server01
+server02
+server03
+EOF
+vim hosts.txt</code></pre>
+          <ol>
+            <li>Use <code>gg</code> to go to top.</li>
+            <li>Use block visual mode: <code>Ctrl-v</code>.</li>
+            <li>Select first column for all three lines with <code>j</code>.</li>
+            <li>Press <code>I</code>, type <code>prod-</code>, press <kbd>Esc</kbd>.</li>
+          </ol>
+          <h4>Expected result</h4>
+          <pre><code>prod-server01
+prod-server02
+prod-server03</code></pre>
+          <label class="check-item"><input type="checkbox" data-xp="visual" onchange="saveXP()"><span>I can use visual/block mode for repeated edits.</span></label>
+        </div>
+      </details>
+
+      <details class="lab">
+        <summary>Mission 8 — Safer Admin-style Editing</summary>
+        <div class="lab-body">
+          <div class="lab-meta"><span class="pill">Level: Intermediate</span><span class="pill">Skills: backup, edit, diff</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cd ~/vim-dojo
+cat > sshd_config.sample <<'EOF'
+Port 22
+PermitRootLogin yes
+PasswordAuthentication yes
+EOF
+cp sshd_config.sample sshd_config.sample.bak
+vim sshd_config.sample</code></pre>
+          <ol>
+            <li>Change <code>PermitRootLogin yes</code> to <code>PermitRootLogin no</code>.</li>
+            <li>Save and quit.</li>
+            <li>Compare changes.</li>
+          </ol>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>diff -u sshd_config.sample.bak sshd_config.sample</code></pre>
+          <div class="callout warning">On real servers, validate SSH config with <code>sudo sshd -t</code> before reloading the service.</div>
+          <label class="check-item"><input type="checkbox" data-xp="adminedit" onchange="saveXP()"><span>I can backup, edit, and compare config files.</span></label>
+        </div>
+      </details>
+
+      <details class="lab">
+        <summary>Mission 9 — Macros: The Tiny Robot</summary>
+        <div class="lab-body">
+          <div class="lab-meta"><span class="pill">Level: Intermediate</span><span class="pill">Skills: qa, q, @a</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cd ~/vim-dojo
+cat > macro.txt <<'EOF'
+alpha
+beta
+gamma
+delta
+epsilon
+EOF
+vim macro.txt</code></pre>
+          <ol>
+            <li>Go to top: <code>gg</code>.</li>
+            <li>Start recording into register a: <code>qa</code>.</li>
+            <li>Insert bullet: <code>0i- </code>, press <kbd>Esc</kbd>.</li>
+            <li>Move down: <code>j</code>.</li>
+            <li>Stop recording: <code>q</code>.</li>
+            <li>Replay 4 times: <code>4@a</code>.</li>
+          </ol>
+          <h4>Expected result</h4>
+          <pre><code>- alpha
+- beta
+- gamma
+- delta
+- epsilon</code></pre>
+          <label class="check-item"><input type="checkbox" data-xp="macro" onchange="saveXP()"><span>I can record and replay a basic macro.</span></label>
+        </div>
+      </details>
+
+      <details class="lab">
+        <summary>Mission 10 — Build a Practical .vimrc</summary>
+        <div class="lab-body">
+          <div class="lab-meta"><span class="pill">Level: Intermediate</span><span class="pill">Skills: settings, backup</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>mkdir -p ~/.vim/backup ~/.vim/swap ~/.vim/undo
+cp ~/.vimrc ~/.vimrc.backup.$(date +%F-%H%M%S) 2>/dev/null || true
+vim ~/.vimrc</code></pre>
+          <p>Paste the configuration from the <a href="#config">.vimrc section</a>, save, and reopen Vim.</p>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>vim ~/vim-dojo/app.conf</code></pre>
+          <p>You should see line numbers and improved search behavior.</p>
+          <label class="check-item"><input type="checkbox" data-xp="vimrc" onchange="saveXP()"><span>I created a beginner-friendly Vim configuration.</span></label>
+        </div>
+      </details>
+
+      <details class="lab">
+        <summary>Mission 11 — Buffers and Splits</summary>
+        <div class="lab-body">
+          <div class="lab-meta"><span class="pill">Level: Intermediate</span><span class="pill">Skills: :e, :ls, :vsplit, Ctrl-w</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cd ~/vim-dojo
+cat > one.conf <<'EOF'
+name=one
+port=8080
+EOF
+cat > two.conf <<'EOF'
+name=two
+port=9090
+EOF
+vim one.conf</code></pre>
+          <ol>
+            <li>Open second file: <code>:e two.conf</code>.</li>
+            <li>List buffers: <code>:ls</code>.</li>
+            <li>Return to previous buffer: <code>:bp</code>.</li>
+            <li>Open vertical split: <code>:vsplit two.conf</code>.</li>
+            <li>Move between windows: <code>Ctrl-w w</code>.</li>
+          </ol>
+          <label class="check-item"><input type="checkbox" data-xp="buffers" onchange="saveXP()"><span>I can work with buffers and splits.</span></label>
+        </div>
+      </details>
+
+      <details class="lab">
+        <summary>Mission 12 — Final Boss: Fix a Broken Service Config 🎮</summary>
+        <div class="lab-body boss">
+          <div class="lab-meta"><span class="pill">Level: Boss Fight</span><span class="pill">Skills: movement, edit, search, replace, verify</span></div>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cd ~/vim-dojo
+cat > service.conf <<'EOF'
+SERVICE_NAME=inventory
+APP_ENV=dev
+SERVICE_PORT=8080
+LOG_LEVEL=debug
+RETRY_COUNT=0
+EOF
+cp service.conf service.conf.bak
+vim service.conf</code></pre>
+          <h4>Tasks inside Vim</h4>
+          <ol>
+            <li>Change <code>APP_ENV=dev</code> to <code>APP_ENV=prod</code>.</li>
+            <li>Change <code>SERVICE_PORT=8080</code> to <code>SERVICE_PORT=9090</code>.</li>
+            <li>Change <code>LOG_LEVEL=debug</code> to <code>LOG_LEVEL=info</code>.</li>
+            <li>Change <code>RETRY_COUNT=0</code> to <code>RETRY_COUNT=3</code>.</li>
+            <li>Save and quit.</li>
+          </ol>
+          <h4>Verify</h4>
+          <pre><button class="small-btn copy" onclick="copyBlock(this)">Copy</button><code>cat service.conf
+diff -u service.conf.bak service.conf</code></pre>
+          <h4>Expected final file</h4>
+          <pre><code>SERVICE_NAME=inventory
+APP_ENV=prod
+SERVICE_PORT=9090
+LOG_LEVEL=info
+RETRY_COUNT=3</code></pre>
+          <label class="check-item"><input type="checkbox" data-xp="boss" onchange="saveXP()"><span>I completed the final Vim Dojo challenge.</span></label>
+        </div>
+      </details>
+    </section>
+
+    <section id="traps" class="card">
+      <h2>16. Common Vim Traps 🪤</h2>
+      <table>
+        <tr><th>Problem</th><th>Likely cause</th><th>Fix</th></tr>
+        <tr><td>“I cannot type.”</td><td>You are in Normal mode.</td><td>Press <code>i</code>.</td></tr>
+        <tr><td>“Commands are appearing inside the file.”</td><td>You are in Insert mode.</td><td>Press <kbd>Esc</kbd>, then type commands.</td></tr>
+        <tr><td>“I cannot quit.”</td><td>Unsaved changes exist.</td><td><code>:q!</code> to discard or <code>:wq</code> to save and quit.</td></tr>
+        <tr><td>“I deleted something accidentally.”</td><td><code>dd</code>, <code>d</code>, or <code>x</code> was pressed.</td><td>Press <code>u</code> to undo.</td></tr>
+        <tr><td>“Readonly file.”</td><td>Permission issue or read-only file.</td><td>Quit and reopen with proper permissions. Avoid forcing writes blindly.</td></tr>
+        <tr><td>“Swap file warning.”</td><td>Another Vim session, crash recovery, or stale swap.</td><td>Recover if needed, verify no active session, then remove stale swap carefully.</td></tr>
+        <tr><td>“Search highlight is annoying.”</td><td><code>hlsearch</code> is on.</td><td>Run <code>:noh</code>.</td></tr>
+        <tr><td>“Backspace behaves strangely.”</td><td>Default compatibility behavior.</td><td>Add <code>set backspace=indent,eol,start</code> to <code>~/.vimrc</code>.</td></tr>
+      </table>
+    </section>
+
+    <section id="quiz" class="card">
+      <h2>17. Quick Assessment</h2>
+      <div class="quiz-card" data-correct="b">
+        <h3>1. Which key returns you to Normal mode?</h3>
+        <button class="small-btn" onclick="answerQuiz(this,'a')">a) i</button>
+        <button class="small-btn" onclick="answerQuiz(this,'b')">b) Esc</button>
+        <button class="small-btn" onclick="answerQuiz(this,'c')">c) :w</button>
+        <div class="feedback"></div>
+      </div>
+      <div class="quiz-card" data-correct="c">
+        <h3>2. Which command quits without saving?</h3>
+        <button class="small-btn" onclick="answerQuiz(this,'a')">a) :q</button>
+        <button class="small-btn" onclick="answerQuiz(this,'b')">b) :wq</button>
+        <button class="small-btn" onclick="answerQuiz(this,'c')">c) :q!</button>
+        <div class="feedback"></div>
+      </div>
+      <div class="quiz-card" data-correct="a">
+        <h3>3. What does <code>dd</code> do?</h3>
+        <button class="small-btn" onclick="answerQuiz(this,'a')">a) Delete current line</button>
+        <button class="small-btn" onclick="answerQuiz(this,'b')">b) Duplicate current line</button>
+        <button class="small-btn" onclick="answerQuiz(this,'c')">c) Delete whole file</button>
+        <div class="feedback"></div>
+      </div>
+      <div class="quiz-card" data-correct="b">
+        <h3>4. Which command replaces all occurrences with confirmation?</h3>
+        <button class="small-btn" onclick="answerQuiz(this,'a')">a) :s/old/new/g</button>
+        <button class="small-btn" onclick="answerQuiz(this,'b')">b) :%s/old/new/gc</button>
+        <button class="small-btn" onclick="answerQuiz(this,'c')">c) /old/new</button>
+        <div class="feedback"></div>
+      </div>
+      <div class="quiz-card" data-correct="c">
+        <h3>5. What does <code>qa</code> do?</h3>
+        <button class="small-btn" onclick="answerQuiz(this,'a')">a) Quit all</button>
+        <button class="small-btn" onclick="answerQuiz(this,'b')">b) Quick append</button>
+        <button class="small-btn" onclick="answerQuiz(this,'c')">c) Record a macro into register a</button>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <section id="cheatsheet" class="card">
+      <h2>18. One-page Cheat Sheet 🖨️</h2>
+      <div class="kbd-grid">
+        <div class="kbd-item"><strong>Esc</strong>Return to Normal mode.</div>
+        <div class="kbd-item"><strong>i / a / o</strong>Insert before cursor / append / open new line below.</div>
+        <div class="kbd-item"><strong>:w / :q / :wq / :q!</strong>Save / quit / save quit / quit without saving.</div>
+        <div class="kbd-item"><strong>h j k l</strong>Left / down / up / right.</div>
+        <div class="kbd-item"><strong>w b e</strong>Next word / previous word / end of word.</div>
+        <div class="kbd-item"><strong>0 ^ $</strong>Line start / first non-blank / line end.</div>
+        <div class="kbd-item"><strong>gg / G / 25G</strong>Top / bottom / go to line 25.</div>
+        <div class="kbd-item"><strong>dd / dw / d$</strong>Delete line / word / to end of line.</div>
+        <div class="kbd-item"><strong>yy / 3yy / p / P</strong>Copy line / copy 3 lines / paste below / paste above.</div>
+        <div class="kbd-item"><strong>u / Ctrl-r / .</strong>Undo / redo / repeat last change.</div>
+        <div class="kbd-item"><strong>/text / n / N</strong>Search / next / previous.</div>
+        <div class="kbd-item"><strong>:%s/old/new/gc</strong>Replace all with confirmation.</div>
+        <div class="kbd-item"><strong>v / V / Ctrl-v</strong>Visual char / visual line / visual block.</div>
+        <div class="kbd-item"><strong>:set number / :noh</strong>Show line numbers / clear search highlight.</div>
+        <div class="kbd-item"><strong>:split / :vsplit</strong>Horizontal / vertical split.</div>
+        <div class="kbd-item"><strong>:ls / :bn / :bp</strong>List buffers / next buffer / previous buffer.</div>
+      </div>
+      <div class="callout success"><strong>Final mantra:</strong> When confused, press <kbd>Esc</kbd>. When careful, backup first. When powerful, use <code>operator + motion</code>.</div>
+    </section>
+  </main>
+</div>
+
+<div class="footer">
+  <p>Suggested delivery: 4–6 hours for beginners, or one full hands-on day for beginner-to-intermediate Linux learners.</p>
+</div>
+
+<script>
+function cursor(){ return '<span class="cursor"></span>'; }
+function mark(t){ return '<span class="highlight">' + t + '</span>'; }
+function escapeHtml(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function renderScreen(el, lines){
+  el.innerHTML = lines.map((line, i) => `<div class="vim-line"><span class="ln">${i+1}</span><span class="text">${line}</span></div>`).join('');
+}
+
+const heroFrames = [
+  {mode:'NORMAL', pill:'', pos:'1,1 All', cmd:'Normal mode: keys are commands. Press <kbd>i</kbd> to insert text.', lines:['# Vim Dojo Notes','', 'Press i to enter INSERT mode', 'Press dd to delete a line', 'Press /word to search', '~']},
+  {mode:'INSERT', pill:'insert', pos:'3,33 All', cmd:'Insert mode: now the keyboard types real text. Press <kbd>Esc</kbd> to stop typing.', lines:['# Vim Dojo Notes','', 'Today I learned Vim modes' + cursor(), 'Press dd to delete a line', 'Press /word to search', '~']},
+  {mode:'VISUAL', pill:'visual', pos:'4,1 All', cmd:'Visual mode: select first, then act with d, y, >, or <.', lines:['# Vim Dojo Notes','', 'Today I learned Vim modes', mark('Press dd to delete a line'), mark('Press /word to search'), '~']},
+  {mode:'COMMAND', pill:'command', pos:'4,1 All', cmd:':%s/dev/prod/gc asks before each replacement. :wq saves and quits.', lines:['# Vim Dojo Notes','', 'APP_ENV=' + mark('prod'), 'SERVICE_PORT=9090', 'LOG_LEVEL=info', '~']}
+];
+let heroIndex = 0;
+function rotateHero(){
+  const f = heroFrames[heroIndex];
+  renderScreen(document.getElementById('heroScreen'), f.lines);
+  document.getElementById('heroMode').innerHTML = `<span class="mode-pill ${f.pill}">${f.mode}</span>`;
+  document.getElementById('heroPos').textContent = f.pos;
+  document.getElementById('heroCmd').innerHTML = f.cmd;
+  heroIndex = (heroIndex + 1) % heroFrames.length;
+}
+setInterval(rotateHero, 2600); rotateHero();
+
+const modeInfo = {
+  normal: '<h3>Normal mode</h3><p>This is command headquarters. Use it for movement, deleting, copying, searching, undoing, and entering other modes.</p><p><strong>Examples:</strong> <code>dd</code>, <code>yy</code>, <code>/text</code>, <code>u</code>, <code>gg</code>, <code>G</code>.</p>',
+  insert: '<h3>Insert mode</h3><p>This behaves like a regular editor. Use it only when you need to type text into the file.</p><p><strong>Enter:</strong> <code>i</code>, <code>a</code>, <code>o</code>. <strong>Exit:</strong> <kbd>Esc</kbd>.</p>',
+  visual: '<h3>Visual mode</h3><p>Select text first, then apply an action such as delete, yank, indent, or change.</p><p><strong>Enter:</strong> <code>v</code>, <code>V</code>, <code>Ctrl-v</code>. <strong>Actions:</strong> <code>d</code>, <code>y</code>, <code>></code>, <code>&lt;</code>.</p>',
+  command: '<h3>Command-line mode</h3><p>Used for file-level commands: save, quit, replace, open files, configure settings.</p><p><strong>Examples:</strong> <code>:w</code>, <code>:q!</code>, <code>:%s/old/new/gc</code>, <code>:set number</code>.</p>'
+};
+function showMode(mode){
+  document.querySelectorAll('.mode-node').forEach(n => n.classList.remove('active'));
+  document.getElementById('node-' + mode).classList.add('active');
+  document.getElementById('modeText').innerHTML = modeInfo[mode];
+  document.querySelectorAll('#modes .small-btn').forEach(b => b.classList.remove('active'));
+  [...document.querySelectorAll('#modes .small-btn')].find(b => b.textContent.toLowerCase().startsWith(mode.slice(0,4)))?.classList.add('active');
+}
+showMode('normal');
+function runSequence(seq){
+  const map = {
+    'i text esc wq': 'Start in Normal → press <code>i</code> → type text in Insert → press <kbd>Esc</kbd> → type <code>:wq</code> to save and quit.',
+    'dd u': 'Start in Normal → press <code>dd</code> to delete current line → press <code>u</code> to undo. Very good safety drill.',
+    'slash n': 'Start in Normal → type <code>/word</code> → press <kbd>Enter</kbd> → press <code>n</code> for the next match.',
+    'v y p': 'Start in Normal → press <code>v</code> to select → move cursor → press <code>y</code> to copy → press <code>p</code> to paste.'
+  };
+  document.getElementById('sequenceOutput').innerHTML = map[seq];
+}
+
+let simState = { mode:'NORMAL', pill:'', pos:'1,1', lines:['hostname=server01','port=8080','status=error','owner=linux-team','~'], history:[], deleted:null, yanked:null };
+function drawSim(msg){
+  renderScreen(document.getElementById('simScreen'), simState.lines.map(x => x.replace('error', mark('error')).replace('environment=training', 'environment=training' + (simState.mode==='INSERT' ? cursor() : ''))));
+  document.getElementById('simMode').innerHTML = `<span class="mode-pill ${simState.pill}">${simState.mode}</span>`;
+  document.getElementById('simPos').textContent = simState.pos;
+  document.getElementById('simCmd').innerHTML = msg;
+}
+function sim(action){
+  if(action === 'reset') { simState = { mode:'NORMAL', pill:'', pos:'1,1', lines:['hostname=server01','port=8080','status=error','owner=linux-team','~'], history:[], deleted:null, yanked:null }; drawSim('Reset. You are back in Normal mode.'); return; }
+  if(action === 'i') { simState.mode='INSERT'; simState.pill='insert'; drawSim('-- INSERT -- Type text now.'); return; }
+  if(action === 'text') { if(simState.mode !== 'INSERT') { drawSim('You are not in Insert mode. Press i first.'); return; } simState.history.push([...simState.lines]); simState.lines.splice(1,0,'environment=training'); drawSim('Inserted a new line. Press Esc to return to Normal mode.'); return; }
+  if(action === 'esc') { simState.mode='NORMAL'; simState.pill=''; drawSim('Back to Normal mode.'); return; }
+  if(action === 'dd') { if(simState.mode !== 'NORMAL') { drawSim('Press Esc first. dd works in Normal mode.'); return; } simState.history.push([...simState.lines]); simState.deleted = simState.lines.splice(Math.min(2, simState.lines.length-2),1)[0]; drawSim('dd deleted the current line and saved it in a register.'); return; }
+  if(action === 'yy') { if(simState.mode !== 'NORMAL') { drawSim('Press Esc first. yy works in Normal mode.'); return; } simState.yanked = simState.lines[0]; drawSim('yy copied the current line. Now press p to paste.'); return; }
+  if(action === 'p') { if(simState.mode !== 'NORMAL') { drawSim('Press Esc first. p works in Normal mode.'); return; } if(!simState.yanked && !simState.deleted) { drawSim('Nothing to paste yet. Try yy or dd first.'); return; } simState.history.push([...simState.lines]); simState.lines.splice(1,0,simState.yanked || simState.deleted); drawSim('p pasted below the current line.'); return; }
+  if(action === 'u') { if(simState.history.length) simState.lines = simState.history.pop(); drawSim('Undo applied with u.'); return; }
+  if(action === 'search') { simState.mode='NORMAL'; simState.pill=''; simState.pos='3,8'; drawSim('/error found the highlighted text. Press n for next match in real Vim.'); return; }
+  if(action === 'wq') { simState.mode='COMMAND'; simState.pill='command'; drawSim(':wq saves the file and quits Vim.'); return; }
+}
+drawSim('Normal mode. Try i, type, Esc, dd, yy, p, u, /error, :wq.');
+
+function updateEquation(){
+  const op = document.getElementById('operatorSelect').value.split('|');
+  const motion = document.getElementById('motionSelect').value.split('|');
+  const cmd = op[0] + motion[0];
+  document.getElementById('equationResult').innerHTML = `<h3><code>${escapeHtml(cmd)}</code></h3><p>${op[1]} ${motion[1]}.</p>`;
+}
+updateEquation();
+
+const flashcards = [
+  ['dd','Delete current line'], ['yy','Copy current line'], ['p','Paste below'], ['P','Paste above'], ['u','Undo'], ['Ctrl-r','Redo'],
+  ['gg','Go to top'], ['G','Go to bottom'], ['w','Next word'], ['b','Previous word'], ['0','$ Line start / end'], ['/text','Search forward'],
+  ['n','Next search match'], [':q!','Quit without saving'], [':wq','Save and quit'], ['ci"','Change inside quotes'], ['V','Visual line mode'], ['.','Repeat last change']
+];
+function buildFlashcards(){
+  const grid = document.getElementById('flashGrid');
+  grid.innerHTML = flashcards.map(([front, back]) => `<div class="flash-card" onclick="this.classList.toggle('flip')"><div class="flash-face flash-front"><strong>${escapeHtml(front)}</strong></div><div class="flash-face flash-back">${escapeHtml(back)}</div></div>`).join('');
+}
+buildFlashcards();
+
+function animateReplace(){
+  const screen = document.getElementById('replaceScreen');
+  const cmd = document.getElementById('replaceCmd');
+  const steps = [
+    {lines:['APP_PORT=' + mark('8080'), 'BACKEND_URL=http://127.0.0.1:' + mark('8080') + '/api', 'APP_PORT=' + mark('8080'), '~'], cmd:'Command: :%s/8080/9090/gc — replace first match? y/n/a/q'},
+    {lines:['APP_PORT=' + mark('9090'), 'BACKEND_URL=http://127.0.0.1:' + mark('8080') + '/api', 'APP_PORT=' + mark('8080'), '~'], cmd:'Pressed y: first match replaced.'},
+    {lines:['APP_PORT=9090', 'BACKEND_URL=http://127.0.0.1:' + mark('9090') + '/api', 'APP_PORT=' + mark('8080'), '~'], cmd:'Pressed y: second match replaced.'},
+    {lines:['APP_PORT=9090', 'BACKEND_URL=http://127.0.0.1:9090/api', 'APP_PORT=' + mark('9090'), '~'], cmd:'Pressed y: third match replaced. Done.'}
+  ];
+  let i = 0;
+  renderScreen(screen, steps[0].lines); cmd.textContent = steps[0].cmd;
+  const timer = setInterval(() => { i++; if(i >= steps.length){ clearInterval(timer); return; } renderScreen(screen, steps[i].lines); cmd.textContent = steps[i].cmd; }, 900);
+}
+animateReplace();
+
+function copyBlock(btn){
+  const code = btn.parentElement.querySelector('code').innerText;
+  navigator.clipboard?.writeText(code).then(() => { const old = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = old, 1200); });
+}
+function checkPractice(input){
+  const box = input.closest('.practice');
+  const answer = box.dataset.answer.trim().toLowerCase();
+  const val = input.value.trim().toLowerCase();
+  const fb = box.querySelector('.feedback');
+  if(!val){ fb.textContent=''; return; }
+  fb.innerHTML = val === answer ? '<span class="correct">Correct.</span>' : '<span class="wrong">Not yet.</span> Hint: full-file substitution starts with <code>:%s</code>.';
+}
+function revealPractice(btn){
+  const box = btn.closest('.practice');
+  box.querySelector('input').value = box.dataset.answer;
+  box.querySelector('.feedback').innerHTML = '<span class="correct">Answer revealed.</span>';
+}
+function answerQuiz(btn, chosen){
+  const card = btn.closest('.quiz-card');
+  const correct = card.dataset.correct;
+  const fb = card.querySelector('.feedback');
+  fb.innerHTML = chosen === correct ? '<span class="correct">Correct.</span>' : '<span class="wrong">Incorrect.</span> Review the relevant section and try again.';
+}
+function panicReveal(){ document.getElementById('panicOutput').classList.toggle('show'); }
+function toggleTheme(){ document.body.classList.toggle('light'); localStorage.setItem('vimDojoTheme', document.body.classList.contains('light') ? 'light' : 'dark'); }
+function fontChange(delta){ const root = document.documentElement; let cur = parseFloat(getComputedStyle(root).getPropertyValue('--font-scale')) || 1; cur = Math.max(.9, Math.min(1.18, cur + delta)); root.style.setProperty('--font-scale', cur); localStorage.setItem('vimDojoFont', cur); }
+function saveXP(){
+  const checks = [...document.querySelectorAll('input[data-xp]')];
+  const state = {};
+  checks.forEach(c => state[c.dataset.xp] = c.checked);
+  localStorage.setItem('vimDojoXP', JSON.stringify(state));
+  updateXP();
+}
+function loadXP(){
+  const saved = JSON.parse(localStorage.getItem('vimDojoXP') || '{}');
+  document.querySelectorAll('input[data-xp]').forEach(c => c.checked = !!saved[c.dataset.xp]);
+  updateXP();
+}
+function updateXP(){
+  const checks = [...document.querySelectorAll('input[data-xp]')];
+  const done = checks.filter(c => c.checked).length;
+  const pct = checks.length ? Math.round((done / checks.length) * 100) : 0;
+  document.getElementById('xpFill').style.width = pct + '%';
+  document.getElementById('xpText').textContent = pct + '%';
+}
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const scrolled = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  document.getElementById('progress').style.width = scrolled + '%';
+  document.getElementById('topBtn').style.display = h.scrollTop > 500 ? 'inline-flex' : 'none';
+});
+(function init(){
+  if(localStorage.getItem('vimDojoTheme') === 'light') document.body.classList.add('light');
+  const fs = localStorage.getItem('vimDojoFont'); if(fs) document.documentElement.style.setProperty('--font-scale', fs);
+  loadXP();
+})();
+</script>
+</body>
+</html>

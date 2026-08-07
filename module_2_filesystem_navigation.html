@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 2: Linux Filesystem and Navigation</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --bg2: #111827;
+      --panel: rgba(15, 23, 42, 0.86);
+      --panel-solid: #111827;
+      --card: rgba(255, 255, 255, 0.08);
+      --card2: rgba(255, 255, 255, 0.12);
+      --text: #e5e7eb;
+      --muted: #a7b0c4;
+      --strong: #ffffff;
+      --ink: #0f172a;
+      --primary: #38bdf8;
+      --primary2: #0284c7;
+      --accent: #22c55e;
+      --accent2: #16a34a;
+      --warn: #f59e0b;
+      --danger: #fb7185;
+      --violet: #a78bfa;
+      --pink: #f472b6;
+      --line: rgba(148, 163, 184, 0.25);
+      --shadow: 0 24px 60px rgba(0,0,0,.35);
+      --radius: 24px;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    html[data-theme="light"] {
+      --bg: #f8fafc;
+      --bg2: #e0f2fe;
+      --panel: rgba(255, 255, 255, 0.9);
+      --panel-solid: #ffffff;
+      --card: rgba(15, 23, 42, 0.055);
+      --card2: rgba(15, 23, 42, 0.085);
+      --text: #182033;
+      --muted: #526177;
+      --strong: #0f172a;
+      --ink: #0f172a;
+      --line: rgba(15, 23, 42, 0.16);
+      --shadow: 0 24px 60px rgba(15,23,42,.12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, .28), transparent 34rem),
+        radial-gradient(circle at 80% 8%, rgba(167, 139, 250, .22), transparent 30rem),
+        radial-gradient(circle at 50% 100%, rgba(34, 197, 94, .12), transparent 26rem),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; }
+    code, pre { font-family: var(--mono); }
+
+    .progress-line {
+      position: fixed;
+      inset: 0 auto auto 0;
+      height: 4px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--primary), var(--violet));
+      z-index: 100;
+      box-shadow: 0 0 20px rgba(56,189,248,.65);
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 70px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 14px;
+      z-index: 40;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 14px;
+      margin-bottom: 28px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      backdrop-filter: blur(16px);
+      background: rgba(15, 23, 42, .64);
+      box-shadow: 0 8px 30px rgba(0,0,0,.22);
+    }
+
+    html[data-theme="light"] .topbar { background: rgba(255,255,255,.72); }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      color: var(--strong);
+      letter-spacing: -.02em;
+    }
+
+    .penguin {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      animation: bob 2.6s ease-in-out infinite;
+      box-shadow: 0 10px 25px rgba(34,197,94,.25);
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-4px) rotate(3deg); }
+    }
+
+    .nav {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .nav a, .btn, button {
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      padding: 9px 13px;
+      border-radius: 999px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: .2s ease;
+      font-size: 14px;
+    }
+
+    .nav a:hover, .btn:hover, button:hover {
+      transform: translateY(-1px);
+      background: var(--card2);
+      border-color: rgba(56,189,248,.55);
+    }
+
+    .hero {
+      position: relative;
+      padding: clamp(30px, 5vw, 60px);
+      border: 1px solid var(--line);
+      border-radius: 36px;
+      background: linear-gradient(135deg, rgba(15,23,42,.82), rgba(15,23,42,.56)), var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    html[data-theme="light"] .hero {
+      background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(240,249,255,.76));
+    }
+
+    .hero:before {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      right: -140px;
+      top: -150px;
+      background: conic-gradient(from 180deg, rgba(56,189,248,.45), rgba(34,197,94,.2), rgba(167,139,250,.38), rgba(56,189,248,.45));
+      filter: blur(20px);
+      opacity: .62;
+      border-radius: 50%;
+      animation: spin 14s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hero-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(56,189,248,.15);
+      color: #7dd3fc;
+      font-weight: 800;
+      margin-bottom: 18px;
+    }
+
+    html[data-theme="light"] .eyebrow { color: #0369a1; }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(38px, 7vw, 78px);
+      line-height: .95;
+      color: var(--strong);
+      letter-spacing: -.06em;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: clamp(28px, 4vw, 44px);
+      color: var(--strong);
+      letter-spacing: -.04em;
+    }
+
+    h3 { margin: 0 0 10px; color: var(--strong); font-size: 23px; letter-spacing: -.02em; }
+    h4 { margin: 0 0 8px; color: var(--strong); font-size: 18px; }
+    p { line-height: 1.72; margin: 0 0 14px; color: var(--text); }
+    .lead { font-size: 19px; color: var(--muted); max-width: 68ch; }
+    .small { font-size: 14px; color: var(--muted); }
+
+    .hero-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px; }
+    .badge {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 13px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      font-weight: 700;
+    }
+
+    .mission-card {
+      position: relative;
+      padding: 22px;
+      border-radius: 28px;
+      background: rgba(2, 6, 23, .58);
+      border: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    html[data-theme="light"] .mission-card { background: rgba(255,255,255,.75); }
+
+    .map-art {
+      min-height: 230px;
+      display: grid;
+      place-items: center;
+    }
+
+    .node { animation: float 4s ease-in-out infinite; transform-origin: center; }
+    .node:nth-child(2) { animation-delay: .35s; }
+    .node:nth-child(3) { animation-delay: .7s; }
+    .node:nth-child(4) { animation-delay: 1.05s; }
+    @keyframes float { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-6px); } }
+
+    .section {
+      margin-top: 34px;
+      padding: clamp(22px, 4vw, 36px);
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 12px 38px rgba(0,0,0,.14);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: start;
+      margin-bottom: 20px;
+    }
+
+    .section-header p { max-width: 72ch; margin-bottom: 0; color: var(--muted); }
+
+    .grid { display: grid; gap: 18px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .card {
+      padding: 20px;
+      border-radius: 24px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      transition: .22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover { transform: translateY(-3px); border-color: rgba(56,189,248,.5); }
+    .card strong { color: var(--strong); }
+
+    .city-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .district {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      align-items: start;
+      padding: 16px;
+      border-radius: 20px;
+      background: var(--card);
+      border: 1px solid var(--line);
+    }
+
+    .district .icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(56,189,248,.23), rgba(34,197,94,.2));
+      font-size: 24px;
+    }
+
+    .path-demo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .path-line {
+      font-family: var(--mono);
+      font-size: 15px;
+      background: rgba(2,6,23,.56);
+      color: #e2e8f0;
+      border: 1px solid rgba(148,163,184,.24);
+      padding: 14px;
+      border-radius: 18px;
+      overflow-x: auto;
+    }
+    html[data-theme="light"] .path-line { background: #0f172a; color: #e2e8f0; }
+
+    .tree-wrap {
+      display: grid;
+      grid-template-columns: .95fr 1.05fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .tree {
+      padding: 18px;
+      background: rgba(2,6,23,.56);
+      color: #e2e8f0;
+      border-radius: 24px;
+      border: 1px solid rgba(148,163,184,.24);
+      font-family: var(--mono);
+      line-height: 1.9;
+    }
+
+    .tree button {
+      font-family: var(--mono);
+      border-radius: 12px;
+      padding: 3px 8px;
+      margin: 2px 0;
+      background: rgba(56,189,248,.09);
+      color: #e2e8f0;
+      border: 1px solid rgba(125,211,252,.24);
+      font-weight: 700;
+    }
+
+    .tree button.active {
+      background: rgba(34,197,94,.22);
+      border-color: rgba(74,222,128,.8);
+      box-shadow: 0 0 0 3px rgba(34,197,94,.13);
+    }
+
+    .tree-info {
+      min-height: 246px;
+      border-radius: 24px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 22px;
+    }
+
+    .terminal {
+      background: #050816;
+      color: #dbeafe;
+      border-radius: 22px;
+      border: 1px solid rgba(148,163,184,.26);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 18px 45px rgba(0,0,0,.22);
+      overflow: hidden;
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,.06);
+      border-bottom: 1px solid rgba(148,163,184,.22);
+      font-family: var(--mono);
+      color: #cbd5e1;
+      font-size: 13px;
+    }
+
+    .lights { display: flex; gap: 7px; }
+    .light { width: 11px; height: 11px; border-radius: 50%; background: #fb7185; }
+    .light:nth-child(2) { background: #fbbf24; }
+    .light:nth-child(3) { background: #34d399; }
+
+    .terminal-body {
+      padding: 18px;
+      font-family: var(--mono);
+      font-size: 15px;
+      line-height: 1.72;
+      overflow-x: auto;
+      min-height: 160px;
+    }
+
+    .prompt { color: #86efac; }
+    .cmd { color: #93c5fd; }
+    .out { color: #e2e8f0; }
+    .comment { color: #94a3b8; }
+
+    .terminal-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 0 18px 18px;
+    }
+
+    .command-card {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      padding: 20px;
+      border-radius: 24px;
+      background: var(--card);
+      border: 1px solid var(--line);
+    }
+
+    .command-card code {
+      display: inline-flex;
+      padding: 7px 10px;
+      border-radius: 12px;
+      background: rgba(56,189,248,.16);
+      color: #7dd3fc;
+      font-weight: 900;
+      width: fit-content;
+    }
+
+    html[data-theme="light"] .command-card code { color: #0369a1; background: rgba(14,165,233,.13); }
+
+    .copy-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .copy-chip {
+      font-family: var(--mono);
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: rgba(2,6,23,.56);
+      color: #e2e8f0;
+      border: 1px solid rgba(148,163,184,.22);
+    }
+    html[data-theme="light"] .copy-chip { background: #0f172a; }
+
+    .lab-step {
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      overflow: hidden;
+    }
+
+    .lab-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .lab-body { padding: 18px; }
+    .expected {
+      display: none;
+      margin-top: 12px;
+      animation: slide .22s ease;
+    }
+    .expected.show { display: block; }
+    @keyframes slide { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+    .callout {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      margin: 16px 0;
+    }
+    .callout .mark { font-size: 28px; }
+    .callout.warn { border-color: rgba(245,158,11,.38); background: rgba(245,158,11,.11); }
+    .callout.good { border-color: rgba(34,197,94,.38); background: rgba(34,197,94,.11); }
+    .callout.danger { border-color: rgba(251,113,133,.38); background: rgba(251,113,133,.11); }
+
+    .quiz {
+      display: grid;
+      gap: 14px;
+    }
+
+    .quiz-card {
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 24px;
+      padding: 18px;
+    }
+
+    .answers { display: grid; gap: 8px; margin-top: 12px; }
+    .answer {
+      width: 100%;
+      text-align: left;
+      border-radius: 16px;
+      padding: 12px 13px;
+      background: rgba(2,6,23,.30);
+    }
+    html[data-theme="light"] .answer { background: rgba(15,23,42,.06); }
+    .answer.correct { border-color: rgba(34,197,94,.8); background: rgba(34,197,94,.18); }
+    .answer.wrong { border-color: rgba(251,113,133,.8); background: rgba(251,113,133,.14); }
+    .feedback { display: none; margin-top: 12px; color: var(--muted); }
+    .feedback.show { display: block; }
+
+    .checklist { display: grid; gap: 10px; }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 13px;
+      border-radius: 18px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      cursor: pointer;
+    }
+    .check-item input { width: 18px; height: 18px; accent-color: #22c55e; }
+    .check-item.done { opacity: .82; text-decoration: line-through; }
+
+    .mini-terminal {
+      background: #050816;
+      color: #e2e8f0;
+      border: 1px solid rgba(148,163,184,.22);
+      border-radius: 18px;
+      padding: 14px;
+      font-family: var(--mono);
+      line-height: 1.65;
+      overflow-x: auto;
+    }
+
+    .split-note {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: start;
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(56,189,248,.11);
+      border: 1px solid rgba(56,189,248,.28);
+    }
+
+    .cheat {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--card);
+    }
+    .cheat th, .cheat td {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    .cheat th { color: var(--strong); background: rgba(56,189,248,.12); }
+    .cheat tr:last-child td { border-bottom: none; }
+    .cheat code { color: #7dd3fc; font-weight: 900; }
+    html[data-theme="light"] .cheat code { color: #0369a1; }
+
+    .footer {
+      margin-top: 34px;
+      text-align: center;
+      color: var(--muted);
+      padding: 28px;
+      border: 1px dashed var(--line);
+      border-radius: 28px;
+      background: var(--card);
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: .6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      .hero-grid, .grid.two, .grid.three, .grid.four, .city-grid, .path-demo, .tree-wrap { grid-template-columns: 1fr; }
+      .topbar { position: static; border-radius: 24px; align-items: flex-start; flex-direction: column; }
+      .nav { justify-content: flex-start; }
+    }
+
+    @media print {
+      body { background: #fff; color: #111827; }
+      .topbar, .progress-line, .terminal-actions, button, .btn { display: none !important; }
+      .page { width: 100%; padding: 0; }
+      .section, .hero, .card, .lab-step { box-shadow: none; break-inside: avoid; }
+      .expected { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-line" id="progressLine"></div>
+  <main class="page">
+    <nav class="topbar" aria-label="Module navigation">
+      <div class="brand"><span class="penguin">🐧</span><span>Linux Explorer</span></div>
+      <div class="nav">
+        <a href="#city">Filesystem City</a>
+        <a href="#paths">Paths</a>
+        <a href="#commands">Commands</a>
+        <a href="#lab">Lab</a>
+        <a href="#quiz">Quiz</a>
+      </div>
+      <button id="themeToggle" type="button">🌙 Dark</button>
+    </nav>
+
+    <header class="hero reveal">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">🎒 Module 2 · Beginner Level</div>
+          <h1>Filesystem and Navigation</h1>
+          <p class="lead">Learn how Linux stores files, how to move around directories, how to list files, and how to create your first practice folder.</p>
+          <div class="hero-badges">
+            <span class="badge">🧭 Navigation</span>
+            <span class="badge">📁 Directories</span>
+            <span class="badge">👀 Hidden files</span>
+            <span class="badge">🧪 Hands-on lab</span>
+          </div>
+        </div>
+        <aside class="mission-card">
+          <h3>Today’s mission</h3>
+          <p>Become comfortable answering three basic Linux questions:</p>
+          <div class="checklist" id="missionChecklist">
+            <label class="check-item"><input type="checkbox"> Where am I? <code>pwd</code></label>
+            <label class="check-item"><input type="checkbox"> What is here? <code>ls -la</code></label>
+            <label class="check-item"><input type="checkbox"> How do I move? <code>cd</code></label>
+          </div>
+          <p class="small" style="margin-top:14px;">Tick these as you learn. Tiny dopamine, very legal. ✅</p>
+        </aside>
+      </div>
+    </header>
+
+    <section class="section reveal" id="city">
+      <div class="section-header">
+        <div>
+          <h2>1. Linux Directory Structure</h2>
+          <p>Linux has one main filesystem tree. Everything starts from the root directory: <code>/</code>. Think of it like a city map where every road begins at the main gate.</p>
+        </div>
+      </div>
+
+      <div class="tree-wrap">
+        <div class="tree" aria-label="Interactive Linux directory tree">
+          <div><button class="tree-btn active" data-dir="root">/</button> <span class="comment">root: start of everything</span></div>
+          <div>├── <button class="tree-btn" data-dir="home">home</button> <span class="comment">user homes</span></div>
+          <div>│&nbsp;&nbsp;&nbsp;└── <button class="tree-btn" data-dir="student">student</button> <span class="comment">your room</span></div>
+          <div>├── <button class="tree-btn" data-dir="etc">etc</button> <span class="comment">configuration</span></div>
+          <div>├── <button class="tree-btn" data-dir="var">var</button> <span class="comment">logs and changing data</span></div>
+          <div>├── <button class="tree-btn" data-dir="tmp">tmp</button> <span class="comment">temporary files</span></div>
+          <div>├── <button class="tree-btn" data-dir="bin">bin</button> <span class="comment">basic commands</span></div>
+          <div>└── <button class="tree-btn" data-dir="usr">usr</button> <span class="comment">applications and tools</span></div>
+        </div>
+        <div class="tree-info" id="treeInfo">
+          <h3>📍 / — Root directory</h3>
+          <p>The root directory is the top of the Linux filesystem. Every absolute path starts from here.</p>
+          <div class="path-line">Example: /home/student/linux-lab</div>
+        </div>
+      </div>
+
+      <div class="city-grid" style="margin-top:18px;">
+        <div class="district"><div class="icon">🏠</div><div><h4>/home</h4><p>User files live here. For example, a user named <code>student</code> usually has files under <code>/home/student</code>.</p></div></div>
+        <div class="district"><div class="icon">⚙️</div><div><h4>/etc</h4><p>System and service configuration files live here. This is the Linux control room. Do not randomly edit files here as root.</p></div></div>
+        <div class="district"><div class="icon">📦</div><div><h4>/var</h4><p>Variable data lives here, such as logs, caches, queues, and files that change often.</p></div></div>
+        <div class="district"><div class="icon">🧹</div><div><h4>/tmp</h4><p>Temporary files live here. Many systems clean this automatically, so do not store important work here.</p></div></div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="paths">
+      <div class="section-header">
+        <div>
+          <h2>2. Absolute vs Relative Path</h2>
+          <p>A path tells Linux the location of a file or directory. The main difference is whether the path starts from <code>/</code> or from your current location.</p>
+        </div>
+      </div>
+
+      <div class="path-demo">
+        <div class="card">
+          <h3>🧱 Absolute path</h3>
+          <p>Starts from the root directory <code>/</code>. It works from anywhere.</p>
+          <div class="path-line">/home/student/linux-lab/file1.txt</div>
+          <div class="callout good"><div class="mark">✅</div><div><strong>Memory trick:</strong><br>Absolute path gives the full address from the city gate.</div></div>
+        </div>
+        <div class="card">
+          <h3>🚶 Relative path</h3>
+          <p>Starts from where you are currently standing in the filesystem.</p>
+          <div class="path-line">linux-lab/file1.txt</div>
+          <div class="callout warn"><div class="mark">⚠️</div><div><strong>Careful:</strong><br>Relative paths can change meaning depending on your current directory.</div></div>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top:18px; padding:22px;">
+        <h3>Path playground</h3>
+        <p>You are currently in <code>/home/student</code>. Click a command to see where it takes you.</p>
+        <div class="terminal">
+          <div class="terminal-bar"><span class="lights"><span class="light"></span><span class="light"></span><span class="light"></span></span><span>path-playground</span></div>
+          <div class="terminal-body" id="pathOutput"><span class="prompt">student@linux:~$</span> <span class="cmd">pwd</span><br><span class="out">/home/student</span></div>
+          <div class="terminal-actions">
+            <button data-pathcmd="cd /etc">cd /etc</button>
+            <button data-pathcmd="cd linux-lab">cd linux-lab</button>
+            <button data-pathcmd="cd ~">cd ~</button>
+            <button data-pathcmd="cd ..">cd ..</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="commands">
+      <div class="section-header">
+        <div>
+          <h2>3. Command Cards</h2>
+          <p>These are the core commands for this module. Learn them like tools in a small toolbox.</p>
+        </div>
+      </div>
+
+      <div class="grid three">
+        <article class="command-card">
+          <code>pwd</code>
+          <div><h3>Where am I?</h3><p>Prints your current working directory.</p></div>
+          <div class="copy-row"><span class="copy-chip">pwd</span><button class="copy" data-copy="pwd">Copy</button></div>
+        </article>
+        <article class="command-card">
+          <code>ls</code>
+          <div><h3>What is here?</h3><p>Lists visible files and directories.</p></div>
+          <div class="copy-row"><span class="copy-chip">ls</span><button class="copy" data-copy="ls">Copy</button></div>
+        </article>
+        <article class="command-card">
+          <code>ls -la</code>
+          <div><h3>Show everything</h3><p>Lists all files, including hidden files, with details.</p></div>
+          <div class="copy-row"><span class="copy-chip">ls -la</span><button class="copy" data-copy="ls -la">Copy</button></div>
+        </article>
+        <article class="command-card">
+          <code>cd</code>
+          <div><h3>Change directory</h3><p>Moves you from one directory to another.</p></div>
+          <div class="copy-row"><span class="copy-chip">cd /etc</span><button class="copy" data-copy="cd /etc">Copy</button></div>
+        </article>
+        <article class="command-card">
+          <code>mkdir</code>
+          <div><h3>Create directory</h3><p>Creates a new folder.</p></div>
+          <div class="copy-row"><span class="copy-chip">mkdir linux-lab</span><button class="copy" data-copy="mkdir linux-lab">Copy</button></div>
+        </article>
+        <article class="command-card">
+          <code>touch</code>
+          <div><h3>Create empty file</h3><p>Creates a blank file or updates file timestamp.</p></div>
+          <div class="copy-row"><span class="copy-chip">touch file1.txt</span><button class="copy" data-copy="touch file1.txt">Copy</button></div>
+        </article>
+      </div>
+
+      <div class="callout danger">
+        <div class="mark">🤦</div>
+        <div>
+          <strong>Classic beginner trap:</strong><br>
+          <code>cd etc</code> and <code>cd /etc</code> are different. <code>cd /etc</code> goes to the real system configuration directory. <code>cd etc</code> tries to enter an <code>etc</code> directory inside your current location.
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="section-header">
+        <div>
+          <h2>4. Listing Files and Hidden Files</h2>
+          <p>Linux hides files whose names start with a dot. They are not special magic files; the dot simply tells normal <code>ls</code> to hide them.</p>
+        </div>
+      </div>
+
+      <div class="grid two">
+        <div class="card">
+          <h3>Normal listing</h3>
+          <p><code>ls</code> shows regular visible files.</p>
+          <div class="mini-terminal"><span class="prompt">student@linux:~$</span> <span class="cmd">ls</span><br>Documents Downloads linux-lab</div>
+        </div>
+        <div class="card">
+          <h3>Detailed listing</h3>
+          <p><code>ls -la</code> shows permissions, owner, size, time, visible files, and hidden files.</p>
+          <div class="mini-terminal"><span class="prompt">student@linux:~$</span> <span class="cmd">ls -la</span><br>drwxr-xr-x  5 student student 4096 Aug  2 .<br>drwxr-xr-x  3 root    root    4096 Aug  2 ..<br>-rw-r--r--  1 student student  220 Aug  2 .bash_logout<br>-rw-r--r--  1 student student 3771 Aug  2 .bashrc<br>drwxr-xr-x  2 student student 4096 Aug  2 linux-lab</div>
+        </div>
+      </div>
+
+      <div class="split-note" style="margin-top:18px;">
+        <div>👀</div>
+        <div><strong>Hidden file rule:</strong> A file named <code>.bashrc</code> is hidden because it starts with a dot. To see it, use <code>ls -a</code> or <code>ls -la</code>.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="lab">
+      <div class="section-header">
+        <div>
+          <h2>5. Guided Lab: First Navigation Mission</h2>
+          <p>Run these commands on your Linux VM or terminal. Use the expected output to check whether you are on the right path.</p>
+        </div>
+      </div>
+
+      <div class="grid">
+        <article class="lab-step">
+          <div class="lab-title"><h3>Mission 1: Check your current location</h3><button class="toggleExpected">Show expected output</button></div>
+          <div class="lab-body">
+            <div class="mini-terminal"><span class="prompt">student@linux:~$</span> <span class="cmd">pwd</span></div>
+            <div class="expected"><p><strong>Expected output:</strong></p><div class="mini-terminal">/home/student</div><p class="small">Your username may be different. For example, <code>/home/jp</code> is also normal if your username is <code>jp</code>.</p></div>
+          </div>
+        </article>
+
+        <article class="lab-step">
+          <div class="lab-title"><h3>Mission 2: List files with details</h3><button class="toggleExpected">Show expected output</button></div>
+          <div class="lab-body">
+            <div class="mini-terminal"><span class="prompt">student@linux:~$</span> <span class="cmd">ls -la</span></div>
+            <div class="expected"><p><strong>Expected output pattern:</strong></p><div class="mini-terminal">drwxr-xr-x ... .<br>drwxr-xr-x ... ..<br>-rw-r--r-- ... .bashrc<br>drwxr-xr-x ... Documents</div><p class="small">Exact files can differ. The important point is that hidden files beginning with <code>.</code> should appear.</p></div>
+          </div>
+        </article>
+
+        <article class="lab-step">
+          <div class="lab-title"><h3>Mission 3: Move to /etc</h3><button class="toggleExpected">Show expected output</button></div>
+          <div class="lab-body">
+            <div class="mini-terminal"><span class="prompt">student@linux:~$</span> <span class="cmd">cd /etc</span><br><span class="prompt">student@linux:/etc$</span> <span class="cmd">pwd</span></div>
+            <div class="expected"><p><strong>Expected output:</strong></p><div class="mini-terminal">/etc</div><p class="small"><code>/etc</code> is an absolute path, so it works from anywhere.</p></div>
+          </div>
+        </article>
+
+        <article class="lab-step">
+          <div class="lab-title"><h3>Mission 4: Return home</h3><button class="toggleExpected">Show expected output</button></div>
+          <div class="lab-body">
+            <div class="mini-terminal"><span class="prompt">student@linux:/etc$</span> <span class="cmd">cd ~</span><br><span class="prompt">student@linux:~$</span> <span class="cmd">pwd</span></div>
+            <div class="expected"><p><strong>Expected output:</strong></p><div class="mini-terminal">/home/student</div><p class="small"><code>~</code> means your home directory.</p></div>
+          </div>
+        </article>
+
+        <article class="lab-step">
+          <div class="lab-title"><h3>Mission 5: Create a lab directory</h3><button class="toggleExpected">Show expected output</button></div>
+          <div class="lab-body">
+            <div class="mini-terminal"><span class="prompt">student@linux:~$</span> <span class="cmd">mkdir linux-lab</span><br><span class="prompt">student@linux:~$</span> <span class="cmd">ls</span></div>
+            <div class="expected"><p><strong>Expected output should include:</strong></p><div class="mini-terminal">linux-lab</div><p class="small">If it says <code>File exists</code>, the directory was already created earlier. Not a disaster; Linux is just being very literal.</p></div>
+          </div>
+        </article>
+
+        <article class="lab-step">
+          <div class="lab-title"><h3>Mission 6: Create a blank file</h3><button class="toggleExpected">Show expected output</button></div>
+          <div class="lab-body">
+            <div class="mini-terminal"><span class="prompt">student@linux:~$</span> <span class="cmd">cd linux-lab</span><br><span class="prompt">student@linux:~/linux-lab$</span> <span class="cmd">touch file1.txt</span><br><span class="prompt">student@linux:~/linux-lab$</span> <span class="cmd">ls -la</span></div>
+            <div class="expected"><p><strong>Expected output should include:</strong></p><div class="mini-terminal">-rw-r--r-- 1 student student 0 Aug  2 file1.txt</div><p class="small">The size is <code>0</code> because <code>touch</code> created an empty file.</p></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section reveal" id="quiz">
+      <div class="section-header">
+        <div>
+          <h2>6. Mini Quiz</h2>
+          <p>Click an answer. The document will tell you immediately whether the answer is correct.</p>
+        </div>
+      </div>
+
+      <div class="quiz">
+        <div class="quiz-card" data-answer="b">
+          <h3>1. Which path is absolute?</h3>
+          <div class="answers">
+            <button class="answer" data-choice="a">linux-lab/file1.txt</button>
+            <button class="answer" data-choice="b">/home/student/linux-lab/file1.txt</button>
+            <button class="answer" data-choice="c">../file1.txt</button>
+          </div>
+          <p class="feedback">Absolute paths start from <code>/</code>.</p>
+        </div>
+
+        <div class="quiz-card" data-answer="a">
+          <h3>2. Which command shows hidden files?</h3>
+          <div class="answers">
+            <button class="answer" data-choice="a">ls -la</button>
+            <button class="answer" data-choice="b">pwd</button>
+            <button class="answer" data-choice="c">cd ~</button>
+          </div>
+          <p class="feedback"><code>ls -la</code> shows all files, including hidden dotfiles.</p>
+        </div>
+
+        <div class="quiz-card" data-answer="c">
+          <h3>3. What does <code>cd ~</code> do?</h3>
+          <div class="answers">
+            <button class="answer" data-choice="a">Deletes the current directory</button>
+            <button class="answer" data-choice="b">Goes to /etc</button>
+            <button class="answer" data-choice="c">Goes to your home directory</button>
+          </div>
+          <p class="feedback"><code>~</code> means your home directory.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="section-header">
+        <div>
+          <h2>7. Final Boss Lab 🐧</h2>
+          <p>Run the full sequence without looking at the earlier answers. Then compare your result.</p>
+        </div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar"><span class="lights"><span class="light"></span><span class="light"></span><span class="light"></span></span><span>boss-lab</span></div>
+        <div class="terminal-body">
+          <span class="prompt">student@linux:~$</span> <span class="cmd">pwd</span><br>
+          <span class="prompt">student@linux:~$</span> <span class="cmd">mkdir linux-lab</span><br>
+          <span class="prompt">student@linux:~$</span> <span class="cmd">cd linux-lab</span><br>
+          <span class="prompt">student@linux:~/linux-lab$</span> <span class="cmd">touch file1.txt</span><br>
+          <span class="prompt">student@linux:~/linux-lab$</span> <span class="cmd">ls -la</span><br>
+          <span class="prompt">student@linux:~/linux-lab$</span> <span class="cmd">cd /etc</span><br>
+          <span class="prompt">student@linux:/etc$</span> <span class="cmd">cd ~</span><br>
+          <span class="prompt">student@linux:~$</span> <span class="cmd">pwd</span>
+        </div>
+      </div>
+
+      <div class="callout good">
+        <div class="mark">🎯</div>
+        <div>
+          <strong>Boss lab questions:</strong><br>
+          After <code>cd ~</code>, where are you? What file did <code>touch file1.txt</code> create? Why does <code>ls -la</code> show files beginning with a dot?
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="section-header">
+        <div>
+          <h2>8. Cheat Sheet</h2>
+          <p>Print this section or keep it open during practice.</p>
+        </div>
+      </div>
+
+      <table class="cheat">
+        <thead><tr><th>Command / Concept</th><th>Meaning</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code>/</code></td><td>Root directory; top of the Linux filesystem.</td><td><code>/etc</code>, <code>/home/student</code></td></tr>
+          <tr><td><code>pwd</code></td><td>Print current directory.</td><td><code>pwd</code></td></tr>
+          <tr><td><code>ls</code></td><td>List visible files and directories.</td><td><code>ls</code></td></tr>
+          <tr><td><code>ls -la</code></td><td>List all files with details, including hidden files.</td><td><code>ls -la</code></td></tr>
+          <tr><td><code>cd</code></td><td>Change directory.</td><td><code>cd /etc</code></td></tr>
+          <tr><td><code>cd ~</code></td><td>Go to your home directory.</td><td><code>cd ~</code></td></tr>
+          <tr><td><code>mkdir</code></td><td>Create a directory.</td><td><code>mkdir linux-lab</code></td></tr>
+          <tr><td><code>touch</code></td><td>Create an empty file or update timestamp.</td><td><code>touch file1.txt</code></td></tr>
+          <tr><td>Hidden file</td><td>File or directory whose name starts with dot.</td><td><code>.bashrc</code>, <code>.ssh</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer class="footer">
+      <h3>End of Module 2</h3>
+      <p>Filesystem navigation is boring only until something breaks. Then <code>pwd</code>, <code>cd</code>, and <code>ls -la</code> become your flashlight. 🔦</p>
+    </footer>
+  </main>
+
+  <script>
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('click', () => {
+      const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
+      html.dataset.theme = next;
+      themeToggle.textContent = next === 'dark' ? '🌙 Dark' : '☀️ Light';
+    });
+
+    const progressLine = document.getElementById('progressLine');
+    window.addEventListener('scroll', () => {
+      const max = document.body.scrollHeight - window.innerHeight;
+      const pct = max > 0 ? (window.scrollY / max) * 100 : 0;
+      progressLine.style.width = pct + '%';
+    });
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: .12 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    const treeData = {
+      root: ['📍 / — Root directory', 'The root directory is the top of the Linux filesystem. Every absolute path starts from here.', 'Example: /home/student/linux-lab'],
+      home: ['🏠 /home — User home area', 'This is where normal users usually keep personal files, downloads, documents, and lab work.', 'Example: /home/student'],
+      student: ['🧑 /home/student — Current user home', 'This is the beginner-friendly place to create practice folders and files.', 'Example: mkdir linux-lab'],
+      etc: ['⚙️ /etc — Configuration room', 'System and service configuration files are stored here. You can view many files, but editing usually needs administrator permission.', 'Example: cd /etc'],
+      var: ['📦 /var — Changing data', 'Logs, caches, queues, databases, and other changing files are commonly stored here.', 'Example: /var/log/syslog'],
+      tmp: ['🧹 /tmp — Temporary area', 'Temporary files are stored here. Do not keep important documents here because cleanup may remove them.', 'Example: /tmp/test.txt'],
+      bin: ['🧰 /bin — Basic command tools', 'Important system commands live here, such as shells and basic utilities.', 'Example: /bin/bash'],
+      usr: ['🏭 /usr — Applications and shared tools', 'Many user-space programs, libraries, documentation, and tools live under /usr.', 'Example: /usr/bin/python3']
+    };
+
+    document.querySelectorAll('.tree-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tree-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const [title, body, example] = treeData[btn.dataset.dir];
+        document.getElementById('treeInfo').innerHTML = `<h3>${title}</h3><p>${body}</p><div class="path-line">${example}</div>`;
+      });
+    });
+
+    const pathOutput = document.getElementById('pathOutput');
+    const pathMap = {
+      'cd /etc': '<span class="prompt">student@linux:~$</span> <span class="cmd">cd /etc</span><br><span class="prompt">student@linux:/etc$</span> <span class="cmd">pwd</span><br><span class="out">/etc</span><br><span class="comment">Absolute path: starts from /, so it goes directly to /etc.</span>',
+      'cd linux-lab': '<span class="prompt">student@linux:~$</span> <span class="cmd">cd linux-lab</span><br><span class="prompt">student@linux:~/linux-lab$</span> <span class="cmd">pwd</span><br><span class="out">/home/student/linux-lab</span><br><span class="comment">Relative path: starts from current location, /home/student.</span>',
+      'cd ~': '<span class="prompt">student@linux:/etc$</span> <span class="cmd">cd ~</span><br><span class="prompt">student@linux:~$</span> <span class="cmd">pwd</span><br><span class="out">/home/student</span><br><span class="comment">~ means your home directory.</span>',
+      'cd ..': '<span class="prompt">student@linux:~/linux-lab$</span> <span class="cmd">cd ..</span><br><span class="prompt">student@linux:~$</span> <span class="cmd">pwd</span><br><span class="out">/home/student</span><br><span class="comment">.. means parent directory: go one level up.</span>'
+    };
+    document.querySelectorAll('[data-pathcmd]').forEach(btn => {
+      btn.addEventListener('click', () => { pathOutput.innerHTML = pathMap[btn.dataset.pathcmd]; });
+    });
+
+    document.querySelectorAll('.toggleExpected').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const expected = btn.closest('.lab-step').querySelector('.expected');
+        expected.classList.toggle('show');
+        btn.textContent = expected.classList.contains('show') ? 'Hide expected output' : 'Show expected output';
+      });
+    });
+
+    document.querySelectorAll('.quiz-card').forEach(card => {
+      const answer = card.dataset.answer;
+      card.querySelectorAll('.answer').forEach(btn => {
+        btn.addEventListener('click', () => {
+          card.querySelectorAll('.answer').forEach(b => b.classList.remove('correct', 'wrong'));
+          if (btn.dataset.choice === answer) btn.classList.add('correct');
+          else btn.classList.add('wrong');
+          card.querySelector(`[data-choice="${answer}"]`).classList.add('correct');
+          card.querySelector('.feedback').classList.add('show');
+        });
+      });
+    });
+
+    document.querySelectorAll('.check-item input').forEach(input => {
+      input.addEventListener('change', () => {
+        input.closest('.check-item').classList.toggle('done', input.checked);
+      });
+    });
+
+    document.querySelectorAll('.copy').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(btn.dataset.copy);
+          const original = btn.textContent;
+          btn.textContent = 'Copied ✅';
+          setTimeout(() => btn.textContent = original, 1000);
+        } catch (e) {
+          btn.textContent = 'Select text';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
