@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 6: Linux Package Management</title>
+  <style>
+    :root {
+      --bg: #08111f;
+      --bg2: #0f172a;
+      --panel: rgba(15, 23, 42, .88);
+      --panel-solid: #111827;
+      --card: rgba(30, 41, 59, .86);
+      --card2: rgba(15, 23, 42, .72);
+      --text: #e5eefc;
+      --muted: #a8b3c7;
+      --soft: #cbd5e1;
+      --line: rgba(148, 163, 184, .24);
+      --accent: #38bdf8;
+      --accent2: #a78bfa;
+      --accent3: #34d399;
+      --warn: #f59e0b;
+      --bad: #fb7185;
+      --good: #22c55e;
+      --cmd: #020617;
+      --white: #ffffff;
+      --shadow: 0 24px 80px rgba(0, 0, 0, .38);
+      --radius: 22px;
+    }
+
+    body.light {
+      --bg: #f8fafc;
+      --bg2: #e0f2fe;
+      --panel: rgba(255, 255, 255, .88);
+      --panel-solid: #ffffff;
+      --card: rgba(255, 255, 255, .94);
+      --card2: rgba(241, 245, 249, .95);
+      --text: #0f172a;
+      --muted: #475569;
+      --soft: #334155;
+      --line: rgba(51, 65, 85, .18);
+      --cmd: #0f172a;
+      --shadow: 0 18px 52px rgba(15, 23, 42, .16);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.62;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(56, 189, 248, .25), transparent 31rem),
+        radial-gradient(circle at 85% 12%, rgba(167, 139, 250, .22), transparent 31rem),
+        radial-gradient(circle at 60% 85%, rgba(34, 197, 94, .12), transparent 26rem),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    code, pre, kbd { font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace; }
+    p { color: var(--soft); }
+    strong { color: var(--text); }
+
+    .progressbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+      z-index: 999;
+      box-shadow: 0 0 18px rgba(56,189,248,.8);
+    }
+
+    .float-actions {
+      position: fixed;
+      right: 1rem;
+      bottom: 1rem;
+      z-index: 100;
+      display: grid;
+      gap: .65rem;
+    }
+
+    .round-btn {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      width: 3rem;
+      height: 3rem;
+      border-radius: 999px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow);
+      font-size: 1.1rem;
+      transition: transform .2s ease, border-color .2s ease;
+    }
+    .round-btn:hover { transform: translateY(-2px) scale(1.03); border-color: var(--accent); }
+
+    header {
+      min-height: 90vh;
+      display: grid;
+      place-items: center;
+      padding: 4rem 1.2rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sparkle {
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(255,255,255,.75);
+      filter: blur(.3px);
+      opacity: .5;
+      animation: twinkle 3s ease-in-out infinite;
+    }
+    .sparkle.s1 { width: 6px; height: 6px; left: 13%; top: 22%; }
+    .sparkle.s2 { width: 4px; height: 4px; right: 15%; top: 31%; animation-delay: .9s; }
+    .sparkle.s3 { width: 7px; height: 7px; left: 67%; bottom: 16%; animation-delay: 1.4s; }
+    @keyframes twinkle { 0%,100% { transform: scale(.8); opacity:.25; } 50% { transform: scale(1.4); opacity:.9; } }
+
+    .hero {
+      width: min(1180px, 100%);
+      display: grid;
+      grid-template-columns: 1.08fr .92fr;
+      gap: 2rem;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .badge {
+      display: inline-flex;
+      gap: .55rem;
+      align-items: center;
+      border: 1px solid rgba(56,189,248,.35);
+      background: rgba(56,189,248,.10);
+      color: #bae6fd;
+      padding: .48rem .85rem;
+      border-radius: 999px;
+      font-weight: 850;
+      font-size: .92rem;
+      letter-spacing: .2px;
+    }
+
+    h1 {
+      margin: 1rem 0 .6rem;
+      font-size: clamp(2.4rem, 6vw, 5.4rem);
+      line-height: .92;
+      letter-spacing: -2.5px;
+    }
+    h2 {
+      margin: 0 0 1rem;
+      font-size: clamp(1.8rem, 3.3vw, 3rem);
+      line-height: 1.08;
+      letter-spacing: -1.2px;
+    }
+    h3 { margin: 0 0 .7rem; font-size: 1.22rem; }
+    h4 { margin: 0 0 .55rem; }
+
+    .hero p { font-size: 1.13rem; max-width: 67ch; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 1.4rem; }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: rgba(15,23,42,.72);
+      color: var(--white);
+      border-radius: 14px;
+      padding: .86rem 1.05rem;
+      font-weight: 850;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .48rem;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    body.light .btn { background: #0f172a; }
+    .btn:hover { transform: translateY(-2px); border-color: rgba(56,189,248,.8); }
+    .btn.primary { border: 0; background: linear-gradient(135deg, #0284c7, #7c3aed); }
+    .btn.good { border: 0; background: linear-gradient(135deg, #16a34a, #0f766e); }
+    .btn.warn { border: 0; background: linear-gradient(135deg, #d97706, #db2777); }
+
+    .hero-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+      min-height: 465px;
+      padding: 1.2rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .terminal-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: rgba(2,6,23,.75);
+      border: 1px solid rgba(148,163,184,.18);
+      border-radius: 18px;
+      padding: .7rem .85rem;
+      color: #cbd5e1;
+      margin-bottom: 1rem;
+    }
+    body.light .terminal-top { background: #0f172a; }
+    .dots { display: flex; gap: .38rem; }
+    .dot { width: .78rem; height: .78rem; border-radius: 999px; display: inline-block; }
+    .dot.red { background: #fb7185; }
+    .dot.yellow { background: #facc15; }
+    .dot.green { background: #4ade80; }
+
+    .package-visual {
+      position: relative;
+      height: 370px;
+      border-radius: 24px;
+      background:
+        linear-gradient(135deg, rgba(56,189,248,.09), transparent 45%),
+        linear-gradient(225deg, rgba(167,139,250,.12), transparent 45%),
+        rgba(2,6,23,.32);
+      border: 1px solid rgba(148,163,184,.16);
+      overflow: hidden;
+    }
+
+    .node {
+      position: absolute;
+      width: 154px;
+      min-height: 105px;
+      border-radius: 20px;
+      padding: .75rem;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(30,41,59,.98), rgba(15,23,42,.98));
+      border: 1px solid rgba(148,163,184,.25);
+      box-shadow: 0 14px 35px rgba(0,0,0,.38);
+      z-index: 2;
+    }
+    .node b { display: block; color: #fff; }
+    .node small { color: #cbd5e1; font-size: .76rem; }
+    .node .icon { font-size: 2rem; line-height: 1; margin-bottom: .25rem; }
+    .repo { top: 22px; left: calc(50% - 77px); }
+    .manager { left: 22px; top: 137px; }
+    .deps { right: 22px; top: 137px; }
+    .system { bottom: 20px; left: calc(50% - 77px); }
+
+    .pipe {
+      position: absolute;
+      height: 5px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, rgba(56,189,248,.75), transparent);
+      opacity: .9;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .pipe::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      width: 35%;
+      background: linear-gradient(90deg, transparent, #fff, transparent);
+      animation: flow 2s linear infinite;
+    }
+    .p1 { width: 160px; left: 39%; top: 120px; transform: rotate(31deg); }
+    .p2 { width: 160px; right: 39%; top: 120px; transform: rotate(-31deg); }
+    .p3 { width: 160px; left: 39%; top: 270px; transform: rotate(-31deg); }
+    .p4 { width: 160px; right: 39%; top: 270px; transform: rotate(31deg); }
+    @keyframes flow { from { transform: translateX(-100%); } to { transform: translateX(270%); } }
+
+    .flying-package {
+      position: absolute;
+      left: 20px;
+      bottom: 18px;
+      font-size: 2.1rem;
+      animation: fly 6.5s ease-in-out infinite;
+      z-index: 3;
+      filter: drop-shadow(0 12px 12px rgba(0,0,0,.35));
+    }
+    @keyframes fly {
+      0% { transform: translate(0,0) rotate(-8deg); }
+      23% { transform: translate(150px,-270px) rotate(12deg); }
+      48% { transform: translate(320px,-145px) rotate(-12deg); }
+      73% { transform: translate(220px, 0px) rotate(8deg); }
+      100% { transform: translate(0,0) rotate(-8deg); }
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(18px);
+      background: rgba(2,6,23,.74);
+      border-bottom: 1px solid rgba(148,163,184,.16);
+    }
+    body.light nav { background: rgba(255,255,255,.78); }
+    .nav-inner {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      display: flex;
+      gap: .45rem;
+      overflow-x: auto;
+      padding: .78rem 1rem;
+    }
+    .nav-inner a {
+      white-space: nowrap;
+      color: var(--soft);
+      padding: .58rem .78rem;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: .9rem;
+    }
+    .nav-inner a:hover { background: rgba(56,189,248,.13); color: var(--text); }
+
+    main { width: min(1180px, 100%); margin: 0 auto; padding: 2.5rem 1rem 5rem; }
+    section { margin: 4.3rem 0; scroll-margin-top: 6rem; }
+
+    .section-kicker {
+      color: var(--accent);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: .8rem;
+      margin-bottom: .5rem;
+    }
+
+    .grid { display: grid; gap: 1rem; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: 0 12px 34px rgba(0,0,0,.14);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(135deg, rgba(255,255,255,.07), transparent 38%);
+      opacity: .8;
+    }
+    .card > * { position: relative; z-index: 1; }
+    .card:hover { border-color: rgba(56,189,248,.45); }
+    .card .big { font-size: 2.25rem; line-height: 1; margin-bottom: .5rem; }
+
+    .analogy-table, table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--card2);
+    }
+    th, td { padding: .9rem; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--text); background: rgba(56,189,248,.13); }
+    tr:last-child td { border-bottom: 0; }
+
+    .callout {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(56,189,248,.13), rgba(167,139,250,.11));
+      padding: 1rem 1.1rem;
+      margin: 1rem 0;
+    }
+    .callout.warn { background: linear-gradient(135deg, rgba(245,158,11,.16), rgba(251,113,133,.13)); }
+    .callout.good { background: linear-gradient(135deg, rgba(34,197,94,.14), rgba(56,189,248,.10)); }
+    .callout.bad { background: linear-gradient(135deg, rgba(251,113,133,.18), rgba(245,158,11,.13)); }
+
+    .story-strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: .75rem;
+      margin: 1.2rem 0;
+    }
+    .story-step {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: .9rem;
+      text-align: center;
+      min-height: 130px;
+      display: grid;
+      align-content: start;
+      gap: .4rem;
+      position: relative;
+    }
+    .story-step span { font-size: 2rem; }
+    .story-step b { display: block; }
+    .story-step small { color: var(--muted); }
+    .story-step.active { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(56,189,248,.14); }
+
+    .tabs {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .tab-buttons { display: flex; flex-wrap: wrap; gap: .5rem; padding: .75rem; border-bottom: 1px solid var(--line); background: rgba(2,6,23,.24); }
+    .tab-btn {
+      border: 1px solid var(--line);
+      background: var(--card2);
+      color: var(--text);
+      border-radius: 999px;
+      padding: .72rem 1rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .tab-btn.active { background: linear-gradient(135deg, #0284c7, #7c3aed); color: white; border-color: transparent; }
+    .tab-panel { display: none; padding: 1.2rem; }
+    .tab-panel.active { display: block; }
+
+    .cmd-card {
+      background: var(--cmd);
+      border: 1px solid rgba(148,163,184,.22);
+      border-radius: 18px;
+      overflow: hidden;
+      margin: 1rem 0;
+      color: #e5e7eb;
+      box-shadow: 0 14px 36px rgba(0,0,0,.25);
+    }
+    .cmd-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .75rem;
+      padding: .75rem .9rem;
+      border-bottom: 1px solid rgba(148,163,184,.18);
+      background: rgba(15,23,42,.9);
+    }
+    .cmd-title { font-weight: 900; color: #e2e8f0; }
+    pre {
+      margin: 0;
+      padding: 1rem;
+      overflow-x: auto;
+      color: #e5e7eb;
+      font-size: .94rem;
+      line-height: 1.55;
+    }
+    .copy {
+      border: 1px solid rgba(148,163,184,.25);
+      background: rgba(56,189,248,.12);
+      color: #e0f2fe;
+      border-radius: 10px;
+      padding: .45rem .62rem;
+      cursor: pointer;
+      font-weight: 850;
+    }
+    .copy:hover { background: rgba(56,189,248,.22); }
+
+    .breakdown {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+      margin-top: .8rem;
+    }
+    .token {
+      border: 1px solid var(--line);
+      background: var(--card2);
+      border-radius: 14px;
+      padding: .65rem .75rem;
+    }
+    .token code { color: var(--accent); font-weight: 900; }
+    .token small { display: block; color: var(--muted); margin-top: .2rem; }
+
+    .timeline {
+      position: relative;
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 1.1rem;
+      top: .4rem;
+      bottom: .4rem;
+      width: 3px;
+      background: linear-gradient(var(--accent), var(--accent2), var(--accent3));
+      border-radius: 999px;
+    }
+    .timeline-item {
+      padding-left: 3rem;
+      position: relative;
+    }
+    .timeline-item::before {
+      content: attr(data-step);
+      position: absolute;
+      left: .35rem;
+      top: .1rem;
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: #00111f;
+      font-weight: 950;
+      font-size: .8rem;
+      box-shadow: 0 0 18px rgba(56,189,248,.55);
+    }
+
+    .challenge {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 1.15rem;
+      margin: 1rem 0;
+    }
+    .options { display: grid; gap: .65rem; margin-top: .85rem; }
+    .option {
+      border: 1px solid var(--line);
+      background: var(--card2);
+      color: var(--text);
+      padding: .8rem .9rem;
+      border-radius: 14px;
+      text-align: left;
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .option:hover { border-color: var(--accent); }
+    .option.correct { border-color: rgba(34,197,94,.8); background: rgba(34,197,94,.14); }
+    .option.wrong { border-color: rgba(251,113,133,.85); background: rgba(251,113,133,.14); }
+    .feedback { margin-top: .7rem; font-weight: 850; min-height: 1.5rem; }
+
+    .quiz-score {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .55rem .75rem;
+      border-radius: 999px;
+      background: rgba(34,197,94,.13);
+      border: 1px solid rgba(34,197,94,.28);
+      font-weight: 900;
+      margin-bottom: .8rem;
+    }
+
+    details {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: .95rem 1rem;
+      margin: .75rem 0;
+    }
+    summary { cursor: pointer; font-weight: 900; color: var(--text); }
+
+    .checklist label {
+      display: flex;
+      align-items: flex-start;
+      gap: .7rem;
+      padding: .72rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--card2);
+      margin: .6rem 0;
+      cursor: pointer;
+    }
+    input[type="checkbox"] { transform: translateY(.28rem) scale(1.15); accent-color: var(--accent3); }
+
+    .footer {
+      margin-top: 5rem;
+      padding: 2rem 1rem;
+      text-align: center;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+    }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: .55rem; margin: .8rem 0; }
+    .pill {
+      border: 1px solid var(--line);
+      background: var(--card2);
+      color: var(--text);
+      border-radius: 999px;
+      padding: .45rem .65rem;
+      font-weight: 850;
+      font-size: .88rem;
+    }
+
+    .mini-terminal {
+      border-radius: 18px;
+      background: var(--cmd);
+      border: 1px solid rgba(148,163,184,.22);
+      padding: 1rem;
+      color: #e5e7eb;
+    }
+    .prompt { color: #67e8f9; font-weight: 900; }
+    .ok { color: #86efac; }
+    .warning-text { color: #fbbf24; }
+    .danger-text { color: #fda4af; }
+
+    .dependency-demo {
+      min-height: 285px;
+      position: relative;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at 20% 30%, rgba(56,189,248,.14), transparent 12rem),
+        radial-gradient(circle at 80% 70%, rgba(167,139,250,.14), transparent 12rem),
+        var(--card2);
+      overflow: hidden;
+      padding: 1rem;
+    }
+    .dep-box {
+      position: absolute;
+      border-radius: 18px;
+      padding: .7rem .85rem;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 12px 24px rgba(0,0,0,.18);
+      font-weight: 900;
+      animation: bob 3s ease-in-out infinite;
+    }
+    .dep-main { left: calc(50% - 68px); top: 32px; font-size: 1.15rem; border-color: rgba(56,189,248,.55); }
+    .dep-a { left: 14%; bottom: 48px; animation-delay: .4s; }
+    .dep-b { right: 13%; bottom: 50px; animation-delay: .8s; }
+    .dep-c { left: calc(50% - 76px); bottom: 22px; animation-delay: 1.2s; }
+    .dep-line {
+      position: absolute;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transform-origin: left center;
+      opacity: .65;
+    }
+    .dl1 { width: 190px; left: 36%; top: 132px; transform: rotate(145deg); }
+    .dl2 { width: 190px; left: 51%; top: 132px; transform: rotate(35deg); }
+    .dl3 { width: 132px; left: 47%; top: 132px; transform: rotate(90deg); }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+    .fun-meter {
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(148,163,184,.22);
+      overflow: hidden;
+      margin: .75rem 0;
+    }
+    .fun-meter span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+      transition: width .4s ease;
+    }
+
+    .confetti {
+      position: fixed;
+      top: -20px;
+      pointer-events: none;
+      z-index: 1000;
+      animation: confetti-fall 1.6s linear forwards;
+      font-size: 1.1rem;
+    }
+    @keyframes confetti-fall {
+      to { transform: translateY(110vh) rotate(540deg); opacity: 0; }
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .grid.two, .grid.three, .grid.four { grid-template-columns: 1fr; }
+      .story-strip { grid-template-columns: repeat(2, 1fr); }
+      .package-visual { height: 420px; }
+      .node { width: 138px; }
+      .repo { left: calc(50% - 69px); }
+      .manager { left: 12px; top: 150px; }
+      .deps { right: 12px; top: 150px; }
+      .system { left: calc(50% - 69px); bottom: 20px; }
+      .p1, .p2, .p3, .p4 { display: none; }
+      .flying-package { display: none; }
+    }
+
+    @media (max-width: 560px) {
+      header { padding-top: 2.4rem; }
+      .hero-card { min-height: auto; }
+      .package-visual { height: 520px; }
+      .node { position: static; width: auto; margin: .75rem; }
+      .story-strip { grid-template-columns: 1fr; }
+      .float-actions { right: .6rem; bottom: .6rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progressbar" id="progressbar"></div>
+  <div class="float-actions" aria-label="Page actions">
+    <button class="round-btn" onclick="toggleTheme()" title="Toggle dark/light mode">🌓</button>
+    <button class="round-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">⬆️</button>
+  </div>
+
+  <header>
+    <span class="sparkle s1"></span><span class="sparkle s2"></span><span class="sparkle s3"></span>
+    <div class="hero">
+      <div>
+        <span class="badge">📦 Module 6 · Linux Beginner Track</span>
+        <h1>Package Management</h1>
+        <p>
+          Learn how Linux installs software safely using <strong>repositories</strong>, <strong>packages</strong>,
+          <strong>dependencies</strong>, and smart tools like <strong>APT</strong> and <strong>DNF</strong>.
+          Think of this module as your first guided visit to the Linux software warehouse. 🏬
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#story">Start the Story</a>
+          <a class="btn good" href="#labs">Jump to Labs</a>
+          <a class="btn warn" href="#bossfight">Try the Boss Fight</a>
+        </div>
+        <div class="pill-row" aria-label="Learning outcomes">
+          <span class="pill">Beginner friendly</span>
+          <span class="pill">Ubuntu + Rocky/RHEL</span>
+          <span class="pill">Copy-ready labs</span>
+          <span class="pill">Expected output</span>
+          <span class="pill">Mini quizzes</span>
+        </div>
+      </div>
+      <div class="hero-card" aria-label="Animated package management diagram">
+        <div class="terminal-top">
+          <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+          <strong>package-manager-lab</strong>
+          <span>online ✅</span>
+        </div>
+        <div class="package-visual">
+          <div class="node repo"><span class="icon">🏬</span><b>Repository</b><small>trusted software warehouse</small></div>
+          <div class="node manager"><span class="icon">🤖</span><b>APT / DNF</b><small>package manager robot</small></div>
+          <div class="node deps"><span class="icon">🧩</span><b>Dependencies</b><small>helper packages</small></div>
+          <div class="node system"><span class="icon">💻</span><b>Your Linux</b><small>installed and ready</small></div>
+          <div class="pipe p1"></div><div class="pipe p2"></div><div class="pipe p3"></div><div class="pipe p4"></div>
+          <div class="flying-package">📦</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="#story">Story</a>
+      <a href="#concepts">Concepts</a>
+      <a href="#flow">Lifecycle</a>
+      <a href="#compare">APT vs DNF</a>
+      <a href="#labs">Labs</a>
+      <a href="#detective">Detective</a>
+      <a href="#oops">Oops Zone</a>
+      <a href="#bossfight">Boss Fight</a>
+      <a href="#checklist">Checklist</a>
+    </div>
+  </nav>
+
+  <main>
+    <section id="story">
+      <div class="section-kicker">First mental model</div>
+      <h2>The Linux Software Restaurant 🍽️</h2>
+      <p>
+        Beginners often ask: <em>“Why do we use apt or dnf? Why not download installers from random websites?”</em>
+        Linux package managers solve that problem by using trusted repositories, package metadata, dependency checks,
+        signatures, and a local installed-package database.
+      </p>
+      <div class="grid two">
+        <div class="card">
+          <div class="big">🍽️</div>
+          <h3>Restaurant analogy</h3>
+          <table class="analogy-table">
+            <thead><tr><th>Linux concept</th><th>Restaurant idea</th></tr></thead>
+            <tbody>
+              <tr><td>Repository</td><td>Menu or kitchen source</td></tr>
+              <tr><td>Package manager</td><td>Waiter who understands the menu</td></tr>
+              <tr><td>Package</td><td>Dish you order</td></tr>
+              <tr><td>Dependency</td><td>Ingredients or side dishes needed</td></tr>
+              <tr><td>Install</td><td>Order and receive the dish</td></tr>
+              <tr><td>Update</td><td>Refresh the menu and upgrade dishes</td></tr>
+              <tr><td>Remove</td><td>Take the dish off your table</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="big">🏬</div>
+          <h3>Software warehouse analogy</h3>
+          <p>
+            A repository is like a safe warehouse. The package manager checks what is available, selects the right package,
+            pulls required helper packages, installs files in correct places, and records what changed.
+          </p>
+          <div class="mini-terminal">
+            <span class="prompt">student@linux$</span> sudo apt install tree -y<br>
+            Reading package lists... Done<br>
+            Building dependency tree... Done<br>
+            <span class="ok">tree installed successfully ✅</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="concepts">
+      <div class="section-kicker">Beginner concepts</div>
+      <h2>Six ideas you must understand</h2>
+      <div class="grid three">
+        <article class="card">
+          <div class="big">🏬</div>
+          <h3>1. Repositories</h3>
+          <p>Trusted online locations from which Linux downloads package metadata and software packages.</p>
+          <p><strong>Beginner note:</strong> Do not add random repositories unless you trust the source.</p>
+        </article>
+        <article class="card">
+          <div class="big">📦</div>
+          <h3>2. Packages</h3>
+          <p>A package contains software files, metadata, version information, and install/remove instructions.</p>
+          <p><strong>Examples:</strong> <code>tree</code>, <code>curl</code>, <code>vim</code>, <code>net-tools</code>.</p>
+        </article>
+        <article class="card">
+          <div class="big">🧩</div>
+          <h3>3. Dependencies</h3>
+          <p>Extra packages required for another package to work correctly.</p>
+          <p><strong>Simple idea:</strong> Some tools need helper libraries before they can run.</p>
+        </article>
+        <article class="card">
+          <div class="big">⬇️</div>
+          <h3>4. Installing tools</h3>
+          <p>Installation downloads the package and places its files in the right directories.</p>
+          <p><code>sudo apt install tree -y</code><br><code>sudo dnf install tree -y</code></p>
+        </article>
+        <article class="card">
+          <div class="big">🔄</div>
+          <h3>5. Updating packages</h3>
+          <p>Updating keeps package information and installed software current.</p>
+          <p><strong>Ubuntu:</strong> <code>apt update</code> refreshes metadata; <code>apt upgrade</code> upgrades installed packages.</p>
+        </article>
+        <article class="card">
+          <div class="big">🧹</div>
+          <h3>6. Removing packages</h3>
+          <p>Removal uninstalls the package. Some configuration files or unused dependencies may remain depending on the command.</p>
+          <p><strong>Careful:</strong> never remove critical system packages casually.</p>
+        </article>
+      </div>
+
+      <div class="callout good">
+        <strong>Trainer tip:</strong> Explain package management as “safe software delivery.” The package manager knows where to get software, what else it needs, where files should go, and how to undo most changes.
+      </div>
+    </section>
+
+    <section id="flow">
+      <div class="section-kicker">Animated learning flow</div>
+      <h2>What happens when you install a package?</h2>
+      <p>Click the button and watch the package journey. This sequence is the core idea behind both APT and DNF.</p>
+      <button class="btn primary" onclick="animateStory()">▶️ Animate Package Journey</button>
+      <div class="story-strip" id="storyStrip">
+        <div class="story-step"><span>⌨️</span><b>1. Command</b><small>You type install command</small></div>
+        <div class="story-step"><span>🏬</span><b>2. Repos</b><small>Manager checks repositories</small></div>
+        <div class="story-step"><span>🗂️</span><b>3. Metadata</b><small>Finds package information</small></div>
+        <div class="story-step"><span>🧩</span><b>4. Dependencies</b><small>Finds helper packages</small></div>
+        <div class="story-step"><span>⬇️</span><b>5. Download</b><small>Downloads package files</small></div>
+        <div class="story-step"><span>✅</span><b>6. Install</b><small>Installs and records result</small></div>
+      </div>
+
+      <div class="grid two">
+        <div class="card">
+          <h3>Package lifecycle</h3>
+          <div class="timeline">
+            <div class="timeline-item" data-step="1"><strong>Search</strong><p>Find the package name before installing.</p></div>
+            <div class="timeline-item" data-step="2"><strong>Inspect</strong><p>Read package details, description, version, and dependencies.</p></div>
+            <div class="timeline-item" data-step="3"><strong>Install</strong><p>Install the package and required dependencies.</p></div>
+            <div class="timeline-item" data-step="4"><strong>Verify</strong><p>Run the command or check package ownership.</p></div>
+            <div class="timeline-item" data-step="5"><strong>Update</strong><p>Refresh package metadata and upgrade when appropriate.</p></div>
+            <div class="timeline-item" data-step="6"><strong>Remove</strong><p>Uninstall safely when no longer needed.</p></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Dependency web 🕸️</h3>
+          <p>A package may rely on libraries and helper packages. The package manager solves this dependency puzzle for you.</p>
+          <div class="dependency-demo" aria-label="Dependency illustration">
+            <div class="dep-line dl1"></div><div class="dep-line dl2"></div><div class="dep-line dl3"></div>
+            <div class="dep-box dep-main">📦 tree</div>
+            <div class="dep-box dep-a">🧩 libc</div>
+            <div class="dep-box dep-b">🧩 docs</div>
+            <div class="dep-box dep-c">🧩 metadata</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="compare">
+      <div class="section-kicker">Ubuntu vs RHEL family</div>
+      <h2>APT vs DNF command map</h2>
+      <p>Ubuntu/Debian systems commonly use <strong>APT</strong>. RHEL/Rocky/Fedora-family systems commonly use <strong>DNF</strong>.</p>
+      <table>
+        <thead>
+          <tr><th>Task</th><th>Ubuntu / Debian</th><th>RHEL / Rocky</th><th>Beginner meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Refresh package metadata</td><td><code>sudo apt update</code></td><td><code>sudo dnf check-update</code></td><td>Check what versions are available.</td></tr>
+          <tr><td>Upgrade installed packages</td><td><code>sudo apt upgrade -y</code></td><td><code>sudo dnf upgrade -y</code></td><td>Update installed software.</td></tr>
+          <tr><td>Install package</td><td><code>sudo apt install tree -y</code></td><td><code>sudo dnf install tree -y</code></td><td>Install a new tool.</td></tr>
+          <tr><td>Remove package</td><td><code>sudo apt remove tree -y</code></td><td><code>sudo dnf remove tree -y</code></td><td>Uninstall a package.</td></tr>
+          <tr><td>Search package</td><td><code>apt search tree</code></td><td><code>dnf search tree</code></td><td>Find package names.</td></tr>
+          <tr><td>Show package info</td><td><code>apt show tree</code></td><td><code>dnf info tree</code></td><td>See details before installing.</td></tr>
+          <tr><td>List installed files</td><td><code>dpkg -L tree</code></td><td><code>rpm -ql tree</code></td><td>See files installed by package.</td></tr>
+          <tr><td>Find owner of a file</td><td><code>dpkg -S /usr/bin/tree</code></td><td><code>rpm -qf /usr/bin/tree</code></td><td>Find which package owns a file.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>Important:</strong> On Ubuntu, <code>apt update</code> refreshes the package list; it does not upgrade installed packages by itself. To upgrade installed packages, use <code>apt upgrade</code> after reviewing what will change.
+      </div>
+    </section>
+
+    <section id="labs">
+      <div class="section-kicker">Hands-on labs</div>
+      <h2>Guided labs with expected output</h2>
+      <p>Use the tab for your distribution. These labs are safe for a training VM and use the small <code>tree</code> utility.</p>
+
+      <div class="tabs">
+        <div class="tab-buttons" role="tablist">
+          <button class="tab-btn active" onclick="openTab(event, 'ubuntu')">🐧 Ubuntu / Debian Lab</button>
+          <button class="tab-btn" onclick="openTab(event, 'rocky')">🧱 RHEL / Rocky Lab</button>
+          <button class="tab-btn" onclick="openTab(event, 'extra')">🧪 Extra Admin Skills</button>
+        </div>
+
+        <div class="tab-panel active" id="ubuntu">
+          <h3>Ubuntu Lab: install, use, remove <code>tree</code></h3>
+          <div class="callout good"><strong>Goal:</strong> Refresh package metadata, install <code>tree</code>, use it, verify it, and remove it.</div>
+
+          <div class="cmd-card">
+            <div class="cmd-head"><span class="cmd-title">Step 1 — Refresh package metadata</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+            <pre><code>sudo apt update</code></pre>
+          </div>
+          <details open><summary>Expected output idea</summary>
+            <pre><code>Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+Reading package lists... Done
+Building dependency tree... Done
+All packages are up to date.</code></pre>
+            <p>Exact repository names and package counts can differ.</p>
+          </details>
+
+          <div class="cmd-card">
+            <div class="cmd-head"><span class="cmd-title">Step 2 — Install tree</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+            <pre><code>sudo apt install tree -y</code></pre>
+          </div>
+          <div class="breakdown">
+            <div class="token"><code>sudo</code><small>Run as administrator</small></div>
+            <div class="token"><code>apt</code><small>Ubuntu package tool</small></div>
+            <div class="token"><code>install</code><small>Install package</small></div>
+            <div class="token"><code>tree</code><small>Package name</small></div>
+            <div class="token"><code>-y</code><small>Answer yes automatically</small></div>
+          </div>
+
+          <div class="cmd-card">
+            <div class="cmd-head"><span class="cmd-title">Step 3 — Run tree</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+            <pre><code>tree /etc | head</code></pre>
+          </div>
+          <details open><summary>Expected output idea</summary>
+            <pre><code>/etc
+├── adduser.conf
+├── alternatives
+├── apparmor
+├── apt
+├── bash.bashrc
+├── bindresvport.blacklist
+├── ca-certificates
+...</code></pre>
+            <p>Your output may differ depending on installed packages and distribution version.</p>
+          </details>
+
+          <div class="cmd-card">
+            <div class="cmd-head"><span class="cmd-title">Step 4 — Verify package and binary</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+            <pre><code>tree --version
+which tree
+dpkg -S /usr/bin/tree</code></pre>
+          </div>
+
+          <div class="cmd-card">
+            <div class="cmd-head"><span class="cmd-title">Step 5 — Remove tree</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+            <pre><code>sudo apt remove tree -y</code></pre>
+          </div>
+          <details><summary>Optional cleanup</summary>
+            <pre><code>sudo apt autoremove -y</code></pre>
+            <p>This removes packages that were installed automatically and are no longer required. Always review output on production systems.</p>
+          </details>
+        </div>
+
+        <div class="tab-panel" id="rocky">
+          <h3>RHEL/Rocky Lab: install, use, remove <code>tree</code></h3>
+          <div class="callout good"><strong>Goal:</strong> Install the <code>tree</code> package using DNF, test it, inspect ownership, and remove it.</div>
+
+          <div class="cmd-card">
+            <div class="cmd-head"><span class="cmd-title">Step 1 — Search package</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+            <pre><code>dnf search tree</code></pre>
+          </div>
+          <details open><summary>Expected output idea</summary>
+            <pre><code>Last metadata expiration check: ...
+================ Name Exactly Matched: tree =================
+tree.x86_64 : File system tree viewer</code></pre>
+          </details>
+
+          <div class="cmd-card">
+            <div class="cmd-head"><span class="cmd-title">Step 2 — Install tree</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+            <pre><code>sudo dnf install tree -y</code></pre>
+          </div>
+          <div class="breakdown">
+            <div class="token"><code>sudo</code><small>Run as administrator</small></div>
+            <div class="token"><code>dnf</code><small>RHEL/Rocky package tool</small></div>
+            <div class="token"><code>install</code><small>Install package</small></div>
+            <div class="token"><code>tree</code><small>Package name</small></div>
+            <div class="token"><code>-y</code><small>Answer yes automatically</small></div>
+          </div>
+
+          <div class="cmd-card">
+            <div class="cmd-head"><span class="cmd-title">Step 3 — Run tree</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+            <pre><code>tree /etc | head</code></pre>
+          </div>
+          <details open><summary>Expected output idea</summary>
+            <pre><code>/etc
+├── NetworkManager
+├── adjtime
+├── aliases
+├── alternatives
+├── bashrc
+├── chrony.conf
+...</code></pre>
+            <p>Directory contents vary by OS release and installed roles.</p>
+          </details>
+
+          <div class="cmd-card">
+            <div class="cmd-head"><span class="cmd-title">Step 4 — Verify package and binary</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+            <pre><code>tree --version
+which tree
+rpm -qf /usr/bin/tree
+rpm -ql tree | head</code></pre>
+          </div>
+
+          <div class="cmd-card">
+            <div class="cmd-head"><span class="cmd-title">Step 5 — Remove tree</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+            <pre><code>sudo dnf remove tree -y</code></pre>
+          </div>
+          <details><summary>Optional update check</summary>
+            <pre><code>sudo dnf check-update
+sudo dnf upgrade -y</code></pre>
+            <p><code>check-update</code> can return a non-zero exit code when updates are available. That does not automatically mean failure.</p>
+          </details>
+        </div>
+
+        <div class="tab-panel" id="extra">
+          <h3>Extra real-world package-admin skills</h3>
+          <div class="grid two">
+            <div class="card">
+              <h4>Ubuntu: inspect before install</h4>
+              <div class="cmd-card"><div class="cmd-head"><span class="cmd-title">Search and show</span><button class="copy" onclick="copyCode(this)">Copy</button></div><pre><code>apt search tree
+apt show tree</code></pre></div>
+            </div>
+            <div class="card">
+              <h4>RHEL/Rocky: inspect before install</h4>
+              <div class="cmd-card"><div class="cmd-head"><span class="cmd-title">Search and info</span><button class="copy" onclick="copyCode(this)">Copy</button></div><pre><code>dnf search tree
+dnf info tree</code></pre></div>
+            </div>
+            <div class="card">
+              <h4>Ubuntu: files installed by package</h4>
+              <div class="cmd-card"><div class="cmd-head"><span class="cmd-title">List package files</span><button class="copy" onclick="copyCode(this)">Copy</button></div><pre><code>dpkg -L tree | head</code></pre></div>
+            </div>
+            <div class="card">
+              <h4>RHEL/Rocky: files installed by package</h4>
+              <div class="cmd-card"><div class="cmd-head"><span class="cmd-title">List package files</span><button class="copy" onclick="copyCode(this)">Copy</button></div><pre><code>rpm -ql tree | head</code></pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="detective">
+      <div class="section-kicker">Interactive mini-game</div>
+      <h2>Package Detective 🕵️</h2>
+      <p>Answer these like a Linux admin debugging a training VM. Correct answers increase the fun meter.</p>
+      <div class="quiz-score">🎯 Fun meter: <span id="funPercent">0%</span></div>
+      <div class="fun-meter"><span id="funBar"></span></div>
+
+      <div class="challenge" data-answer="tree">
+        <h3>Case 1: You need a command to display directories like branches. Which package is most likely?</h3>
+        <div class="options">
+          <button class="option" onclick="answerChallenge(this, 'curl')">curl</button>
+          <button class="option" onclick="answerChallenge(this, 'tree')">tree</button>
+          <button class="option" onclick="answerChallenge(this, 'passwd')">passwd</button>
+          <button class="option" onclick="answerChallenge(this, 'hostname')">hostname</button>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="challenge" data-answer="dependency">
+        <h3>Case 2: A package needs helper libraries before it can work. What are those called?</h3>
+        <div class="options">
+          <button class="option" onclick="answerChallenge(this, 'repository')">repository</button>
+          <button class="option" onclick="answerChallenge(this, 'dependency')">dependency</button>
+          <button class="option" onclick="answerChallenge(this, 'prompt')">prompt</button>
+          <button class="option" onclick="answerChallenge(this, 'inode')">inode</button>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="challenge" data-answer="apt update">
+        <h3>Case 3: On Ubuntu, which command refreshes package metadata?</h3>
+        <div class="options">
+          <button class="option" onclick="answerChallenge(this, 'apt update')">sudo apt update</button>
+          <button class="option" onclick="answerChallenge(this, 'apt delete')">sudo apt delete</button>
+          <button class="option" onclick="answerChallenge(this, 'dnf install')">sudo dnf install</button>
+          <button class="option" onclick="answerChallenge(this, 'tree /etc')">tree /etc</button>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="challenge" data-answer="rpm -qf">
+        <h3>Case 4: On Rocky/RHEL, which command finds the package that owns <code>/usr/bin/tree</code>?</h3>
+        <div class="options">
+          <button class="option" onclick="answerChallenge(this, 'rpm -qf')">rpm -qf /usr/bin/tree</button>
+          <button class="option" onclick="answerChallenge(this, 'apt show')">apt show tree</button>
+          <button class="option" onclick="answerChallenge(this, 'ls -la')">ls -la /usr/bin/tree</button>
+          <button class="option" onclick="answerChallenge(this, 'touch')">touch /usr/bin/tree</button>
+        </div>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <section id="oops">
+      <div class="section-kicker">Troubleshooting</div>
+      <h2>Oops! Fix-it zone ⚠️</h2>
+      <p>Package-management errors are normal in labs. Teach learners to read the error, understand the cause, and try a safe fix.</p>
+      <table>
+        <thead><tr><th>Error / Symptom</th><th>Likely meaning</th><th>Safe fix</th></tr></thead>
+        <tbody>
+          <tr><td><code>tree: command not found</code></td><td><code>tree</code> is not installed.</td><td>Install using <code>sudo apt install tree -y</code> or <code>sudo dnf install tree -y</code>.</td></tr>
+          <tr><td><code>Unable to locate package tree</code></td><td>APT metadata may be outdated or repository unavailable.</td><td>Run <code>sudo apt update</code>, then retry. Check internet/DNS if it still fails.</td></tr>
+          <tr><td><code>Could not resolve host</code></td><td>DNS or network problem.</td><td>Check <code>ping 8.8.8.8</code>, <code>resolvectl status</code>, and VM network settings.</td></tr>
+          <tr><td><code>Permission denied</code></td><td>Command needs root/admin privileges.</td><td>Use <code>sudo</code> if appropriate.</td></tr>
+          <tr><td><code>Could not get lock /var/lib/dpkg/lock</code></td><td>Another APT process is running.</td><td>Wait. Check updates/installers. Avoid deleting lock files unless you understand the risk.</td></tr>
+          <tr><td><code>No match for argument: tree</code></td><td>DNF cannot find package in enabled repositories.</td><td>Check enabled repos using <code>dnf repolist</code> and network connectivity.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout bad">
+        <strong>Danger zone — do not run casually:</strong>
+        <pre><code>sudo apt remove python3
+sudo dnf remove systemd
+sudo dnf remove glibc</code></pre>
+        Removing critical packages can break the operating system. In production, always review the transaction summary before confirming removals.
+      </div>
+    </section>
+
+    <section id="realworld">
+      <div class="section-kicker">Real-world admin habits</div>
+      <h2>How admins actually use package managers</h2>
+      <div class="grid three">
+        <div class="card">
+          <div class="big">🔍</div>
+          <h3>Inspect first</h3>
+          <p>Search and read package details before installing. Do not blindly install unknown packages on production systems.</p>
+        </div>
+        <div class="card">
+          <div class="big">📋</div>
+          <h3>Read transaction summary</h3>
+          <p>Package managers show what will be installed, upgraded, removed, or replaced. Train yourself to read that summary.</p>
+        </div>
+        <div class="card">
+          <div class="big">🧾</div>
+          <h3>Keep evidence</h3>
+          <p>For servers, record what you installed, why you installed it, and how to rollback if needed.</p>
+        </div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-head"><span class="cmd-title">Useful admin verification commands</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+        <pre><code># Ubuntu/Debian
+apt policy tree
+apt show tree
+dpkg -L tree | head
+
+# RHEL/Rocky
+sudo dnf info tree
+rpm -ql tree | head
+rpm -qf /usr/bin/tree</code></pre>
+      </div>
+    </section>
+
+    <section id="bossfight">
+      <div class="section-kicker">Final quiz</div>
+      <h2>Package Manager Boss Fight 🐉</h2>
+      <p>Choose the best answer. This is meant for live classroom recap or self-check.</p>
+
+      <div class="challenge" data-answer="repositories">
+        <h3>1. Where does the package manager usually download trusted packages from?</h3>
+        <div class="options">
+          <button class="option" onclick="answerChallenge(this, 'random websites')">Random websites</button>
+          <button class="option" onclick="answerChallenge(this, 'repositories')">Repositories</button>
+          <button class="option" onclick="answerChallenge(this, 'shell prompt')">Shell prompt</button>
+          <button class="option" onclick="answerChallenge(this, 'home directory')">Home directory</button>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="challenge" data-answer="apt upgrade">
+        <h3>2. On Ubuntu, what command upgrades installed packages after metadata is refreshed?</h3>
+        <div class="options">
+          <button class="option" onclick="answerChallenge(this, 'apt update')">sudo apt update</button>
+          <button class="option" onclick="answerChallenge(this, 'apt upgrade')">sudo apt upgrade -y</button>
+          <button class="option" onclick="answerChallenge(this, 'apt search')">apt search tree</button>
+          <button class="option" onclick="answerChallenge(this, 'apt remove')">sudo apt remove tree</button>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="challenge" data-answer="dnf install tree">
+        <h3>3. On Rocky Linux, which command installs <code>tree</code>?</h3>
+        <div class="options">
+          <button class="option" onclick="answerChallenge(this, 'apt install tree')">sudo apt install tree -y</button>
+          <button class="option" onclick="answerChallenge(this, 'dnf install tree')">sudo dnf install tree -y</button>
+          <button class="option" onclick="answerChallenge(this, 'tree install')">tree install</button>
+          <button class="option" onclick="answerChallenge(this, 'rpm tree run')">rpm tree run</button>
+        </div>
+        <div class="feedback"></div>
+      </div>
+
+      <div class="challenge" data-answer="review summary">
+        <h3>4. Before removing packages on a server, what is the safest habit?</h3>
+        <div class="options">
+          <button class="option" onclick="answerChallenge(this, 'review summary')">Review the transaction summary</button>
+          <button class="option" onclick="answerChallenge(this, 'always use force')">Always use force</button>
+          <button class="option" onclick="answerChallenge(this, 'remove systemd')">Remove systemd first</button>
+          <button class="option" onclick="answerChallenge(this, 'ignore dependencies')">Ignore dependencies</button>
+        </div>
+        <div class="feedback"></div>
+      </div>
+    </section>
+
+    <section id="checklist">
+      <div class="section-kicker">Trainer checklist</div>
+      <h2>Can the learner do this now?</h2>
+      <div class="grid two">
+        <div class="card checklist">
+          <h3>Hands-on skills</h3>
+          <label><input type="checkbox"> Explain what a repository is.</label>
+          <label><input type="checkbox"> Explain what a package is.</label>
+          <label><input type="checkbox"> Explain dependencies with an analogy.</label>
+          <label><input type="checkbox"> Install <code>tree</code> on Ubuntu.</label>
+          <label><input type="checkbox"> Install <code>tree</code> on Rocky/RHEL.</label>
+          <label><input type="checkbox"> Verify package ownership of <code>/usr/bin/tree</code>.</label>
+          <label><input type="checkbox"> Remove <code>tree</code> safely.</label>
+        </div>
+        <div class="card">
+          <h3>One-minute recap script</h3>
+          <p>
+            “A package manager is a trusted software delivery assistant. It checks repositories, reads package metadata,
+            resolves dependencies, downloads packages, installs files in correct locations, and records what was installed.
+            Ubuntu uses APT; RHEL/Rocky uses DNF. Always inspect before installing and review before removing.”
+          </p>
+          <div class="cmd-card">
+            <div class="cmd-head"><span class="cmd-title">Memory hook</span><button class="copy" onclick="copyCode(this)">Copy</button></div>
+            <pre><code>Search → Info → Install → Verify → Remove</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer">
+    <p><strong>Module 6: Package Management</strong> · Built for beginner Linux training · Offline interactive HTML</p>
+    <p>References to check on live systems: <code>man apt</code>, <code>man dnf</code>, <code>man dpkg</code>, <code>man rpm</code>.</p>
+  </div>
+
+  <script>
+    let answeredCorrect = new Set();
+
+    function copyCode(button) {
+      const card = button.closest('.cmd-card');
+      const code = card ? card.querySelector('code').innerText : '';
+      navigator.clipboard.writeText(code).then(() => {
+        const original = button.innerText;
+        button.innerText = 'Copied ✅';
+        setTimeout(() => button.innerText = original, 1200);
+      }).catch(() => {
+        const original = button.innerText;
+        button.innerText = 'Select text';
+        setTimeout(() => button.innerText = original, 1200);
+      });
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      localStorage.setItem('pkgTheme', document.body.classList.contains('light') ? 'light' : 'dark');
+    }
+
+    function openTab(event, id) {
+      const tabs = event.target.closest('.tabs');
+      tabs.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      tabs.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+      event.target.classList.add('active');
+      tabs.querySelector('#' + id).classList.add('active');
+    }
+
+    function animateStory() {
+      const steps = document.querySelectorAll('#storyStrip .story-step');
+      steps.forEach(step => step.classList.remove('active'));
+      steps.forEach((step, index) => {
+        setTimeout(() => {
+          steps.forEach(s => s.classList.remove('active'));
+          step.classList.add('active');
+          if (index === steps.length - 1) burstConfetti();
+        }, index * 650);
+      });
+    }
+
+    function answerChallenge(button, selected) {
+      const challenge = button.closest('.challenge');
+      const answer = challenge.dataset.answer;
+      const feedback = challenge.querySelector('.feedback');
+      challenge.querySelectorAll('.option').forEach(opt => {
+        opt.classList.remove('correct', 'wrong');
+        opt.disabled = true;
+      });
+      if (selected === answer) {
+        button.classList.add('correct');
+        feedback.innerHTML = 'Correct ✅ Package detective points earned.';
+        answeredCorrect.add(challenge.innerText.slice(0, 45));
+        burstConfetti();
+      } else {
+        button.classList.add('wrong');
+        feedback.innerHTML = 'Not quite. The best answer is <strong>' + answer + '</strong>.';
+        challenge.querySelectorAll('.option').forEach(opt => {
+          if (opt.innerText.toLowerCase().includes(answer.toLowerCase()) || opt.getAttribute('onclick').includes("'" + answer + "'")) {
+            opt.classList.add('correct');
+          }
+        });
+      }
+      updateFunMeter();
+    }
+
+    function updateFunMeter() {
+      const total = document.querySelectorAll('.challenge').length;
+      const pct = Math.round((answeredCorrect.size / total) * 100);
+      document.getElementById('funPercent').innerText = pct + '%';
+      document.getElementById('funBar').style.width = pct + '%';
+    }
+
+    function burstConfetti() {
+      const icons = ['📦','🧩','✅','✨','🐧','🚀'];
+      for (let i = 0; i < 18; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.innerText = icons[Math.floor(Math.random() * icons.length)];
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.animationDelay = Math.random() * .25 + 's';
+        c.style.transform = 'rotate(' + (Math.random() * 180) + 'deg)';
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 1800);
+      }
+    }
+
+    window.addEventListener('scroll', () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = max > 0 ? (window.scrollY / max) * 100 : 0;
+      document.getElementById('progressbar').style.width = pct + '%';
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('pkgTheme') === 'light') document.body.classList.add('light');
+      setTimeout(animateStory, 700);
+    });
+  </script>
+</body>
+</html>
