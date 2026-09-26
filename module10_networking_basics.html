@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 10: Networking Basics - Interactive Animated HTML Reference</title>
+<style>
+  :root{
+    --bg:#020617;
+    --panel:#0f172a;
+    --panel2:#111827;
+    --card:#172033;
+    --text:#e5e7eb;
+    --muted:#a7b0c0;
+    --line:rgba(255,255,255,.12);
+    --blue:#38bdf8;
+    --green:#22c55e;
+    --yellow:#f59e0b;
+    --red:#ef4444;
+    --purple:#a78bfa;
+    --radius:20px;
+    --shadow:0 20px 60px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(circle at 18% 10%,rgba(56,189,248,.24),transparent 26%),
+      radial-gradient(circle at 85% 18%,rgba(167,139,250,.22),transparent 29%),
+      linear-gradient(135deg,#020617,#0f172a 52%,#111827);
+    color:var(--text);
+    line-height:1.55;
+  }
+
+  header{
+    padding:70px 22px 54px;
+    border-bottom:1px solid var(--line);
+    overflow:hidden;
+  }
+
+  .hero{
+    max-width:1180px;
+    margin:auto;
+    display:grid;
+    grid-template-columns:1.05fr .95fr;
+    gap:34px;
+    align-items:center;
+  }
+
+  .badge{
+    display:inline-flex;
+    gap:8px;
+    align-items:center;
+    padding:7px 12px;
+    border:1px solid rgba(56,189,248,.35);
+    background:rgba(56,189,248,.1);
+    color:#bae6fd;
+    border-radius:999px;
+    font-size:14px;
+    margin-bottom:18px;
+  }
+
+  h1{
+    margin:0 0 18px;
+    font-size:clamp(34px,5vw,64px);
+    line-height:1.04;
+    letter-spacing:-1.4px;
+  }
+
+  h2{
+    margin:0 0 16px;
+    font-size:clamp(26px,3vw,38px);
+    letter-spacing:-.5px;
+  }
+
+  h3{margin:0 0 10px;font-size:22px}
+  p{margin:0 0 14px;color:var(--muted)}
+  strong{color:#fff}
+
+  .btn{
+    border:0;
+    border-radius:999px;
+    padding:12px 18px;
+    color:#fff;
+    background:linear-gradient(135deg,#0284c7,#2563eb);
+    box-shadow:0 10px 30px rgba(37,99,235,.35);
+    text-decoration:none;
+    font-weight:800;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+    transition:transform .2s ease,filter .2s ease;
+  }
+  .btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
+  .btn.secondary{background:rgba(255,255,255,.08);border:1px solid var(--line);box-shadow:none}
+
+  .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+
+  .hero-net{
+    position:relative;
+    min-height:330px;
+    border:1px solid var(--line);
+    background:rgba(15,23,42,.78);
+    border-radius:var(--radius);
+    padding:22px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+
+  .hero-line{
+    position:absolute;
+    left:75px;
+    right:75px;
+    top:126px;
+    height:4px;
+    background:repeating-linear-gradient(90deg,rgba(56,189,248,.25) 0 18px,rgba(34,197,94,.5) 18px 25px);
+    border-radius:99px;
+  }
+
+  .hero-packet{
+    position:absolute;
+    top:112px;
+    left:70px;
+    width:30px;
+    height:30px;
+    border-radius:8px;
+    background:var(--blue);
+    box-shadow:0 0 26px rgba(56,189,248,.85);
+    animation:heroPacket 4s infinite ease-in-out;
+    z-index:3;
+  }
+
+  .hero-packet:after{
+    content:"DATA";
+    position:absolute;
+    top:-27px;
+    left:-7px;
+    color:#e0f2fe;
+    font-size:11px;
+    font-weight:1000;
+    letter-spacing:.7px;
+  }
+
+  @keyframes heroPacket{
+    0%{left:70px;opacity:.3;transform:scale(.9)}
+    12%{opacity:1}
+    50%{left:48%;transform:scale(1)}
+    84%{left:calc(100% - 104px);opacity:1}
+    100%{left:calc(100% - 104px);opacity:.3;transform:scale(.9)}
+  }
+
+  .device-row{
+    position:relative;
+    z-index:2;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    height:220px;
+  }
+
+  .device{
+    width:120px;
+    height:92px;
+    border-radius:18px;
+    display:grid;
+    place-items:center;
+    text-align:center;
+    font-weight:900;
+    background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,.04));
+    border:1px solid var(--line);
+    box-shadow:inset 0 0 30px rgba(255,255,255,.03),0 16px 32px rgba(0,0,0,.25);
+  }
+  .device small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+  .router{width:98px;height:98px;border-radius:50%;border-color:rgba(34,197,94,.4);background:linear-gradient(135deg,rgba(34,197,94,.25),rgba(56,189,248,.16))}
+  .hero-note{padding:14px;border-radius:16px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.18);color:#c6e9ff;font-size:14px}
+
+  nav{
+    position:sticky;
+    top:0;
+    z-index:30;
+    backdrop-filter:blur(14px);
+    background:rgba(2,6,23,.78);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{max-width:1180px;margin:auto;display:flex;gap:10px;overflow-x:auto;padding:10px 18px}
+  .nav-inner a{white-space:nowrap;color:#dbeafe;text-decoration:none;border:1px solid transparent;padding:9px 12px;border-radius:999px;font-size:14px}
+  .nav-inner a:hover{border-color:rgba(56,189,248,.4);background:rgba(56,189,248,.08)}
+
+  main{max-width:1180px;margin:auto;padding:36px 20px 72px}
+  section{
+    margin:34px 0;
+    padding:30px;
+    border:1px solid var(--line);
+    background:rgba(15,23,42,.78);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+  }
+
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+  .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .card,.lab-card{
+    background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.035));
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:18px;
+    transition:transform .22s ease,border-color .22s ease,background .22s ease;
+  }
+  .card:hover,.lab-card:hover{transform:translateY(-3px);border-color:rgba(56,189,248,.38);background:linear-gradient(180deg,rgba(56,189,248,.09),rgba(255,255,255,.035))}
+  .icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;margin-bottom:12px;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.25);font-size:22px}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;margin:5px 5px 5px 0;border-radius:999px;background:rgba(255,255,255,.08);color:#cbd5e1;border:1px solid var(--line);font-size:13px}
+  .kbd{font-family:Consolas,monospace;background:rgba(255,255,255,.09);border:1px solid var(--line);padding:2px 7px;border-radius:7px;color:#fff}
+
+  .mini-table{width:100%;border-collapse:collapse;margin-top:12px;overflow:hidden;border-radius:14px;font-size:14px}
+  .mini-table th,.mini-table td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left}
+  .mini-table th{color:#fff;background:rgba(56,189,248,.09)}
+  .mini-table td{color:#b9c2d1}
+
+  .code{
+    position:relative;
+    background:#020617;
+    border:1px solid rgba(148,163,184,.18);
+    border-radius:16px;
+    padding:15px;
+    margin:12px 0;
+    overflow-x:auto;
+    color:#d1fae5;
+    font-family:"Cascadia Code","Fira Code",Consolas,monospace;
+    font-size:14px;
+    white-space:pre;
+  }
+  .prompt{color:#38bdf8;user-select:none}
+  .copy{
+    position:absolute;
+    right:10px;
+    top:9px;
+    border:1px solid rgba(255,255,255,.16);
+    background:rgba(255,255,255,.07);
+    color:#e5e7eb;
+    border-radius:10px;
+    padding:6px 9px;
+    cursor:pointer;
+    font-size:12px;
+  }
+
+  details{border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.045);padding:14px 16px;margin:10px 0}
+  summary{cursor:pointer;font-weight:900;color:#f8fafc}
+  .ok{color:#86efac;font-weight:900}.bad{color:#fca5a5;font-weight:900}.warn{color:#fcd34d;font-weight:900}
+
+  /* Fixed OSI animation area */
+  .osi-demo{
+    display:grid;
+    grid-template-columns:1fr 1.25fr 1fr;
+    gap:16px;
+    align-items:stretch;
+    margin-top:18px;
+  }
+
+  .stack{display:flex;flex-direction:column;gap:8px}
+  .layer{
+    border-radius:14px;
+    padding:10px 12px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.055);
+    min-height:49px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .layer .name{font-weight:900;color:#fff}
+  .layer .hint{color:#aeb9ca;font-size:12px}
+
+  .osi-demo.running .send .l7{animation:layerPulse 7.2s infinite 0s}
+  .osi-demo.running .send .l4{animation:layerPulse 7.2s infinite .8s}
+  .osi-demo.running .send .l3{animation:layerPulse 7.2s infinite 1.6s}
+  .osi-demo.running .send .l2{animation:layerPulse 7.2s infinite 2.4s}
+  .osi-demo.running .send .l1{animation:layerPulse 7.2s infinite 3.1s}
+  .osi-demo.running .recv .l3{animation:layerPulse 7.2s infinite 4s}
+  .osi-demo.running .recv .l4{animation:layerPulse 7.2s infinite 4.9s}
+  .osi-demo.running .recv .l7{animation:layerPulse 7.2s infinite 5.8s}
+
+  @keyframes layerPulse{
+    0%,18%,100%{transform:scale(1);background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.12);box-shadow:none}
+    6%,12%{transform:scale(1.035);background:rgba(56,189,248,.18);border-color:rgba(56,189,248,.65);box-shadow:0 0 25px rgba(56,189,248,.17)}
+  }
+
+  .flow-stage{
+    min-height:445px;
+    position:relative;
+    overflow:hidden;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:
+      linear-gradient(90deg,rgba(56,189,248,.08),transparent 30%,transparent 70%,rgba(34,197,94,.08)),
+      rgba(2,6,23,.65);
+    padding:18px;
+  }
+
+  .endpoint{
+    position:absolute;
+    top:32px;
+    width:118px;
+    height:78px;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.07);
+    display:grid;
+    place-items:center;
+    text-align:center;
+    font-weight:1000;
+    z-index:3;
+  }
+  .endpoint small{display:block;color:var(--muted);font-weight:700;margin-top:2px}
+  .client{left:22px}.server{right:22px}
+
+  .network-zone{
+    position:absolute;
+    top:160px;
+    left:50%;
+    transform:translateX(-50%);
+    width:205px;
+    height:110px;
+    border-radius:55px;
+    background:rgba(167,139,250,.12);
+    border:1px solid rgba(167,139,250,.32);
+    display:grid;
+    place-items:center;
+    text-align:center;
+    font-weight:1000;
+    color:#ddd6fe;
+    z-index:2;
+  }
+
+  .middle-device{
+    position:absolute;
+    bottom:54px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:14px 20px;
+    border-radius:16px;
+    border:1px solid rgba(34,197,94,.35);
+    background:rgba(34,197,94,.11);
+    color:#bbf7d0;
+    font-weight:1000;
+    z-index:2;
+  }
+
+  .osi-path{
+    position:absolute;
+    left:78px;
+    right:78px;
+    top:147px;
+    height:3px;
+    border-radius:99px;
+    background:linear-gradient(90deg,rgba(56,189,248,.45),rgba(167,139,250,.45),rgba(34,197,94,.45));
+    z-index:1;
+  }
+
+  .osi-path.down{
+    left:48%;
+    right:auto;
+    top:151px;
+    width:4px;
+    height:160px;
+    background:linear-gradient(180deg,rgba(167,139,250,.35),rgba(34,197,94,.45));
+  }
+
+  .osi-packet{
+    position:absolute;
+    left:8%;
+    top:122px;
+    width:38px;
+    height:38px;
+    border-radius:11px;
+    background:#38bdf8;
+    box-shadow:0 0 28px rgba(56,189,248,.9);
+    z-index:5;
+    display:grid;
+    place-items:center;
+    color:#001827;
+    font-size:11px;
+    font-weight:1000;
+  }
+
+  .osi-demo.running .osi-packet{
+    animation:packetFlow 7.2s infinite ease-in-out;
+  }
+
+  @keyframes packetFlow{
+    0%{left:8%;top:122px;background:#38bdf8;transform:scale(.9);opacity:.35}
+    8%{left:13%;top:122px;opacity:1}
+    18%{left:23%;top:147px;background:#38bdf8}
+    30%{left:36%;top:190px;background:#a78bfa}
+    43%{left:48%;top:292px;background:#f59e0b}
+    56%{left:50%;top:190px;background:#a78bfa}
+    70%{left:65%;top:147px;background:#22c55e}
+    84%{left:82%;top:122px;background:#22c55e;opacity:1}
+    100%{left:82%;top:122px;background:#22c55e;transform:scale(.9);opacity:.35}
+  }
+
+  .packet-labels span{
+    position:absolute;
+    z-index:4;
+    font-size:11px;
+    color:#c7d2fe;
+    font-weight:900;
+    background:rgba(2,6,23,.75);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:999px;
+    padding:4px 8px;
+  }
+  .packet-labels span:nth-child(1){left:7%;top:86px}
+  .packet-labels span:nth-child(2){left:22%;top:100px}
+  .packet-labels span:nth-child(3){left:43%;top:323px}
+  .packet-labels span:nth-child(4){right:8%;top:86px}
+
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .step-card{margin-top:14px;border-radius:16px;padding:14px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.18)}
+  .step-title{color:#e0f2fe;font-weight:1000;margin-bottom:4px}
+
+  .timeline{display:grid;gap:14px;margin-top:12px}
+  .timeline-item{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:start}
+  .dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(56,189,248,.14);border:1px solid rgba(56,189,248,.34);color:#bae6fd;font-weight:1000}
+
+  .scenario{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .flowchart{display:grid;gap:10px;margin-top:14px}
+  .flow-node{padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.055)}
+  .flow-node:not(:last-child)::after{content:"↓";display:block;text-align:center;color:var(--blue);font-size:22px;line-height:1;margin-top:7px}
+
+  .quiz{display:grid;gap:12px}
+  .question{border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:16px;padding:16px}
+  .answers{display:grid;gap:8px;margin-top:10px}
+  .answers button{text-align:left;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#e5e7eb;padding:10px 12px;border-radius:12px;cursor:pointer}
+  .answers button:hover{background:rgba(56,189,248,.1)}
+  .answers button.correct{border-color:rgba(34,197,94,.65);background:rgba(34,197,94,.15)}
+  .answers button.wrong{border-color:rgba(239,68,68,.65);background:rgba(239,68,68,.14)}
+
+  .footer{text-align:center;color:var(--muted);margin-top:30px;padding:20px}
+
+  @media(max-width:980px){
+    .hero,.grid,.grid.two,.osi-demo,.scenario{grid-template-columns:1fr}
+    section{padding:22px}
+    .device{width:92px;height:76px;font-size:13px}
+    .router{width:74px;height:74px}
+    .hero-net{min-height:270px}
+    .device-row{height:165px}
+    .flow-stage{min-height:390px}
+    .endpoint{width:100px;height:70px;font-size:14px}
+    .network-zone{width:170px;height:95px}
+    .middle-device{bottom:38px}
+    @keyframes packetFlow{
+      0%{left:8%;top:116px;background:#38bdf8;transform:scale(.9);opacity:.35}
+      15%{left:20%;top:116px;opacity:1}
+      35%{left:45%;top:180px;background:#a78bfa}
+      55%{left:48%;top:270px;background:#f59e0b}
+      72%{left:65%;top:140px;background:#22c55e}
+      90%,100%{left:80%;top:116px;background:#22c55e;opacity:.45}
+    }
+  }
+
+  @media print{
+    body{background:#fff;color:#111827}
+    header,section{box-shadow:none;background:#fff;color:#111827;border-color:#d1d5db}
+    p,.card p,.lab-card p{color:#374151}
+    nav,.btn,.copy,.controls{display:none}
+    .code{color:#111827;background:#f3f4f6}
+  }
+
+
+/* ===== ENHANCED LEARNING EXPERIENCE ===== */
+.floating-tools{position:fixed;right:18px;bottom:18px;z-index:80;display:grid;gap:9px}
+.tool-btn{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:rgba(15,23,42,.92);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,.28);text-decoration:none}
+.learning-progress{max-width:1180px;margin:22px auto 0;padding:0 20px}.progress-card{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px 16px;border:1px solid var(--line);background:rgba(15,23,42,.78);border-radius:16px}.progress-track{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#38bdf8,#22c55e);transition:width .3s ease}
+.story-strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:18px}.story-step{position:relative;min-height:135px;padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.045)}.story-step:not(:last-child)::after{content:'→';position:absolute;right:-16px;top:47%;color:#38bdf8;font-size:24px;z-index:5}.story-num{width:29px;height:29px;border-radius:50%;display:grid;place-items:center;background:rgba(56,189,248,.14);border:1px solid rgba(56,189,248,.35);font-weight:900;margin-bottom:8px}.story-step p{font-size:13px}
+.visual-concepts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.visual-card{border:1px solid var(--line);border-radius:18px;padding:18px;background:rgba(255,255,255,.045)}.visual-scene{height:150px;margin:12px 0;border-radius:15px;border:1px solid var(--line);background:rgba(2,6,23,.46);position:relative;overflow:hidden}.scene-label{position:absolute;top:9px;left:10px;font-size:11px;color:#94a3b8;font-weight:800}.house{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);width:76px;height:55px;background:rgba(56,189,248,.18);border:1px solid rgba(56,189,248,.45);border-radius:8px}.house:before{content:'';position:absolute;left:8px;top:-31px;border-left:29px solid transparent;border-right:29px solid transparent;border-bottom:31px solid rgba(56,189,248,.55)}.house:after{content:'192.168.1.10';position:absolute;left:50%;bottom:-26px;transform:translateX(-50%);white-space:nowrap;color:#7dd3fc;font-size:12px;font-weight:900}.street{position:absolute;left:0;right:0;bottom:0;height:12px;background:repeating-linear-gradient(90deg,#334155 0 28px,#cbd5e1 28px 44px)}.gateway-gate{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:92px;height:60px;border:4px solid #f59e0b;border-bottom:0;border-radius:11px 11px 0 0}.gateway-gate:after{content:'default gateway';position:absolute;left:50%;top:66px;transform:translateX(-50%);white-space:nowrap;color:#fbbf24;font-size:12px;font-weight:900}.road-line{position:absolute;top:50%;left:0;right:0;height:5px;background:linear-gradient(90deg,#38bdf8,#f59e0b,#a78bfa)}.dns-book{position:absolute;inset:28px 45px;border-radius:12px;display:grid;place-items:center;text-align:center;background:linear-gradient(135deg,rgba(167,139,250,.2),rgba(56,189,248,.16));border:1px solid rgba(167,139,250,.45);font-weight:900}.port-grid{position:absolute;inset:23px;display:grid;grid-template-columns:1fr 1fr;gap:9px}.port-door{display:grid;place-items:center;text-align:center;border-radius:10px;border:2px solid rgba(34,197,94,.45);background:rgba(34,197,94,.08);font-size:12px;font-weight:900}.listener-person{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-size:48px}.listener-person small{display:block;font-size:13px;color:#a7b0c0}.analogy-box{padding:10px 12px;border-radius:13px;border:1px dashed rgba(167,139,250,.4);background:rgba(167,139,250,.07);font-size:13px;color:#cbd5e1}
+.mission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.mission-card{position:relative;padding:18px;border-radius:18px;border:1px solid var(--line);background:rgba(2,6,23,.46)}.mission-tag{position:absolute;right:14px;top:14px;padding:4px 8px;border-radius:999px;border:1px solid rgba(34,197,94,.35);background:rgba(34,197,94,.08);color:#86efac;font-size:11px;font-weight:900}.mission-check{display:flex;gap:9px;align-items:flex-start;margin-top:11px}.mission-check input{margin-top:5px;accent-color:#22c55e}
+.challenge-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.challenge-card{padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.045)}.choice-list{display:grid;gap:8px;margin-top:12px}.choice-btn{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:#e5e7eb;text-align:left;cursor:pointer}.choice-btn:hover{background:rgba(56,189,248,.08)}.choice-btn.correct{border-color:rgba(34,197,94,.65);background:rgba(34,197,94,.13)}.choice-btn.wrong{border-color:rgba(239,68,68,.65);background:rgba(239,68,68,.11)}.challenge-feedback{min-height:24px;margin-top:9px;font-size:13px;color:#cbd5e1}
+.flash-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.flash-card{height:170px;perspective:900px;cursor:pointer}.flash-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s}.flash-card.flipped .flash-inner{transform:rotateY(180deg)}.flash-face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.045);padding:17px;display:grid;place-content:center;text-align:center}.flash-back{transform:rotateY(180deg);background:rgba(56,189,248,.08)}
+.memory-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:16px}.memory-chip{text-align:center;padding:10px 6px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.045);font-size:12px}.voice-panel{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:15px;padding:13px;border-radius:16px;border:1px solid rgba(167,139,250,.32);background:rgba(167,139,250,.07)}.voice-state{color:#cbd5e1;font-size:13px;margin-left:auto}.voice-panel button{padding:8px 11px}
+[data-light='true'] body{background:#eef6ff;color:#172033}[data-light='true'] section,[data-light='true'] .progress-card{background:#fff;color:#172033;box-shadow:0 16px 45px rgba(42,67,94,.12)}[data-light='true'] p{color:#53687d}[data-light='true'] .card,[data-light='true'] .visual-card,[data-light='true'] .mission-card,[data-light='true'] .challenge-card,[data-light='true'] .flash-face,[data-light='true'] .story-step{background:#f8fbff;color:#172033}[data-light='true'] .choice-btn{background:#fff;color:#172033}[data-light='true'] .tool-btn{background:#fff;color:#172033}
+@media(max-width:980px){.story-strip{grid-template-columns:repeat(3,1fr)}.visual-concepts,.flash-grid{grid-template-columns:repeat(2,1fr)}.memory-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:680px){.story-strip,.visual-concepts,.mission-grid,.challenge-grid,.flash-grid{grid-template-columns:1fr}.story-step:not(:last-child)::after{content:'↓';right:auto;left:50%;top:auto;bottom:-20px}.memory-row{grid-template-columns:repeat(2,1fr)}.progress-card{grid-template-columns:1fr}.voice-state{width:100%;margin-left:0}}
+
+</style>
+
+<style id="learning-coach-v3-style">
+  .coach-accuracy-note{
+    margin:12px 0 16px;padding:12px 14px;border-radius:14px;
+    border:1px solid rgba(251,191,36,.35);
+    background:rgba(251,191,36,.08);color:#fde68a;font-size:14px;
+  }
+
+  #learningCoachDock{
+    position:fixed;right:14px;bottom:14px;z-index:90;
+    width:350px;max-height:calc(100vh - 86px);
+    border:1px solid var(--line);border-radius:20px;
+    background:rgba(2,6,23,.96);color:var(--text);
+    box-shadow:0 24px 70px rgba(0,0,0,.42);
+    backdrop-filter:blur(16px);
+    overflow:hidden;
+    transition:width .25s ease,max-height .25s ease,transform .25s ease;
+  }
+  [data-light="true"] #learningCoachDock{
+    background:rgba(255,255,255,.98);
+  }
+
+  #learningCoachDock.coach-collapsed{
+    width:58px;height:58px;border-radius:18px;
+  }
+  #learningCoachDock.coach-collapsed .coach-body,
+  #learningCoachDock.coach-collapsed .coach-title-wrap,
+  #learningCoachDock.coach-collapsed .coach-close-label{
+    display:none;
+  }
+  #learningCoachDock.coach-collapsed .coach-head{
+    height:56px;padding:0;display:grid;place-items:center;border-bottom:0;
+  }
+  #learningCoachDock.coach-collapsed #coachToggle{
+    width:100%;height:100%;border:0;background:transparent;color:var(--text);
+    font-size:25px;cursor:pointer;
+  }
+  #learningCoachDock:not(.coach-collapsed) #coachToggle{
+    min-width:38px;height:38px;border-radius:11px;border:1px solid var(--line);
+    background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;
+  }
+
+  .coach-head{
+    display:flex;align-items:center;gap:10px;padding:11px 12px;
+    border-bottom:1px solid var(--line);
+  }
+  .coach-title-wrap{min-width:0;flex:1}
+  .coach-title{font-weight:900;color:var(--text);font-size:15px}
+  .coach-subtitle{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .coach-body{padding:12px;overflow:auto;max-height:calc(100vh - 145px)}
+  .coach-section-pill{
+    display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:12px;
+    background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);
+    color:#bae6fd;font-size:12px;font-weight:800;margin-bottom:10px;
+  }
+  [data-light="true"] .coach-section-pill{color:#075985}
+  .coach-controls{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+  .coach-controls button,.coach-actions button,.coach-tab-btn,.coach-option{
+    border:1px solid var(--line);background:rgba(255,255,255,.055);
+    color:var(--text);border-radius:10px;padding:8px 7px;cursor:pointer;font-size:12px;font-weight:800;
+  }
+  .coach-controls button:hover,.coach-actions button:hover,.coach-tab-btn:hover,.coach-option:hover{
+    background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.38)
+  }
+  .coach-explain{
+    border:1px solid var(--line);background:rgba(255,255,255,.035);
+    border-radius:14px;padding:11px;font-size:13px;color:var(--muted);min-height:82px;
+  }
+  .coach-explain strong{color:var(--text)}
+  .coach-prompt{
+    margin-top:10px;padding:10px;border-radius:13px;
+    border:1px solid rgba(34,197,94,.22);background:rgba(34,197,94,.07);
+  }
+  .coach-prompt-title{font-weight:900;color:#bbf7d0;font-size:13px;margin-bottom:8px}
+  [data-light="true"] .coach-prompt-title{color:#166534}
+  .coach-actions{display:flex;flex-wrap:wrap;gap:6px}
+  .coach-actions button{padding:7px 10px}
+  .coach-tabs{display:flex;gap:5px;margin:11px 0 8px}
+  .coach-tab-btn.active{background:rgba(56,189,248,.15);border-color:rgba(56,189,248,.4);color:#bae6fd}
+  .coach-pane{display:none}
+  .coach-pane.active{display:block}
+  .coach-input,.coach-textarea{
+    width:100%;border:1px solid var(--line);background:rgba(255,255,255,.04);
+    color:var(--text);border-radius:11px;padding:9px 10px;outline:none;
+  }
+  .coach-textarea{min-height:74px;resize:vertical}
+  .coach-input:focus,.coach-textarea:focus{border-color:rgba(56,189,248,.55)}
+  .coach-row{display:flex;gap:6px;margin-top:7px}
+  .coach-row .coach-input{flex:1}
+  .coach-answer,.coach-feedback,.coach-incident{
+    margin-top:8px;padding:9px 10px;border:1px solid var(--line);
+    border-radius:11px;background:rgba(255,255,255,.035);color:var(--muted);font-size:12px;
+  }
+  .coach-answer strong,.coach-feedback strong,.coach-incident strong{color:var(--text)}
+  .coach-incident-options{display:grid;gap:6px;margin-top:8px}
+  .coach-option{text-align:left}
+  .coach-option.correct{border-color:rgba(34,197,94,.55);background:rgba(34,197,94,.12)}
+  .coach-option.wrong{border-color:rgba(239,68,68,.55);background:rgba(239,68,68,.10)}
+  .coach-ideas{display:grid;gap:7px}
+  .coach-idea{
+    padding:9px 10px;border:1px solid var(--line);border-radius:11px;
+    background:rgba(167,139,250,.07);font-size:12px;color:var(--muted)
+  }
+  .coach-idea strong{color:#ddd6fe}
+  [data-light="true"] .coach-idea strong{color:#5b21b6}
+  .coach-status{margin-top:8px;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+  .coach-spotlight{
+    outline:2px solid rgba(56,189,248,.5)!important;
+    box-shadow:0 0 0 5px rgba(56,189,248,.08),var(--shadow)!important;
+    transition:outline .2s ease,box-shadow .2s ease;
+  }
+  .coach-focus-item{
+    outline:2px solid rgba(34,197,94,.55)!important;
+    transform:translateY(-2px);
+    box-shadow:0 0 0 4px rgba(34,197,94,.08)!important;
+    transition:.2s ease;
+  }
+
+  @media (min-width:1181px){
+    body.coach-open{padding-right:370px;transition:padding-right .25s ease}
+    body.coach-open .floating-tools{right:384px}
+  }
+  @media (max-width:1180px){
+    body.coach-open .floating-tools{display:none}
+    #learningCoachDock:not(.coach-collapsed){
+      width:min(420px,calc(100vw - 20px));right:10px;bottom:10px;max-height:54vh;
+    }
+    #learningCoachDock:not(.coach-collapsed) .coach-body{max-height:calc(54vh - 60px)}
+    body.coach-open{padding-bottom:58vh}
+  }
+  @media (max-width:520px){
+    .coach-controls{grid-template-columns:repeat(3,1fr)}
+    #learningCoachDock:not(.coach-collapsed){max-height:52vh}
+    #learningCoachDock:not(.coach-collapsed) .coach-body{max-height:calc(52vh - 60px)}
+    body.coach-open{padding-bottom:56vh}
+  }
+</style>
+
+
+
+
+<!-- GNU-UNIX-AI-TUTOR-V2.1:BEGIN -->
+<link rel="stylesheet" href="/_platform/ai-tutor/ai-tutor-v2.css">
+<script src="/_platform/config/learning-platform.js"></script>
+<script src="/_platform/profiles/linux-operations-profiles.js"></script>
+<script src="/_platform/profiles/freebsd-operations-profiles.js"></script>
+<script>window.GNU_LEARNING_DOC={"id":"linux-beginner-linux-training-01-linux-start-module10-networking-basics-html","title":"Module 10: Networking Basics - Interactive Animated HTML Reference","osFamily":"Linux","domain":"linux-networking","level":"beginner","aiLevel":"operations","profile":"networking","capabilities":["concept-tutor","voice-coach","lab-generator","incident-simulator"],"topics":["interfaces","routing","DNS","TCP/IP","sockets","firewalls","packet capture"],"safetyRules":["Never execute generated commands automatically","Separate observation commands from state-changing commands","Mark destructive commands clearly and require verification first","Do not flush firewall rules as a generic fix","Packet captures may contain sensitive data"]};</script>
+<script defer src="/_platform/ai-tutor/ai-tutor-v2.js"></script>
+<!-- GNU-UNIX-AI-TUTOR-V2.1:END -->
+</head>
+
+<body id="top">
+<header>
+  <div class="hero">
+    <div>
+      <div class="badge">🌐 Beginner Linux Training · Module 10</div>
+      <h1>Networking Basics</h1>
+      <p>Learn how Linux systems communicate using <strong>IP addresses, subnets, gateway, DNS, ports, listening services</strong>, and basic connectivity testing commands.</p>
+      <p>This module is designed for trainees who are new to Linux networking and first-level troubleshooting.</p>
+      <div class="hero-actions">
+        <a class="btn" href="#concepts">Start Concepts</a>
+        <a class="btn secondary" href="#osi">Watch OSI Flow</a>
+        <a class="btn secondary" href="#labs">Go to Labs</a>
+      </div>
+    </div>
+
+    <div class="hero-net">
+      <div class="hero-line"></div>
+      <div class="hero-packet"></div>
+      <div class="device-row">
+        <div class="device">Client<small>192.168.1.10</small></div>
+        <div class="device router">Router<small>Gateway</small></div>
+        <div class="device">Server<small>Web / App</small></div>
+      </div>
+      <div class="hero-note">A network is a path that lets one system send data to another system. Linux gives you commands to inspect, test, and troubleshoot that path.</div>
+    </div>
+  </div>
+</header>
+
+
+  <div class="learning-progress">
+    <div class="progress-card">
+      <strong>🏁 Learning progress</strong>
+      <div class="progress-track"><div class="progress-fill" id="learningProgressFill"></div></div>
+      <strong id="learningProgressText">0%</strong>
+    </div>
+  </div>
+
+  <nav>
+  <div class="nav-inner">
+    <a href="#objectives">Objectives</a>
+    <a href="#concepts">Concepts</a>
+    <a href="#osi">OSI Animation</a>
+    <a href="#commands">Commands</a>
+    <a href="#labs">Labs</a>
+    <a href="#troubleshooting">Troubleshooting</a>
+    <a href="#quiz">Knowledge Check</a>
+  </div>
+</nav>
+
+<main>
+
+<section id="packet-story">
+  <h2>📦 The Packet Delivery Story</h2>
+  <p>Think of networking like delivering a parcel. This one mental model connects DNS, IP addresses, routing, ports, and the OSI model.</p>
+  <div class="story-strip">
+    <div class="story-step"><div class="story-num">1</div><h3>App asks</h3><p><span class="kbd">curl google.com</span> wants a webpage.</p></div>
+    <div class="story-step"><div class="story-num">2</div><h3>DNS finds it</h3><p>DNS resolves the hostname to one or more IP addresses so the client knows which network destination to contact.</p></div>
+    <div class="story-step"><div class="story-num">3</div><h3>Linux routes</h3><p>The route table decides local delivery or gateway.</p></div>
+    <div class="story-step"><div class="story-num">4</div><h3>Bits travel</h3><p>Frames and packets move through LAN, router, or Internet.</p></div>
+    <div class="story-step"><div class="story-num">5</div><h3>Port finds app</h3><p>The destination port selects the service endpoint; ports 80 and 443 are commonly used for HTTP and HTTPS.</p></div>
+    <div class="story-step"><div class="story-num">6</div><h3>Server replies</h3><p>The answer travels back to the client.</p></div>
+  </div>
+</section>
+
+<section id="visual-memory">
+  <h2>🧠 Visual Memory Anchors</h2>
+  <p>These pictures are deliberately simple. They are meant to be remembered while troubleshooting at a terminal.</p>
+  <div class="visual-concepts">
+    <div class="visual-card"><h3>🏠 IP = House Address</h3><div class="visual-scene"><span class="scene-label">Where should the packet go?</span><div class="street"></div><div class="house"></div></div><div class="analogy-box">The IP identifies the destination system, like a house number identifies a destination.</div></div>
+    <div class="visual-card"><h3>🏘️ Subnet = Neighborhood</h3><div class="visual-scene" style="display:grid;place-items:center"><div style="display:grid;grid-template-columns:repeat(3,58px);gap:8px"><div class="port-door">.10</div><div class="port-door">.20</div><div class="port-door">.30</div><div class="port-door">.40</div><div class="port-door">.50</div><div class="port-door">.60</div></div></div><div class="analogy-box">Systems in the same subnet are like houses in the same neighborhood.</div></div>
+    <div class="visual-card"><h3>🚪 Gateway = Exit Gate</h3><div class="visual-scene"><div class="road-line"></div><div class="gateway-gate"></div></div><div class="analogy-box">When the destination is outside your subnet, traffic normally leaves through the default gateway.</div></div>
+    <div class="visual-card"><h3>📖 DNS = Contact Book</h3><div class="visual-scene"><div class="dns-book">google.com<br><span style="color:#a7b0c0;font-size:13px">→ IP address</span></div></div><div class="analogy-box">You remember a name; DNS returns the network address.</div></div>
+    <div class="visual-card"><h3>🏢 Ports = Numbered Doors</h3><div class="visual-scene"><div class="port-grid"><div class="port-door">22<br>SSH</div><div class="port-door">53<br>DNS</div><div class="port-door">80<br>HTTP</div><div class="port-door">443<br>HTTPS</div></div></div><div class="analogy-box">The IP finds the building. The port finds the correct door/application.</div></div>
+    <div class="visual-card"><h3>👂 Listener = Someone Waiting</h3><div class="visual-scene"><div class="listener-person">🧑‍✈️<small>waiting on :22</small></div></div><div class="analogy-box">A listening service is waiting on a local IP/port for incoming connections.</div></div>
+  </div>
+</section>
+
+<section id="objectives">
+  <h2>Learning Objectives</h2>
+  <div class="grid">
+    <div class="card"><div class="icon">🎯</div><h3>Understand addressing</h3><p>Identify what an IP address, subnet, and gateway do in a Linux network.</p></div>
+    <div class="card"><div class="icon">🧭</div><h3>Understand name resolution</h3><p>Explain why <span class="kbd">google.com</span> needs DNS before the system can connect.</p></div>
+    <div class="card"><div class="icon">🧪</div><h3>Test connectivity</h3><p>Use <span class="kbd">ip</span>, <span class="kbd">ping</span>, <span class="kbd">ss</span>, and <span class="kbd">curl</span> for first-level checks.</p></div>
+  </div>
+</section>
+
+<section id="concepts">
+  <h2>Core Concepts</h2>
+  <p>Before troubleshooting networking, trainees must understand these building blocks.</p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="icon">🏷️</div>
+      <h3>IP Address</h3>
+      <p>An <strong>IP address</strong> is a logical address assigned to a network interface or endpoint. Example: <strong>192.168.1.10</strong>.</p>
+      <span class="pill">System identification</span><span class="pill">IPv4: 192.168.1.10</span><span class="pill">IPv6: fe80::1</span>
+    </div>
+
+    <div class="card">
+      <div class="icon">🧮</div>
+      <h3>Subnet</h3>
+      <p>A <strong>subnet</strong> defines which IP addresses are local to your network. Example: <strong>192.168.1.0/24</strong>.</p>
+      <p>In beginner terms, systems like <strong>192.168.1.10</strong> and <strong>192.168.1.20</strong> are usually local to each other in a /24 subnet.</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">🚪</div>
+      <h3>Gateway</h3>
+      <p>A <strong>gateway</strong> is a next-hop router. For destinations without a more specific route, Linux commonly uses the default gateway/default route.</p>
+      <p>Example: Your laptop uses <strong>192.168.1.1</strong> to reach the Internet.</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">📖</div>
+      <h3>DNS</h3>
+      <p><strong>DNS</strong> resolves names to resource records, commonly IPv4 or IPv6 addresses. Example: <strong>google.com → one or more IP addresses</strong>.</p>
+      <p>If an IP ping works but <span class="kbd">ping google.com</span> reports a <strong>name-resolution error</strong>, suspect DNS. If the name resolves to an IP but there is no echo reply, ICMP may simply be blocked.</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">🔌</div>
+      <h3>Ports</h3>
+      <p>A <strong>port number</strong> helps identify a transport-layer service endpoint. The IP identifies the host/interface; the transport protocol plus port helps deliver traffic to the correct socket/service.</p>
+      <table class="mini-table">
+        <tr><th>Port</th><th>Common / conventional service</th></tr>
+        <tr><td>22</td><td>SSH</td></tr>
+        <tr><td>53</td><td>DNS</td></tr>
+        <tr><td>80</td><td>HTTP</td></tr>
+        <tr><td>443</td><td>HTTPS</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="icon">👂</div>
+      <h3>Listening Services</h3>
+      <p>A service is <strong>listening</strong> when it is waiting for network connections on a port.</p>
+      <p>Example: SSH server listens on port <strong>22</strong>.</p>
+    </div>
+  </div>
+</section>
+
+<section id="osi">
+  <h2>Animated OSI Flow: Client to Server</h2>
+  <p>The animation below now runs automatically using CSS. The buttons are optional controls; the packet should move even if you do not click anything.</p>
+  <div class="coach-accuracy-note"><strong>Accuracy note:</strong> The OSI model is a teaching and troubleshooting model. Real TCP/IP implementations do not always map cleanly into separate OSI Layers 5 and 6, so use those layers conceptually rather than assuming each is a distinct Linux component.</div>
+
+  <div class="osi-demo running" id="osiDemo">
+    <div>
+      <h3>Client Sending Data</h3>
+      <div class="stack send">
+        <div class="layer l7"><div><span class="name">7. Application</span><div class="hint">curl, browser, SSH</div></div><span>📦</span></div>
+        <div class="layer l6"><div><span class="name">6. Presentation</span><div class="hint">format, encryption</div></div><span>🔐</span></div>
+        <div class="layer l5"><div><span class="name">5. Session</span><div class="hint">session handling</div></div><span>🔁</span></div>
+        <div class="layer l4"><div><span class="name">4. Transport</span><div class="hint">TCP/UDP, ports</div></div><span>🚚</span></div>
+        <div class="layer l3"><div><span class="name">3. Network</span><div class="hint">IP and routing</div></div><span>🌍</span></div>
+        <div class="layer l2"><div><span class="name">2. Data Link</span><div class="hint">MAC, switch</div></div><span>🔗</span></div>
+        <div class="layer l1"><div><span class="name">1. Physical</span><div class="hint">cable, Wi‑Fi, bits</div></div><span>⚡</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flow-stage">
+        <div class="osi-path"></div>
+        <div class="osi-path down"></div>
+        <div class="endpoint client">Client<small>10.0.0.10</small></div>
+        <div class="endpoint server">Server<small>172.16.1.20</small></div>
+        <div class="network-zone" id="networkZone">LAN / Internet</div>
+        <div class="middle-device" id="middleDevice">Switch / Gateway / Router</div>
+        <div class="packet-labels">
+          <span>App data</span>
+          <span>TCP port</span>
+          <span>Bits</span>
+          <span>Server app</span>
+        </div>
+        <div class="osi-packet">DATA</div>
+      </div>
+
+      <div class="controls">
+        <button class="btn" id="playLanBtn" type="button">Play LAN Flow</button>
+        <button class="btn secondary" id="playInternetBtn" type="button">Play Internet Flow</button>
+        <button class="btn secondary" id="pauseBtn" type="button">Pause / Resume</button>
+      </div>
+
+      <div class="step-card">
+        <div class="step-title" id="flowTitle">Flow running</div>
+        <p id="flowText">Data starts at the client application, moves down the client stack, crosses LAN/Internet, then moves up the server stack.</p>
+      </div>
+      <div class="voice-panel">
+        <strong>🔊 OSI voice explanation</strong>
+        <span class="voice-state" id="enhVoiceState">English · ready</span>
+        <button class="btn secondary" id="enhVoicePlay" type="button">Play</button>
+        <button class="btn secondary" id="enhVoicePause" type="button">Pause</button>
+        <button class="btn secondary" id="enhVoiceResume" type="button">Resume</button>
+        <button class="btn secondary" id="enhVoiceStop" type="button">Stop</button>
+      </div>
+
+    </div>
+
+    <div>
+      <h3>Server Receiving Data</h3>
+      <div class="stack recv">
+        <div class="layer l7"><div><span class="name">7. Application</span><div class="hint">web app receives request</div></div><span>📬</span></div>
+        <div class="layer l6"><div><span class="name">6. Presentation</span><div class="hint">decrypt / decode</div></div><span>🔓</span></div>
+        <div class="layer l5"><div><span class="name">5. Session</span><div class="hint">session matched</div></div><span>🔁</span></div>
+        <div class="layer l4"><div><span class="name">4. Transport</span><div class="hint">port 80 / 443</div></div><span>🚚</span></div>
+        <div class="layer l3"><div><span class="name">3. Network</span><div class="hint">server IP</div></div><span>🌍</span></div>
+        <div class="layer l2"><div><span class="name">2. Data Link</span><div class="hint">local MAC frame</div></div><span>🔗</span></div>
+        <div class="layer l1"><div><span class="name">1. Physical</span><div class="hint">signal received</div></div><span>⚡</span></div>
+      </div>
+    </div>
+  </div>
+
+  <details open>
+    <summary>Beginner explanation: what happens when you run curl google.com?</summary>
+    <div class="timeline">
+      <div class="timeline-item"><div class="dot">1</div><p><strong>Application:</strong> <span class="kbd">curl</span> wants to connect to <span class="kbd">google.com</span>.</p></div>
+      <div class="timeline-item"><div class="dot">2</div><p><strong>DNS:</strong> The system asks DNS for the IP address of <span class="kbd">google.com</span>.</p></div>
+      <div class="timeline-item"><div class="dot">3</div><p><strong>Transport:</strong> The client opens a TCP connection to a destination port, usually 80 or 443.</p></div>
+      <div class="timeline-item"><div class="dot">4</div><p><strong>Network:</strong> Linux checks the route table to decide whether to send locally or through the gateway.</p></div>
+      <div class="timeline-item"><div class="dot">5</div><p><strong>Data Link / Physical:</strong> Data leaves through the network interface using Ethernet or Wi‑Fi.</p></div>
+      <div class="timeline-item"><div class="dot">6</div><p><strong>Server:</strong> The remote server receives the request and sends a response back.</p></div>
+    </div>
+  </details>
+</section>
+
+<section id="commands">
+  <h2>Linux Networking Command Reference</h2>
+  <p>These are the minimum commands a beginner should know before troubleshooting Linux connectivity.</p>
+
+  <div class="grid two">
+    <div class="lab-card">
+      <h3>Show IP addresses</h3>
+      <p>Use this to see interfaces like <span class="kbd">lo</span>, <span class="kbd">eth0</span>, <span class="kbd">ens33</span>, <span class="kbd">wlan0</span>, and assigned IP addresses.</p>
+      <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ip a</div>
+      <details><summary>What to observe</summary><p>Look for <span class="kbd">inet</span> for IPv4, <span class="kbd">inet6</span> for IPv6, and interface state like <span class="kbd">UP</span> or <span class="kbd">DOWN</span>.</p></details>
+    </div>
+
+    <div class="lab-card">
+      <h3>Show route table</h3>
+      <p>Use this to find the default gateway and routing path.</p>
+      <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ip r</div>
+      <details><summary>What to observe</summary><p>The line starting with <span class="kbd">default via</span> shows the gateway used to reach other networks and the Internet.</p></details>
+    </div>
+
+    <div class="lab-card">
+      <h3>Ping public IP</h3>
+      <p>This tests ICMP reachability to one specific public IP address without depending on DNS. A failed ping does not by itself prove that Internet access is down.</p>
+      <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ping 8.8.8.8</div>
+      <details><summary>What to observe</summary><p><span class="ok">Success:</span> replies show that IP connectivity likely works. Stop ping using <span class="kbd">Ctrl+C</span>.</p><p><span class="bad">Failure:</span> check the local interface/address, route table, gateway, host/network firewall rules, target filtering, or the upstream network. HTTP proxy settings do not control ICMP ping.</p></details>
+    </div>
+
+    <div class="lab-card">
+      <h3>Ping domain name</h3>
+      <p>This tests name resolution and then ICMP reachability to the resolved address. Distinguish a DNS resolution error from a resolved host that simply does not answer ICMP.</p>
+      <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ping google.com</div>
+      <details><summary>What to observe</summary><p>If <span class="kbd">ping 8.8.8.8</span> works but <span class="kbd">ping google.com</span> reports a resolver error such as <em>Name or service not known</em>, suspect DNS. If the hostname resolves but echo replies do not arrive, DNS may be fine.</p><p><strong>Optional DNS-only check:</strong></p><div class="code"><button class="copy">Copy</button><span class="prompt">$</span> getent ahosts google.com</div><p>This asks the system name-service stack for address records without depending on ICMP echo replies.</p></details>
+    </div>
+
+    <div class="lab-card">
+      <h3>Show listening services</h3>
+      <p>Use this to see TCP/UDP ports that local services are listening on.</p>
+      <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ss -tulnp</div>
+      <details><summary>What to observe</summary><p><span class="kbd">t</span> = TCP, <span class="kbd">u</span> = UDP, <span class="kbd">l</span> = listening, <span class="kbd">n</span> = numeric, <span class="kbd">p</span> = process.</p><p>Use <span class="kbd">sudo ss -tulnp</span> if process details are hidden.</p></details>
+    </div>
+
+    <div class="lab-card">
+      <h3>Test HTTP using curl</h3>
+      <p>Use this to test whether an application-level HTTP request works.</p>
+      <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> curl google.com</div>
+      <details><summary>What to observe</summary><p>You may see HTML, redirect output, or a message telling you the site has moved. For headers only, use:</p><div class="code"><button class="copy">Copy</button><span class="prompt">$</span> curl -I https://www.google.com</div></details>
+    </div>
+  </div>
+</section>
+
+<section id="labs">
+  <h2>Hands-on Lab: Basic Network Inspection</h2>
+  <p>Run these commands on a Linux VM. The goal is not to memorize output, but to learn what each command proves.</p>
+
+  <div class="lab-card">
+    <h3>Lab 1: Check IP address</h3>
+    <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ip a</div>
+    <p><strong>Task:</strong> Identify your active interface and write down its IPv4 address.</p>
+  </div>
+
+  <div class="lab-card">
+    <h3>Lab 2: Check default gateway</h3>
+    <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ip r</div>
+    <p><strong>Task:</strong> Find the <span class="kbd">default via</span> line.</p>
+  </div>
+
+  <div class="lab-card">
+    <h3>Lab 3: Test public-IP ICMP reachability</h3>
+    <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ping 8.8.8.8</div>
+    <p><strong>Task:</strong> Check whether your system receives ICMP echo replies from this public IP address.</p>
+  </div>
+
+  <div class="lab-card">
+    <h3>Lab 4: Test DNS</h3>
+    <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ping google.com</div>
+    <p><strong>Task:</strong> Compare this result with <span class="kbd">ping 8.8.8.8</span>. If you need to separate DNS from ICMP behavior, also try <span class="kbd">getent ahosts google.com</span>.</p>
+  </div>
+
+  <div class="lab-card">
+    <h3>Lab 5: Check listening ports</h3>
+    <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ss -tulnp</div>
+    <p><strong>Task:</strong> Identify at least two listening ports and the local addresses they bind to.</p>
+    <details><summary>Beginner notes</summary><p><span class="kbd">127.0.0.1:port</span> means local only. <span class="kbd">0.0.0.0:port</span> means all IPv4 interfaces. <span class="kbd">:::port</span> usually means IPv6 interfaces.</p></details>
+  </div>
+
+  <div class="lab-card">
+    <h3>Lab 6: Test web access</h3>
+    <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> curl google.com</div>
+    <p><strong>Task:</strong> Verify whether your system can make an HTTP request from the terminal.</p>
+  </div>
+</section>
+
+<section id="troubleshooting">
+  <h2>Beginner Troubleshooting Flow</h2>
+  <p>Use this simple decision path when a Linux machine cannot reach the network.</p>
+
+  <div class="scenario">
+    <div class="card">
+      <h3>Scenario A: Internet not working</h3>
+      <div class="flowchart">
+        <div class="flow-node"><strong>1. Check interface</strong><br><span class="kbd">ip a</span> — Does the interface have an IP?</div>
+        <div class="flow-node"><strong>2. Check route</strong><br><span class="kbd">ip r</span> — Is there a default gateway?</div>
+        <div class="flow-node"><strong>3. Check IP reachability</strong><br><span class="kbd">ping 8.8.8.8</span> — Can the system reach a public IP?</div>
+        <div class="flow-node"><strong>4. Check DNS</strong><br><span class="kbd">ping google.com</span> — Can the system resolve names?</div>
+        <div class="flow-node"><strong>5. Check application</strong><br><span class="kbd">curl google.com</span> — Does HTTP work?</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Scenario B: Service not reachable</h3>
+      <div class="flowchart">
+        <div class="flow-node"><strong>1. Is service running?</strong><br>Check service status or process list.</div>
+        <div class="flow-node"><strong>2. Is service listening?</strong><br><span class="kbd">ss -tulnp</span> — Is the expected port open?</div>
+        <div class="flow-node"><strong>3. Is it bound correctly?</strong><br><span class="kbd">127.0.0.1</span> means local only; <span class="kbd">0.0.0.0</span> means all IPv4 interfaces.</div>
+        <div class="flow-node"><strong>4. Is firewall blocking?</strong><br>Check host firewall and network firewall rules.</div>
+        <div class="flow-node"><strong>5. Is DNS/name correct?</strong><br>Try IP address directly, then hostname.</div>
+      </div>
+    </div>
+  </div>
+
+  <table class="mini-table">
+    <tr><th>Symptom</th><th>Likely Area</th><th>First Command</th></tr>
+    <tr><td>No IP address</td><td>Interface / DHCP / static config</td><td><span class="kbd">ip a</span></td></tr>
+    <tr><td>No default route</td><td>Gateway / route config</td><td><span class="kbd">ip r</span></td></tr>
+    <tr><td>IP ping works, hostname gives resolution error</td><td>DNS</td><td><span class="kbd">ping google.com</span></td></tr>
+    <tr><td>Server reachable but app fails</td><td>Port / service / firewall</td><td><span class="kbd">ss -tulnp</span></td></tr>
+    <tr><td>Browser fails but ping works</td><td>HTTP/HTTPS/proxy/application layer</td><td><span class="kbd">curl -I https://example.com</span></td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Trainer Notes</h2>
+  <div class="grid two">
+    <div class="card">
+      <h3>Recommended delivery sequence</h3>
+      <div class="timeline">
+        <div class="timeline-item"><div class="dot">1</div><p>Explain IP, subnet, gateway using a home Wi‑Fi or office LAN example.</p></div>
+        <div class="timeline-item"><div class="dot">2</div><p>Run <span class="kbd">ip a</span> and <span class="kbd">ip r</span> live on a Linux VM.</p></div>
+        <div class="timeline-item"><div class="dot">3</div><p>Compare <span class="kbd">ping 8.8.8.8</span> and <span class="kbd">ping google.com</span>.</p></div>
+        <div class="timeline-item"><div class="dot">4</div><p>Use <span class="kbd">ss -tulnp</span> to explain ports and listening services.</p></div>
+        <div class="timeline-item"><div class="dot">5</div><p>Use OSI animation to connect commands with networking layers.</p></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Common beginner mistakes</h3>
+      <p><span class="warn">Mistake:</span> Thinking IP address and hostname are the same thing.</p>
+      <p><span class="warn">Mistake:</span> Assuming ping failure always means Internet is down. ICMP may be blocked.</p>
+      <p><span class="warn">Mistake:</span> Ignoring gateway when external connectivity fails.</p>
+      <p><span class="warn">Mistake:</span> Seeing a service on <span class="kbd">127.0.0.1</span> and expecting remote systems to connect to it.</p>
+    </div>
+  </div>
+</section>
+
+
+<section id="missions">
+  <h2>🎯 Networking Field Missions</h2>
+  <p>Run each mission on a Linux VM. Tick it only when you can explain what the result proves. Progress is saved locally in your browser.</p>
+  <div class="mission-grid">
+    <div class="mission-card"><span class="mission-tag">MISSION 1</span><h3>🪪 Find your identity</h3><div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ip a</div><p>Find the active interface and its IPv4 address.</p><label class="mission-check"><input class="enh-mission" type="checkbox"><span>I can identify interface + IP.</span></label></div>
+    <div class="mission-card"><span class="mission-tag">MISSION 2</span><h3>🚪 Find the exit</h3><div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ip r</div><p>Find the default route and gateway.</p><label class="mission-check"><input class="enh-mission" type="checkbox"><span>I can identify the default gateway.</span></label></div>
+    <div class="mission-card"><span class="mission-tag">MISSION 3</span><h3>🌎 Test raw reachability</h3><div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ping 8.8.8.8</div><p>Observe replies, latency, and packet loss. Remember ICMP may be blocked.</p><label class="mission-check"><input class="enh-mission" type="checkbox"><span>I understand what ping proves.</span></label></div>
+    <div class="mission-card"><span class="mission-tag">MISSION 4</span><h3>📖 Test DNS</h3><div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ping google.com</div><p>Compare this with the IP-only ping.</p><label class="mission-check"><input class="enh-mission" type="checkbox"><span>I can recognize a likely DNS issue.</span></label></div>
+    <div class="mission-card"><span class="mission-tag">MISSION 5</span><h3>👂 Inspect listeners</h3><div class="code"><button class="copy">Copy</button><span class="prompt">$</span> sudo ss -tulnp</div><p>Find one TCP listener and explain its bind address.</p><label class="mission-check"><input class="enh-mission" type="checkbox"><span>I understand 127.0.0.1 vs 0.0.0.0.</span></label></div>
+    <div class="mission-card"><span class="mission-tag">MISSION 6</span><h3>🌐 Test the application</h3><div class="code"><button class="copy">Copy</button><span class="prompt">$</span> curl -I https://www.google.com</div><p>Find the HTTP status line and headers.</p><label class="mission-check"><input class="enh-mission" type="checkbox"><span>I can explain why curl tells me more than ping.</span></label></div>
+  </div>
+</section>
+
+<section id="field-challenges">
+  <h2>🕵️ Real-World Troubleshooting Challenges</h2>
+  <p>Choose the strongest next action based on the evidence — not a random command.</p>
+  <div class="challenge-grid">
+    <div class="challenge-card"><h3>Ticket #1 — Name resolution failure</h3><p><span class="kbd">ping 8.8.8.8</span> works. <span class="kbd">ping google.com</span> fails to resolve the name.</p><div class="choice-list"><button class="choice-btn" data-right="0">Replace the network cable</button><button class="choice-btn" data-right="1">Investigate DNS configuration</button><button class="choice-btn" data-right="0">Check disk usage</button></div><div class="challenge-feedback"></div></div>
+    <div class="challenge-card"><h3>Ticket #2 — App works only locally</h3><p><span class="kbd">ss -tulnp</span> shows <span class="kbd">127.0.0.1:8080</span>.</p><div class="choice-list"><button class="choice-btn" data-right="1">Check the application's listen/bind address</button><button class="choice-btn" data-right="0">Change DNS server</button><button class="choice-btn" data-right="0">Add RAM</button></div><div class="challenge-feedback"></div></div>
+    <div class="challenge-card"><h3>Ticket #3 — No external connectivity</h3><p><span class="kbd">ip a</span> looks normal, but <span class="kbd">ip r</span> has no <span class="kbd">default</span> route.</p><div class="choice-list"><button class="choice-btn" data-right="0">Restart SSH</button><button class="choice-btn" data-right="1">Investigate gateway/default route</button><button class="choice-btn" data-right="0">Delete resolv.conf</button></div><div class="challenge-feedback"></div></div>
+    <div class="challenge-card"><h3>Ticket #4 — Ping fails, web works</h3><p>Browser and curl work normally, but the host does not reply to ping.</p><div class="choice-list"><button class="choice-btn" data-right="1">ICMP may be blocked; connectivity can still work</button><button class="choice-btn" data-right="0">Internet must be down</button><button class="choice-btn" data-right="0">DNS must be broken</button></div><div class="challenge-feedback"></div></div>
+  </div>
+</section>
+
+<section id="flashcards">
+  <h2>🧠 Click-to-Flip Recall Cards</h2>
+  <p>Try to answer in your head first, then click the card.</p>
+  <div class="flash-grid">
+    <div class="flash-card"><div class="flash-inner"><div class="flash-face"><strong>What does <span class="kbd">ip a</span> answer?</strong><p>Click to reveal</p></div><div class="flash-face flash-back"><strong>Interfaces + IP addresses</strong><p>Also inspect interface state.</p></div></div></div>
+    <div class="flash-card"><div class="flash-inner"><div class="flash-face"><strong>Gateway in one sentence?</strong><p>Click to reveal</p></div><div class="flash-face flash-back"><strong>Normal next hop to other networks</strong><p>Usually shown as <span class="kbd">default via</span>.</p></div></div></div>
+    <div class="flash-card"><div class="flash-inner"><div class="flash-face"><strong>DNS in one sentence?</strong><p>Click to reveal</p></div><div class="flash-face flash-back"><strong>Name → IP resolution</strong><p>Hostname lookup before connecting.</p></div></div></div>
+    <div class="flash-card"><div class="flash-inner"><div class="flash-face"><strong>Port 22?</strong><p>Click to reveal</p></div><div class="flash-face flash-back"><strong>SSH</strong><p>Common SSH server port.</p></div></div></div>
+    <div class="flash-card"><div class="flash-inner"><div class="flash-face"><strong>Listener on 127.0.0.1?</strong><p>Click to reveal</p></div><div class="flash-face flash-back"><strong>Localhost only</strong><p>Remote systems normally cannot connect directly.</p></div></div></div>
+    <div class="flash-card"><div class="flash-inner"><div class="flash-face"><strong>Why curl after ping?</strong><p>Click to reveal</p></div><div class="flash-face flash-back"><strong>Application-level evidence</strong><p>curl can exercise DNS, TCP, TLS and HTTP.</p></div></div></div>
+  </div>
+  <div class="memory-row"><div class="memory-chip"><strong>IP</strong><br>Identity</div><div class="memory-chip"><strong>Subnet</strong><br>Neighborhood</div><div class="memory-chip"><strong>Gateway</strong><br>Exit path</div><div class="memory-chip"><strong>DNS</strong><br>Name lookup</div><div class="memory-chip"><strong>Port</strong><br>App door</div><div class="memory-chip"><strong>Listener</strong><br>Waiting app</div></div>
+</section>
+
+<section id="quiz">
+  <h2>Knowledge Check</h2>
+  <p>Click an answer to check understanding.</p>
+
+  <div class="quiz">
+    <div class="question"><strong>1. Which command shows the IP address of Linux interfaces?</strong><div class="answers"><button data-correct="false">ip r</button><button data-correct="true">ip a</button><button data-correct="false">ss -tulnp</button></div></div>
+    <div class="question"><strong>2. What does DNS do?</strong><div class="answers"><button data-correct="false">It opens local ports.</button><button data-correct="true">It resolves domain names to IP addresses.</button><button data-correct="false">It creates Linux users.</button></div></div>
+    <div class="question"><strong>3. If ping 8.8.8.8 works but ping google.com reports a name-resolution error, what is the likely problem?</strong><div class="answers"><button data-correct="true">DNS problem</button><button data-correct="false">Keyboard problem</button><button data-correct="false">Disk full problem</button></div></div>
+    <div class="question"><strong>4. Which command shows listening TCP/UDP services?</strong><div class="answers"><button data-correct="false">du -sh</button><button data-correct="false">lsblk</button><button data-correct="true">ss -tulnp</button></div></div>
+    <div class="question"><strong>5. In the OSI model, which layer is mainly responsible for IP routing?</strong><div class="answers"><button data-correct="false">Layer 1 - Physical</button><button data-correct="true">Layer 3 - Network</button><button data-correct="false">Layer 7 - Application</button></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>One-page Lab Sheet</h2>
+  <p><strong>Commands to practice:</strong></p>
+  <div class="code"><button class="copy">Copy</button><span class="prompt">$</span> ip a
+<span class="prompt">$</span> ip r
+<span class="prompt">$</span> ping 8.8.8.8
+<span class="prompt">$</span> ping google.com
+<span class="prompt">$</span> ss -tulnp
+<span class="prompt">$</span> curl google.com</div>
+  <p>Ask trainees to write what each command proves: IP configuration, gateway route, ICMP reachability to a public IP, DNS resolution, listening services, and application-level web access.</p>
+</section>
+
+<div class="footer">Module 10: Networking Basics · Linux Beginner Training Reference</div>
+</main>
+
+<script>
+(function(){
+  const demo = document.getElementById("osiDemo");
+  const zone = document.getElementById("networkZone");
+  const middle = document.getElementById("middleDevice");
+  const title = document.getElementById("flowTitle");
+  const text = document.getElementById("flowText");
+
+  function restartAnimation(){
+    demo.classList.remove("running");
+    void demo.offsetWidth;
+    demo.classList.add("running");
+  }
+
+  const playLanBtn = document.getElementById("playLanBtn");
+  if(playLanBtn){
+    playLanBtn.addEventListener("click", function(){
+      zone.textContent = "LAN";
+      middle.textContent = "Switch";
+      title.textContent = "LAN flow running";
+      text.textContent = "On a LAN, the client reaches the server through local switching. Routing is minimal unless the server is in another subnet.";
+      restartAnimation();
+    });
+  }
+
+  const playInternetBtn = document.getElementById("playInternetBtn");
+  if(playInternetBtn){
+    playInternetBtn.addEventListener("click", function(){
+      zone.textContent = "Internet";
+      middle.textContent = "Gateway / Router / ISP";
+      title.textContent = "Internet flow running";
+      text.textContent = "For Internet access, Linux uses the default gateway, then routers move the packet toward the remote server.";
+      restartAnimation();
+    });
+  }
+
+  const pauseBtn = document.getElementById("pauseBtn");
+  if(pauseBtn){
+    pauseBtn.addEventListener("click", function(){
+      demo.classList.toggle("running");
+      if(demo.classList.contains("running")){
+        title.textContent = "Flow running";
+        text.textContent = "The OSI packet animation is active.";
+      } else {
+        title.textContent = "Flow paused";
+        text.textContent = "Click Pause / Resume again to continue the OSI animation.";
+      }
+    });
+  }
+
+  document.querySelectorAll(".copy").forEach(function(button){
+    button.addEventListener("click", function(){
+      const clone = button.parentElement.cloneNode(true);
+      const copyButton = clone.querySelector(".copy");
+      if(copyButton) copyButton.remove();
+      const commandText = clone.textContent.replace(/\$/g,"").trim();
+      navigator.clipboard.writeText(commandText).then(function(){
+        const old = button.textContent;
+        button.textContent = "Copied";
+        setTimeout(function(){button.textContent = old;},900);
+      }).catch(function(){
+        button.textContent = "Select text";
+      });
+    });
+  });
+
+  document.querySelectorAll(".answers button").forEach(function(button){
+    button.addEventListener("click", function(){
+      const group = button.parentElement.querySelectorAll("button");
+      group.forEach(function(btn){
+        btn.classList.remove("correct","wrong");
+        btn.disabled = true;
+        if(btn.dataset.correct === "true") btn.classList.add("correct");
+      });
+      if(button.dataset.correct !== "true") button.classList.add("wrong");
+    });
+  });
+})();
+
+
+    // ===== Enhanced learning interactions =====
+    const pageRoot = document.documentElement;
+    const enhThemeBtn = document.getElementById('enhThemeBtn');
+    const savedLight = localStorage.getItem('module10-light') === '1';
+    if(savedLight) pageRoot.setAttribute('data-light','true');
+    function refreshThemeIcon(){ if(enhThemeBtn) enhThemeBtn.textContent = pageRoot.getAttribute('data-light') === 'true' ? '🌙' : '☀️'; }
+    refreshThemeIcon();
+    if(enhThemeBtn) enhThemeBtn.addEventListener('click',()=>{
+      const light = pageRoot.getAttribute('data-light') === 'true';
+      if(light) pageRoot.removeAttribute('data-light'); else pageRoot.setAttribute('data-light','true');
+      localStorage.setItem('module10-light', light ? '0' : '1'); refreshThemeIcon();
+    });
+
+    const enhMissions = [...document.querySelectorAll('.enh-mission')];
+    enhMissions.forEach((m,i)=>{
+      m.checked = localStorage.getItem('module10-mission-'+i) === '1';
+      m.addEventListener('change',()=>{localStorage.setItem('module10-mission-'+i,m.checked?'1':'0');updateEnhProgress();});
+    });
+
+    document.querySelectorAll('.challenge-card').forEach((card)=>{
+      card.querySelectorAll('.choice-btn').forEach(btn=>btn.addEventListener('click',()=>{
+        card.querySelectorAll('.choice-btn').forEach(b=>{ b.disabled=true; if(b.dataset.right==='1') b.classList.add('correct'); });
+        if(btn.dataset.right!=='1') btn.classList.add('wrong');
+        card.querySelector('.challenge-feedback').textContent = btn.dataset.right==='1' ? '✅ Correct — that follows the evidence.' : '❌ Not the strongest next step. Follow the symptom to the implicated networking layer.';
+        updateEnhProgress();
+      }));
+    });
+
+    document.querySelectorAll('.flash-card').forEach(card=>card.addEventListener('click',()=>{card.classList.toggle('flipped');updateEnhProgress();}));
+
+    function updateEnhProgress(){
+      const missionDone = enhMissions.filter(x=>x.checked).length;
+      const challenges = [...document.querySelectorAll('.challenge-card')];
+      const challengeDone = challenges.filter(c=>c.querySelector('.challenge-feedback').textContent.trim()).length;
+      const flashes = [...document.querySelectorAll('.flash-card')];
+      const flashDone = flashes.filter(f=>f.classList.contains('flipped')).length;
+      const total = enhMissions.length + challenges.length + flashes.length;
+      const pct = total ? Math.round((missionDone+challengeDone+flashDone)/total*100) : 0;
+      const fill=document.getElementById('learningProgressFill'), txt=document.getElementById('learningProgressText');
+      if(fill) fill.style.width=pct+'%'; if(txt) txt.textContent=pct+'%';
+    }
+    updateEnhProgress();
+
+    const enhVoiceText = 'Imagine that curl wants a web page. First DNS finds the server IP address. At the application layer, data is created. The transport layer adds TCP or UDP information and port numbers. The network layer adds IP addressing and Linux checks the route table. The data link layer uses local MAC addressing, and the physical layer sends bits through Ethernet or Wi-Fi. If the server is outside the local subnet, the packet goes to the default gateway and then through routers. At the server, the process happens in reverse until the application receives the request.';
+    const enhVoiceState=document.getElementById('enhVoiceState');
+    function enhSpeechSupported(){return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;}
+    function enhMakeUtterance(){
+      const u=new SpeechSynthesisUtterance(enhVoiceText); u.lang='en-US'; u.rate=.94; u.pitch=1;
+      const voices=speechSynthesis.getVoices(); const eng=voices.find(v=>/^en(-|_)/i.test(v.lang)); if(eng) u.voice=eng;
+      u.onstart=()=>{if(enhVoiceState) enhVoiceState.textContent='English · playing';};
+      u.onend=()=>{if(enhVoiceState) enhVoiceState.textContent='English · finished';};
+      u.onerror=()=>{if(enhVoiceState) enhVoiceState.textContent='Voice unavailable in this browser';}; return u;
+    }
+    const vp=document.getElementById('enhVoicePlay'); if(vp) vp.addEventListener('click',()=>{if(!enhSpeechSupported()){enhVoiceState.textContent='Voice unavailable in this browser';return;}speechSynthesis.cancel();speechSynthesis.speak(enhMakeUtterance());});
+    const vpa=document.getElementById('enhVoicePause'); if(vpa) vpa.addEventListener('click',()=>{if(enhSpeechSupported()&&speechSynthesis.speaking){speechSynthesis.pause();enhVoiceState.textContent='English · paused';}});
+    const vr=document.getElementById('enhVoiceResume'); if(vr) vr.addEventListener('click',()=>{if(enhSpeechSupported()){speechSynthesis.resume();enhVoiceState.textContent='English · playing';}});
+    const vs=document.getElementById('enhVoiceStop'); if(vs) vs.addEventListener('click',()=>{if(enhSpeechSupported()){speechSynthesis.cancel();enhVoiceState.textContent='English · stopped';}});
+
+  </script>
+
+  <div class="floating-tools">
+    <button class="tool-btn" id="enhThemeBtn" title="Light/Dark theme">☀️</button>
+    <a class="tool-btn" href="#top" title="Back to top">↑</a>
+  </div>
+
+
+<aside id="learningCoachDock" class="coach-collapsed" aria-label="Interactive learning coach">
+  <div class="coach-head">
+    <button id="coachToggle" type="button" aria-label="Open or close learning coach">🧑‍🏫</button>
+    <div class="coach-title-wrap">
+      <div class="coach-title">Networking Learning Coach</div>
+      <div class="coach-subtitle">Explains · asks · adapts · stays out of the lesson</div>
+    </div>
+    <span class="coach-close-label" style="font-size:11px;color:var(--muted)">Docked</span>
+  </div>
+
+  <div class="coach-body">
+    <div class="coach-section-pill">📍 <span id="coachSectionName">Networking Basics</span></div>
+
+    <div class="coach-controls">
+      <button id="coachPlay" type="button">▶ Explain</button>
+      <button id="coachPause" type="button">⏸ Pause</button>
+      <button id="coachResume" type="button">⏯ Resume</button>
+      <button id="coachReplay" type="button">↻ Repeat</button>
+      <button id="coachStop" type="button">■ Stop</button>
+    </div>
+
+    <div class="coach-explain" id="coachExplain" aria-live="polite">
+      <strong>Ready.</strong> Open any lesson section and press <em>Explain</em>. I will teach the idea in plain English instead of reading the page word-for-word.
+    </div>
+
+    <div class="coach-prompt" id="coachPrompt">
+      <div class="coach-prompt-title">Did that make sense?</div>
+      <div class="coach-actions">
+        <button id="coachYes" type="button">✅ Yes</button>
+        <button id="coachNo" type="button">🔄 Not yet</button>
+        <button id="coachQuizMe" type="button">🎯 Quiz me</button>
+      </div>
+    </div>
+
+    <div class="coach-tabs" role="tablist">
+      <button class="coach-tab-btn active" data-pane="ask" type="button">Ask</button>
+      <button class="coach-tab-btn" data-pane="teach" type="button">Teach-back</button>
+      <button class="coach-tab-btn" data-pane="incident" type="button">Incident</button>
+      <button class="coach-tab-btn" data-pane="ideas" type="button">✨ Ideas</button>
+    </div>
+
+    <div class="coach-pane active" id="coachPaneAsk">
+      <label for="coachQuestion" style="font-size:12px;font-weight:800">Ask a networking question</label>
+      <div class="coach-row">
+        <input id="coachQuestion" class="coach-input" type="text" placeholder="e.g. Why do we need a gateway?">
+        <button id="coachAsk" class="coach-tab-btn" type="button">Ask</button>
+      </div>
+      <div class="coach-answer" id="coachAnswer">Offline coach: answers common questions about this module without sending data anywhere.</div>
+    </div>
+
+    <div class="coach-pane" id="coachPaneTeach">
+      <label for="coachTeachText" style="font-size:12px;font-weight:800">Explain the current idea in your own words</label>
+      <textarea id="coachTeachText" class="coach-textarea" placeholder="Teach it back to the coach..."></textarea>
+      <div class="coach-row">
+        <button id="coachCheckTeach" class="coach-tab-btn" type="button">Check my explanation</button>
+      </div>
+      <div class="coach-feedback" id="coachTeachFeedback">I will look for the key ideas, not perfect wording.</div>
+    </div>
+
+    <div class="coach-pane" id="coachPaneIncident">
+      <div class="coach-incident" id="coachIncident"><strong>Adaptive micro-incident:</strong> press “New incident” for a short troubleshooting situation.</div>
+      <div class="coach-row">
+        <button id="coachNewIncident" class="coach-tab-btn" type="button">New incident</button>
+      </div>
+    </div>
+
+    <div class="coach-pane" id="coachPaneIdeas">
+      <div class="coach-ideas">
+        <div class="coach-idea"><strong>1. Packet Lens</strong><br>Click a Linux command and visually highlight which OSI layers that command tests.</div>
+        <div class="coach-idea"><strong>2. Fault Injection Lab</strong><br>Let learners “break” DNS, the default route, or a listen address and diagnose the simulated output.</div>
+        <div class="coach-idea"><strong>3. Subnet Playground</strong><br>Drag hosts between subnets and predict whether traffic goes directly or through a router.</div>
+      </div>
+      <div class="coach-row">
+        <button id="coachSelfTest" class="coach-tab-btn" type="button">🧪 Run browser self-check</button>
+      </div>
+      <div class="coach-feedback" id="coachSelfTestResult">Checks DOM wiring, internal links, OSI animation state, quiz controls, and browser voice support.</div>
+    </div>
+
+    <div class="coach-status">
+      <span id="coachVoiceState">Voice: ready</span>
+      <span id="coachUnderstanding">Understanding: not checked</span>
+    </div>
+  </div>
+</aside>
+
+
+<script id="learning-coach-v3-script">
+(function(){
+  const dock = document.getElementById('learningCoachDock');
+  if(!dock) return;
+
+  const $ = id => document.getElementById(id);
+  const toggle = $('coachToggle');
+  const sectionName = $('coachSectionName');
+  const explainBox = $('coachExplain');
+  const voiceState = $('coachVoiceState');
+  const understanding = $('coachUnderstanding');
+
+  const lesson = {
+    'packet-story': {
+      title:'Packet Delivery Story',
+      explain:'Think of a network request as a parcel. The application creates the request. DNS can translate the destination name into an IP address. Linux then checks its routing table. The transport layer uses a protocol and ports, the network layer uses IP addresses, and the local link carries the data toward the next hop. The server receives the data and sends a response back.',
+      analogies:[
+        'Imagine ordering food. DNS finds the restaurant address, the route table chooses the road, the IP address identifies the building, and the destination port identifies the service desk that should receive your order.',
+        'Think of a courier label: hostname is the friendly contact name, DNS looks up the delivery address, routing chooses the next road, and the port is the department number inside the destination.'
+      ],
+      keywords:['dns','route','ip','port']
+    },
+    'visual-memory': {
+      title:'Visual Memory Anchors',
+      explain:'Use the pictures as memory anchors, but keep the real mechanism in mind. IP is a logical network address. A subnet tells Linux which destinations are on-link according to its prefix and routes. A gateway is a router used as a next hop. DNS resolves names. Ports belong to transport protocols and help identify service endpoints. A listener is a socket waiting for traffic.',
+      analogies:[
+        'A neighborhood analogy works well: IP is the house address, subnet is the neighborhood boundary, gateway is the exit road, and ports are numbered doors. The analogy is for memory; Linux actually makes the decision using addresses, prefixes, routes, protocols, and sockets.',
+        'Picture an office campus: DNS is the directory, the IP is the building address, the subnet is the campus zone, the router is the gate to another campus, and the port is the room/service number.'
+      ],
+      keywords:['ip','subnet','gateway','dns','port','listener']
+    },
+    'objectives': {
+      title:'Learning Objectives',
+      explain:'By the end of this module, you should be able to answer three practical questions: What network identity does this Linux host have? Where will Linux send traffic? And which test should I run next when connectivity or a service fails?',
+      analogies:['This is like learning a diagnostic checklist for a car: identify the machine, identify the path, then test one subsystem at a time instead of replacing random parts.'],
+      keywords:['address','route','test']
+    },
+    'concepts': {
+      title:'Core Networking Concepts',
+      explain:'The six concepts work together. IP addresses identify network endpoints. The subnet prefix helps determine what is on-link. Routing selects a path and next hop, which may be a gateway. DNS maps names to records such as IPv4 or IPv6 addresses. TCP and UDP use port numbers to identify endpoints, and listening sockets wait for incoming traffic.',
+      analogies:[
+        'Think of a city: IP is a street address, the subnet is the local district, the gateway is a road out of the district, DNS is the directory, the port is a suite number, and the listener is someone waiting inside that suite.',
+        'Think of a company campus: DNS finds the building, IP identifies it, subnet says whether it is on your campus, the gateway gets you off-campus, and the port identifies the service desk.'
+      ],
+      keywords:['ip','subnet','gateway','dns','port']
+    },
+    'osi': {
+      title:'OSI Client-to-Server Flow',
+      explain:'The OSI model is a troubleshooting model. At the application layer, a program such as curl creates a request. Transport adds TCP or UDP semantics and ports. The network layer deals with IP and routing. The data-link layer handles the local link, commonly Ethernet or Wi-Fi framing, and the physical layer carries signals. On the server, the information is processed upward toward the application. Layers five and six are useful concepts, but real TCP/IP stacks do not always implement them as separate Linux components.',
+      analogies:[
+        'Imagine packing a gift into several labeled envelopes. Each networking layer adds information needed for a different part of delivery. The receiver removes those envelopes in the opposite order.',
+        'Imagine airport luggage: the application creates the contents, transport adds the service tag, IP adds the destination, the local link gets it to the next checkpoint, and the physical medium actually carries it.'
+      ],
+      keywords:['application','transport','network','data link','physical']
+    },
+    'commands': {
+      title:'Linux Networking Commands',
+      explain:'Treat each command as a question. ip a asks what interfaces and addresses exist. ip r asks what routes Linux will use. ping tests ICMP reachability to a destination but lack of replies is not proof that the Internet is down. ss shows sockets, including listeners. curl tests an application protocol such as HTTP or HTTPS and therefore gives higher-layer evidence.',
+      analogies:[
+        'Think like a doctor: ip a checks identity, ip r checks the path, ping checks whether one kind of probe comes back, ss checks who is waiting for connections, and curl tests the actual application conversation.',
+        'Think of a building inspection: first verify the address, then the road map, then test a knock, then see which doors are staffed, and finally request the real service.'
+      ],
+      keywords:['ip a','ip r','ping','ss','curl']
+    },
+    'labs': {
+      title:'Hands-on Labs',
+      explain:'Run one command at a time and write down what evidence it gives. The goal is not to get a green result every time. The goal is to interpret success and failure correctly and know what the next check should be.',
+      analogies:['A lab is a detective notebook. Every command is one witness. Do not let one witness decide the whole case; combine evidence.'],
+      keywords:['evidence','interpret','next']
+    },
+    'troubleshooting': {
+      title:'Troubleshooting Flow',
+      explain:'Troubleshoot systematically. Verify the interface and address, then routes, then destination reachability, then name resolution, then the application. For service problems, also check whether the service is actually listening on the expected protocol, address, and port, and remember firewalls can block traffic even when the process is running.',
+      analogies:[
+        'Use a staircase: interface first, route second, reachability third, DNS fourth, application last. If a lower step is broken, climbing higher usually wastes time.',
+        'Use a delivery chain: sender address, road map, reachable destination, name lookup, then the actual business at the destination.'
+      ],
+      keywords:['interface','route','dns','application','listener']
+    },
+    'missions': {
+      title:'Networking Field Missions',
+      explain:'The missions turn the concepts into muscle memory. Complete them only when you can explain what the command proves, what it does not prove, and what you would check next after a failure.',
+      analogies:['Treat each mission like a small support ticket. Success is not running the command; success is interpreting the evidence.'],
+      keywords:['prove','failure','next']
+    },
+    'field-challenges': {
+      title:'Real-World Challenges',
+      explain:'These incidents train evidence-based troubleshooting. If a public IP responds but a hostname produces a resolver error, DNS is the main suspect. If a service listens only on 127.0.0.1, remote clients normally cannot connect to that listener. If there is no default route, off-subnet traffic may have no usable path. If curl works while ping does not, ICMP may simply be filtered.',
+      analogies:['You are a network detective: choose the explanation that fits the evidence with the fewest unsupported assumptions.'],
+      keywords:['dns','127.0.0.1','default route','icmp']
+    },
+    'flashcards': {
+      title:'Recall Flashcards',
+      explain:'Flashcards are for retrieval practice. Try to answer before you flip. The small effort of recalling from memory is more useful than rereading the answer repeatedly.',
+      analogies:['Think of recall like exercising a muscle. Looking at the answer is watching someone else lift the weight; recalling it yourself is the repetition that builds strength.'],
+      keywords:['recall','memory']
+    },
+    'quiz': {
+      title:'Knowledge Check',
+      explain:'Use the quiz to test whether you can connect symptoms to concepts. Pay attention to wording: a hostname that cannot be resolved is a DNS clue, while a hostname that resolves but does not answer ping may simply be filtering ICMP.',
+      analogies:['Treat each question like a tiny support ticket: first identify exactly what failed, then choose the layer or mechanism that explains it.'],
+      keywords:['symptom','dns','icmp']
+    }
+  };
+
+  const faq = [
+    {keys:['gateway','why gateway','default gateway'], ans:'A gateway is a router used as a next hop. Linux selects routes by the routing table; when there is no more-specific route, a default route often points to the gateway for off-subnet destinations.'},
+    {keys:['subnet','/24','prefix'], ans:'A subnet/prefix describes a range of addresses. For IPv4, /24 means the first 24 bits are the network prefix. Linux combines address prefixes and routing information to decide whether a destination is on-link or needs a next hop.'},
+    {keys:['dns'], ans:'DNS resolves names to resource records. For host connectivity, the most familiar records are A for IPv4 and AAAA for IPv6. A DNS failure is different from a host that resolves correctly but does not answer ping.'},
+    {keys:['ping','icmp'], ans:'ping normally sends ICMP Echo Request messages and waits for Echo Replies. A reply is useful reachability evidence. No reply is inconclusive because ICMP can be filtered, rate-limited, or blocked while other traffic still works.'},
+    {keys:['ss','tulnp','listening'], ans:'ss inspects sockets. In ss -tulnp: -t TCP, -u UDP, -l listening, -n numeric addresses/ports, and -p process information. Process details may require elevated privileges.'},
+    {keys:['curl'], ans:'curl can test an actual application protocol. For HTTPS, a successful request may involve DNS resolution, a TCP connection, TLS negotiation, and then HTTP. That makes curl useful after lower-level checks.'},
+    {keys:['127.0.0.1','localhost'], ans:'127.0.0.1 is IPv4 loopback. A service bound only to 127.0.0.1 is normally reachable only from the same host, not from remote machines.'},
+    {keys:['0.0.0.0'], ans:'For a listening IPv4 socket, 0.0.0.0 commonly means the service is bound to all local IPv4 addresses. A firewall or application policy can still prevent remote access.'},
+    {keys:['port','22','80','443','53'], ans:'Ports are transport-layer numbers used with protocols such as TCP or UDP. Common conventions include SSH 22/TCP, DNS 53 over UDP and TCP, HTTP 80/TCP, and HTTPS 443/TCP, but applications can be configured on other ports.'},
+    {keys:['osi'], ans:'OSI is a seven-layer reference model useful for teaching and troubleshooting. Real Internet stacks are usually described with the TCP/IP model, and OSI Layers 5 and 6 do not necessarily exist as separate Linux subsystems.'},
+    {keys:['ip a','ip address'], ans:'ip a is shorthand for ip address and displays network interface addresses and related state. Look for the active interface, inet/inet6 addresses, and UP/DOWN state.'},
+    {keys:['ip r','route'], ans:'ip r is shorthand for ip route and displays routes. The default route is used only when no more-specific matching route wins.'},
+    {keys:['lan','same subnet'], ans:'For two hosts on the same on-link subnet, traffic normally does not use the default gateway. The sender resolves the peer link-layer address, for example with ARP in IPv4, and sends frames on the local network.'}
+  ];
+
+  const incidents = [
+    {
+      q:'ping 8.8.8.8 receives replies, but ping google.com says “Name or service not known”. What is the strongest next check?',
+      opts:['Inspect DNS resolver configuration','Replace the Ethernet cable','Check disk usage'],
+      right:0,
+      why:'The public-IP ICMP test works and the failure happens during name resolution, so DNS is the strongest lead.'
+    },
+    {
+      q:'A web app is running, but ss shows 127.0.0.1:8080. Remote clients cannot connect. What should you inspect?',
+      opts:['The application listen/bind address','The DNS TTL','The filesystem inode count'],
+      right:0,
+      why:'127.0.0.1 is loopback. A listener bound only there is normally local-only.'
+    },
+    {
+      q:'ip a shows a valid address, but ip r has no default route. Local subnet works; Internet destinations fail. What is the strongest lead?',
+      opts:['Default gateway / routing configuration','SSH host keys','CPU frequency scaling'],
+      right:0,
+      why:'Local delivery can still work, but off-subnet destinations may have no route without an appropriate gateway/default route.'
+    },
+    {
+      q:'curl https://example.com works, but ping example.com receives no echo replies. What conclusion is safest?',
+      opts:['Internet is down','DNS is definitely broken','ICMP may be filtered even though application connectivity works'],
+      right:2,
+      why:'curl proves the application path can work. ICMP Echo traffic can be filtered independently.'
+    },
+    {
+      q:'Two IPv4 hosts are on the same on-link /24 network. Which device is normally unnecessary for their direct traffic?',
+      opts:['Default gateway','Local switch / Wi-Fi AP','Network interface'],
+      right:0,
+      why:'Same-subnet traffic is normally delivered on-link; the default gateway is for routed destinations unless a special route/policy changes that.'
+    }
+  ];
+
+  let currentSection = 'concepts';
+  let lastSpoken = '';
+  let analogyIndex = {};
+  let focusTimer = null;
+  let utterance = null;
+
+  function speechOK(){ return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window; }
+
+  function setOpen(open){
+    dock.classList.toggle('coach-collapsed', !open);
+    document.body.classList.toggle('coach-open', open);
+    toggle.setAttribute('aria-label', open ? 'Close learning coach' : 'Open learning coach');
+    toggle.textContent = open ? '✕' : '🧑‍🏫';
+  }
+  toggle.addEventListener('click',()=>setOpen(dock.classList.contains('coach-collapsed')));
+
+  function currentData(){ return lesson[currentSection] || lesson.concepts; }
+
+  function removeSpotlight(){
+    document.querySelectorAll('.coach-spotlight,.coach-focus-item').forEach(el=>{
+      el.classList.remove('coach-spotlight','coach-focus-item');
+    });
+    if(focusTimer){ clearInterval(focusTimer); focusTimer=null; }
+  }
+
+  function spotlight(){
+    removeSpotlight();
+    const sec=document.getElementById(currentSection);
+    if(!sec) return;
+    sec.classList.add('coach-spotlight');
+    let items=[...sec.querySelectorAll('.card,.visual-card,.story-step,.layer,.cmd-card,.lab-card,.mission-card,.challenge-card,.question,.flash-card')];
+    if(!items.length) return;
+    let i=0;
+    items[0].classList.add('coach-focus-item');
+    focusTimer=setInterval(()=>{
+      items.forEach(x=>x.classList.remove('coach-focus-item'));
+      i=(i+1)%items.length;
+      items[i].classList.add('coach-focus-item');
+    },2400);
+  }
+
+  function chooseVoice(){
+    const voices=speechSynthesis.getVoices();
+    return voices.find(v=>/^en-(IN|GB|US|AU)/i.test(v.lang)) || voices.find(v=>/^en/i.test(v.lang)) || null;
+  }
+
+  function speak(text, afterPrompt=true){
+    lastSpoken=text;
+    explainBox.innerHTML='<strong>'+currentData().title+':</strong> '+text;
+    spotlight();
+    if(!speechOK()){
+      voiceState.textContent='Voice: unavailable in this browser';
+      return;
+    }
+    speechSynthesis.cancel();
+    utterance=new SpeechSynthesisUtterance(text);
+    utterance.lang='en-US';
+    utterance.rate=.94;
+    utterance.pitch=1;
+    const v=chooseVoice(); if(v) utterance.voice=v;
+    utterance.onstart=()=>voiceState.textContent='Voice: explaining';
+    utterance.onend=()=>{
+      voiceState.textContent='Voice: finished';
+      removeSpotlight();
+      if(afterPrompt){
+        $('coachPrompt').style.display='block';
+        understanding.textContent='Understanding: please confirm';
+      }
+    };
+    utterance.onerror=()=>{voiceState.textContent='Voice: browser speech error';removeSpotlight();};
+    speechSynthesis.speak(utterance);
+  }
+
+  $('coachPlay').addEventListener('click',()=>speak(currentData().explain));
+  $('coachPause').addEventListener('click',()=>{
+    if(speechOK() && speechSynthesis.speaking){speechSynthesis.pause();voiceState.textContent='Voice: paused';}
+    if(focusTimer) document.querySelectorAll('.coach-focus-item').forEach(x=>x.style.animationPlayState='paused');
+  });
+  $('coachResume').addEventListener('click',()=>{
+    if(speechOK()){speechSynthesis.resume();voiceState.textContent='Voice: resumed';}
+  });
+  $('coachReplay').addEventListener('click',()=>speak(lastSpoken || currentData().explain));
+  $('coachStop').addEventListener('click',()=>{
+    if(speechOK()) speechSynthesis.cancel();
+    voiceState.textContent='Voice: stopped';removeSpotlight();
+  });
+
+  $('coachYes').addEventListener('click',()=>{
+    localStorage.setItem('coach-understood-'+currentSection,'1');
+    understanding.textContent='Understanding: confirmed ✓';
+    explainBox.innerHTML='<strong>Good.</strong> Try the Teach-back tab or a micro-incident so you prove you can retrieve the idea without rereading it.';
+  });
+
+  $('coachNo').addEventListener('click',()=>{
+    const d=currentData();
+    const list=d.analogies && d.analogies.length ? d.analogies : ['Let me explain it from another angle: focus on what decision Linux is making at this step and which command gives evidence about that decision.'];
+    analogyIndex[currentSection]=(analogyIndex[currentSection]||0)%list.length;
+    const text='Different analogy: '+list[analogyIndex[currentSection]];
+    analogyIndex[currentSection]++;
+    understanding.textContent='Understanding: trying another analogy';
+    speak(text);
+  });
+
+  function activatePane(name){
+    document.querySelectorAll('.coach-tab-btn[data-pane]').forEach(b=>b.classList.toggle('active',b.dataset.pane===name));
+    document.querySelectorAll('.coach-pane').forEach(p=>p.classList.remove('active'));
+    const pane=$('coachPane'+name.charAt(0).toUpperCase()+name.slice(1));
+    if(pane)pane.classList.add('active');
+  }
+  document.querySelectorAll('.coach-tab-btn[data-pane]').forEach(b=>b.addEventListener('click',()=>activatePane(b.dataset.pane)));
+
+  function answerQuestion(q){
+    const x=q.trim().toLowerCase();
+    if(!x) return 'Ask something like “Why do we need a gateway?”, “What does ss -tulnp mean?”, or “Why can curl work when ping fails?”';
+    let best=null,bestScore=0;
+    faq.forEach(item=>{
+      let score=0;
+      item.keys.forEach(k=>{ if(x.includes(k.toLowerCase())) score+=k.length; });
+      if(score>bestScore){bestScore=score;best=item;}
+    });
+    return best ? best.ans : 'I do not have a reliable offline answer for that exact question. Try asking about IP, subnet, gateway, DNS, ports, listeners, ip a, ip r, ping, ss, curl, LAN, or the OSI model.';
+  }
+
+  function doAsk(){
+    const q=$('coachQuestion').value;
+    const ans=answerQuestion(q);
+    $('coachAnswer').innerHTML='<strong>Coach:</strong> '+ans;
+  }
+  $('coachAsk').addEventListener('click',doAsk);
+  $('coachQuestion').addEventListener('keydown',e=>{if(e.key==='Enter')doAsk();});
+
+  $('coachCheckTeach').addEventListener('click',()=>{
+    const text=$('coachTeachText').value.toLowerCase();
+    const keys=currentData().keywords||[];
+    const hit=keys.filter(k=>text.includes(k.toLowerCase()));
+    const miss=keys.filter(k=>!text.includes(k.toLowerCase()));
+    if(!text.trim()){
+      $('coachTeachFeedback').innerHTML='<strong>Try first:</strong> explain the idea in one or two sentences.';
+      return;
+    }
+    if(hit.length>=Math.max(2,Math.ceil(keys.length*.6))){
+      $('coachTeachFeedback').innerHTML='<strong>Strong teach-back.</strong> You covered '+hit.join(', ')+(miss.length?'. To make it stronger, also mention '+miss.join(', ')+'.':'.');
+      understanding.textContent='Understanding: teach-back passed ✓';
+      localStorage.setItem('coach-understood-'+currentSection,'1');
+    }else{
+      $('coachTeachFeedback').innerHTML='<strong>Good start.</strong> I heard '+(hit.length?hit.join(', '):'some general ideas')+'. Try again and include '+miss.slice(0,4).join(', ')+'.';
+    }
+  });
+
+  let incidentIndex=0;
+  function showIncident(){
+    const item=incidents[incidentIndex++%incidents.length];
+    const box=$('coachIncident');
+    box.innerHTML='<strong>Adaptive micro-incident:</strong><br>'+item.q+'<div class="coach-incident-options"></div><div class="coach-feedback" aria-live="polite"></div>';
+    const opts=box.querySelector('.coach-incident-options');
+    item.opts.forEach((txt,i)=>{
+      const b=document.createElement('button');
+      b.className='coach-option';b.type='button';b.textContent=txt;
+      b.addEventListener('click',()=>{
+        [...opts.children].forEach((x,j)=>{x.disabled=true;if(j===item.right)x.classList.add('correct');});
+        if(i!==item.right)b.classList.add('wrong');
+        box.querySelector('.coach-feedback').innerHTML=(i===item.right?'<strong>Correct.</strong> ':'<strong>Not the best choice.</strong> ')+item.why;
+      });
+      opts.appendChild(b);
+    });
+  }
+  $('coachNewIncident').addEventListener('click',showIncident);
+  $('coachQuizMe').addEventListener('click',()=>{activatePane('incident');showIncident();});
+
+  // Track the section the learner is actually viewing.
+  const tracked=[...document.querySelectorAll('main section[id]')].filter(s=>lesson[s.id]);
+  const observer=new IntersectionObserver(entries=>{
+    const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+    if(!visible) return;
+    currentSection=visible.target.id;
+    const d=currentData();
+    sectionName.textContent=d.title;
+    const understood=localStorage.getItem('coach-understood-'+currentSection)==='1';
+    understanding.textContent=understood?'Understanding: confirmed ✓':'Understanding: not checked';
+  },{threshold:[.22,.45,.7],rootMargin:'-12% 0px -45% 0px'});
+  tracked.forEach(s=>observer.observe(s));
+
+
+  const selfTestBtn=$('coachSelfTest');
+  if(selfTestBtn){
+    selfTestBtn.addEventListener('click',()=>{
+      const checks=[];
+      const ids=['osiDemo','playLanBtn','playInternetBtn','pauseBtn','quiz','learningCoachDock','coachPlay','coachPause','coachResume','coachReplay','coachStop'];
+      checks.push(['Required controls',ids.every(id=>!!document.getElementById(id))]);
+      const allIds=[...document.querySelectorAll('[id]')].map(x=>x.id);
+      checks.push(['Unique IDs',new Set(allIds).size===allIds.length]);
+      const anchors=[...document.querySelectorAll('a[href^="#"]')].filter(a=>a.getAttribute('href').length>1);
+      checks.push(['Internal links',anchors.every(a=>!!document.getElementById(a.getAttribute('href').slice(1)))]);
+      checks.push(['Six missions',document.querySelectorAll('.enh-mission').length===6]);
+      checks.push(['Five quiz questions',document.querySelectorAll('#quiz .question').length===5]);
+      checks.push(['Six flashcards',document.querySelectorAll('.flash-card').length===6]);
+      const packet=document.querySelector('#osiDemo .osi-packet');
+      let animationOK=false;
+      if(packet){
+        const cs=getComputedStyle(packet);
+        animationOK=cs.animationName && cs.animationName!=='none';
+      }
+      checks.push(['OSI CSS animation',animationOK]);
+      checks.push(['Speech synthesis',speechOK()]);
+      const passed=checks.filter(x=>x[1]).length;
+      const rows=checks.map(x=>(x[1]?'✅ ':'⚠️ ')+x[0]).join('<br>');
+      $('coachSelfTestResult').innerHTML='<strong>'+passed+'/'+checks.length+' browser checks passed.</strong><br>'+rows+'<br><br><em>External network reachability is environment-dependent and is not treated as an HTML failure.</em>';
+    });
+  }
+
+  // Start collapsed so the lesson is never covered by default.
+  setOpen(false);
+})();
+</script>
+
+</body>
+</html>
