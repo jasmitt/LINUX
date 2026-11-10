@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 12: Shell Scripting Basics — Interactive Adventure</title>
+<style>
+:root{
+  --bg:#07111f;--panel:#0d1b2f;--panel2:#10243f;--text:#eef6ff;--muted:#aac0da;
+  --accent:#4fd1c5;--accent2:#f6ad55;--accent3:#9f7aea;--good:#68d391;--bad:#fc8181;--warn:#f6e05e;
+  --code:#06101b;--border:rgba(255,255,255,.13);--shadow:0 22px 55px rgba(0,0,0,.35);
+}
+[data-theme="light"]{
+  --bg:#f6f9ff;--panel:#ffffff;--panel2:#edf4ff;--text:#0a1830;--muted:#40546f;
+  --accent:#087f75;--accent2:#c05621;--accent3:#6b46c1;--code:#081426;--border:rgba(13,33,66,.14);--shadow:0 18px 40px rgba(36,58,89,.12);
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0%,rgba(79,209,197,.18),transparent 34%),radial-gradient(circle at 86% 5%,rgba(246,173,85,.16),transparent 32%),var(--bg);line-height:1.6}
+.grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:42px 42px;pointer-events:none;mask-image:linear-gradient(to bottom,#000,transparent 82%)}
+[data-theme="light"] .grid-bg{background-image:linear-gradient(rgba(0,0,0,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.035) 1px,transparent 1px)}
+header{position:relative;padding:52px 20px 34px;overflow:hidden}.wrap{max-width:1180px;margin:0 auto;position:relative;z-index:1}.hero{display:grid;grid-template-columns:1.08fr .92fr;gap:28px;align-items:center}.badge{display:inline-flex;gap:8px;align-items:center;border:1px solid rgba(79,209,197,.45);background:rgba(79,209,197,.12);color:var(--text);padding:7px 12px;border-radius:999px;font-size:.88rem;font-weight:900;letter-spacing:.02em}h1{margin:18px 0 12px;font-size:clamp(2.2rem,5vw,4.7rem);line-height:1.02;letter-spacing:-.06em}h2{margin:0 0 14px;font-size:clamp(1.45rem,3vw,2.25rem);letter-spacing:-.035em}h3{margin:0 0 10px;font-size:1.17rem}p{margin:0 0 12px;color:var(--muted)}.lead{max-width:760px;font-size:1.13rem;color:var(--muted)}.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}.btn,button{border:0;color:#041018;background:linear-gradient(135deg,var(--accent),#98f5e1);padding:11px 16px;border-radius:12px;font-weight:850;cursor:pointer;text-decoration:none;box-shadow:0 12px 28px rgba(79,209,197,.2);transition:transform .18s ease,opacity .18s ease;display:inline-flex;align-items:center;gap:8px}.btn.secondary,button.secondary{background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--border);box-shadow:none}[data-theme="light"] .btn.secondary,[data-theme="light"] button.secondary{background:#fff}.copy-btn{position:absolute;right:10px;top:10px;padding:7px 10px;border-radius:10px;font-size:.8rem;z-index:2}button:hover,.btn:hover{transform:translateY(-2px)}
+nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(16px);background:rgba(7,17,31,.78);border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}[data-theme="light"] nav{background:rgba(246,249,255,.85);border-color:rgba(0,0,0,.08)}.nav-inner{max-width:1180px;margin:0 auto;display:flex;gap:8px;padding:10px 14px;overflow-x:auto}nav a{color:var(--text);text-decoration:none;padding:8px 12px;border-radius:999px;white-space:nowrap;font-size:.92rem}nav a:hover{background:rgba(255,255,255,.08)}[data-theme="light"] nav a:hover{background:rgba(8,127,117,.08)}
+main{position:relative;padding:26px 18px 70px}section{max-width:1180px;margin:0 auto 24px;border:1px solid var(--border);background:linear-gradient(180deg,color-mix(in srgb,var(--panel) 94%,transparent),color-mix(in srgb,var(--panel2) 78%,transparent));border-radius:24px;padding:24px;box-shadow:var(--shadow)}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}.card{grid-column:span 4;padding:18px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,.04);position:relative;overflow:hidden}.card.wide{grid-column:span 8}.card.full{grid-column:1/-1}.card.half{grid-column:span 6}.card:before{content:"";position:absolute;inset:-70px auto auto -70px;width:140px;height:140px;border-radius:50%;background:rgba(79,209,197,.12)}.card>*{position:relative;z-index:1}.mini-title{text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-size:.78rem;font-weight:900;margin-bottom:7px}.callout{border-left:4px solid var(--accent2);background:rgba(246,173,85,.10);padding:14px 16px;border-radius:14px;margin:12px 0}.callout strong{color:var(--accent2)}
+.terminal{background:#06101b;border:1px solid rgba(137,180,250,.23);border-radius:18px;overflow:hidden;box-shadow:0 18px 36px rgba(0,0,0,.32)}.term-top{height:40px;background:#0e1b2b;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.08)}.dot{width:11px;height:11px;border-radius:50%;display:inline-block}.red{background:#ff6b6b}.yellow{background:#ffd166}.green{background:#06d6a0}.term-title{color:#9ab5d8;margin-left:8px;font-size:.88rem}pre,code{font-family:"Cascadia Code","Fira Code",Consolas,monospace}pre{margin:0;padding:16px;color:#d8f3ff;overflow:auto;font-size:.95rem;line-height:1.55;background:var(--code);white-space:pre-wrap}.prompt{color:var(--accent)}.code-box{position:relative;margin:10px 0 0;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+.flow{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:18px}.flow-node{flex:1 1 145px;min-height:80px;display:grid;place-items:center;text-align:center;padding:12px;border:1px solid rgba(79,209,197,.35);background:rgba(79,209,197,.08);border-radius:16px;font-weight:850;transition:transform .3s ease,background .3s ease,border .3s ease}.flow-node.active{transform:translateY(-6px) scale(1.03);background:rgba(246,173,85,.18);border-color:rgba(246,173,85,.7)}.arrow{color:var(--accent2);font-size:1.6rem;font-weight:900}.pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.11);color:var(--text);border-radius:999px;padding:7px 11px;margin:4px 5px 4px 0;font-size:.9rem}
+.floatbox{position:relative;height:320px;border-radius:22px;border:1px solid var(--border);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));overflow:hidden}.paper{position:absolute;width:305px;left:50%;top:42px;transform:translateX(-50%) rotate(-2deg);border-radius:16px;border:1px solid rgba(255,255,255,.16);background:#f7fbff;color:#092033;box-shadow:0 18px 30px rgba(0,0,0,.24);padding:16px;animation:float 3.5s ease-in-out infinite}.paper code{color:#092033}.ln{color:#8b99a9;user-select:none;display:inline-block;width:22px}.gear{position:absolute;border-radius:50%;border:8px dashed rgba(79,209,197,.55);animation:spin 12s linear infinite;opacity:.8}.gear.one{width:120px;height:120px;left:38px;bottom:24px}.gear.two{width:82px;height:82px;right:45px;top:35px;animation-duration:8s;animation-direction:reverse}@keyframes float{0%,100%{transform:translateX(-50%) translateY(0) rotate(-2deg)}50%{transform:translateX(-50%) translateY(-12px) rotate(1deg)}}@keyframes spin{to{transform:rotate(360deg)}}.cursor:after{content:"█";color:var(--accent);animation:blink 1s steps(1) infinite}@keyframes blink{50%{opacity:0}}
+.input-row{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}input,select{background:rgba(255,255,255,.08);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:10px 12px;min-width:160px;outline:none}input:focus,select:focus{border-color:rgba(79,209,197,.65)}select option{color:#06101b}.result-box{margin-top:12px;padding:14px;border-radius:14px;background:rgba(0,0,0,.23);border:1px solid rgba(255,255,255,.1);min-height:54px;color:#e9fbff}.status-lights{display:flex;gap:14px;align-items:center;margin:16px 0}.light{width:86px;height:86px;border-radius:50%;display:grid;place-items:center;font-weight:900;color:#06101b;opacity:.32;transform:scale(.92);transition:.28s ease}.light.ok{background:var(--good)}.light.fail{background:var(--bad)}.light.active{opacity:1;transform:scale(1);box-shadow:0 0 35px currentColor}.checklist{list-style:none;padding:0;margin:10px 0 0}.checklist li{padding:9px 0 9px 32px;position:relative;color:var(--muted);border-bottom:1px dashed rgba(255,255,255,.08)}.checklist li:before{content:"✓";position:absolute;left:0;top:8px;color:var(--good);font-weight:900}.timeline{position:relative;padding-left:20px}.timeline:before{content:"";position:absolute;left:4px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--accent),transparent)}.step{position:relative;margin:0 0 14px;padding:13px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px}.step:before{content:"";position:absolute;left:-21px;top:20px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px rgba(79,209,197,.13)}.progress-wrap{height:12px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin:16px 0;border:1px solid var(--border)}.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s ease}.table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:16px;margin-top:12px;border:1px solid var(--border)}.table th,.table td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:top}.table th{background:rgba(79,209,197,.11);color:var(--text)}.table tr:last-child td{border-bottom:none}.quiz-item{border:1px solid var(--border);background:rgba(255,255,255,.04);border-radius:18px;padding:16px;margin:12px 0}.quiz-options{display:grid;gap:8px;margin-top:10px}.quiz-options button{text-align:left;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);border-radius:12px;padding:10px;cursor:pointer}.quiz-options button.correct{background:rgba(104,211,145,.18);border-color:rgba(104,211,145,.6)}.quiz-options button.wrong{background:rgba(252,129,129,.16);border-color:rgba(252,129,129,.55)}.badge-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.achievement{padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.05);font-weight:850;color:var(--muted)}.achievement.unlocked{color:var(--text);border-color:rgba(104,211,145,.5);background:rgba(104,211,145,.12)}footer{max-width:1180px;margin:0 auto;padding:20px;color:var(--muted);text-align:center}@media(max-width:900px){.hero{grid-template-columns:1fr}.card,.card.half,.card.wide{grid-column:1/-1}section{padding:18px}.arrow{display:none}}
+
+.voice-toolbar{position:sticky;top:54px;z-index:9;max-width:1180px;margin:0 auto 18px;padding:10px 12px;border:1px solid var(--border);border-radius:18px;background:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(14px);display:flex;gap:10px;align-items:center;flex-wrap:wrap;box-shadow:var(--shadow)}
+.voice-toolbar small{color:var(--muted);font-weight:800}.voice-dot{width:10px;height:10px;border-radius:999px;background:var(--bad);box-shadow:0 0 0 5px rgba(252,129,129,.12)}.voice-dot.on{background:var(--good);box-shadow:0 0 0 5px rgba(104,211,145,.16)}.voice-panel{border:1px solid rgba(159,122,234,.35);background:linear-gradient(135deg,rgba(159,122,234,.13),rgba(79,209,197,.08));border-radius:22px;padding:18px;position:relative;overflow:hidden}.voice-panel:after{content:"🔊";position:absolute;right:18px;bottom:-10px;font-size:5rem;opacity:.13}.voice-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}.voice-select{min-width:230px;max-width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-weight:800}.narrate-btn{font-size:.82rem;padding:8px 11px;border-radius:999px;box-shadow:none;background:rgba(159,122,234,.16);color:var(--text);border:1px solid rgba(159,122,234,.32)}.wave{display:inline-flex;gap:3px;align-items:end;height:18px;margin-left:4px}.wave span{display:block;width:4px;border-radius:4px;background:var(--accent);height:7px;animation:voicewave 1s ease-in-out infinite}.wave span:nth-child(2){animation-delay:.12s;height:13px}.wave span:nth-child(3){animation-delay:.24s;height:9px}.wave.paused span{animation:none;opacity:.35}@keyframes voicewave{0%,100%{transform:scaleY(.55);opacity:.55}50%{transform:scaleY(1.35);opacity:1}}.voice-tip{font-size:.92rem;color:var(--muted);margin:8px 0 0}.sr-live{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+</style>
+
+
+
+<!-- GNU-UNIX-AI-TUTOR-V2.1:BEGIN -->
+<link rel="stylesheet" href="/_platform/ai-tutor/ai-tutor-v2.css">
+<script src="/_platform/config/learning-platform.js"></script>
+<script src="/_platform/profiles/linux-operations-profiles.js"></script>
+<script src="/_platform/profiles/freebsd-operations-profiles.js"></script>
+<script>window.GNU_LEARNING_DOC={"id":"linux-beginner-linux-training-01-linux-start-module12-shell-scripting-basics-voice-html","title":"Module 12: Shell Scripting Basics — Interactive Adventure","osFamily":"Linux","domain":"linux-shell-&-automation","level":"beginner","aiLevel":"labs","profile":"generic","capabilities":["concept-tutor","voice-coach","lab-generator"],"topics":["shell","Bash","automation"],"safetyRules":["Never execute generated commands automatically","Separate observation commands from state-changing commands","Mark destructive commands clearly and require verification first"]};</script>
+<script defer src="/_platform/ai-tutor/ai-tutor-v2.js"></script>
+<!-- GNU-UNIX-AI-TUTOR-V2.1:END -->
+</head>
+<body>
+<div class="grid-bg"></div>
+<header>
+  <div class="wrap hero">
+    <div>
+      <span class="badge">🐧 Module 12 · Beginner Adventure</span>
+      <h1>Shell Scripting Basics</h1>
+      <p class="lead">Learn how to turn repeated Linux commands into tiny automation helpers. This reference mixes concepts, command labs, animated flows, terminal simulations, quizzes, and troubleshooting.</p>
+      <div class="hero-actions">
+        <a class="btn" href="#mission">Start Mission</a>
+        <a class="btn secondary" href="#lab">Jump to Lab</a>
+        <button class="secondary" onclick="toggleTheme()">🌗 Toggle Theme</button>
+        <button class="secondary" onclick="toggleVoice()" id="voiceToggleBtn">🔇 Voice Off</button>
+        <button class="secondary" onclick="speakText(narrations.intro,true)">🔊 Listen Intro</button>
+      </div>
+      <div class="progress-wrap" aria-label="learning progress"><div id="progressBar" class="progress-bar"></div></div>
+      <p id="progressText">Progress: 0% — complete activities to unlock badges.</p>
+    </div>
+    <div class="floatbox" aria-label="animated shell script illustration">
+      <div class="gear one"></div><div class="gear two"></div>
+      <div class="paper">
+        <strong>check_disk.sh</strong><br><br>
+        <code><span class="ln">1</span>#!/bin/bash<br><span class="ln">2</span>echo "Disk Report"<br><span class="ln">3</span>df -h<br><span class="ln">4</span>echo "Done"</code>
+      </div>
+    </div>
+  </div>
+</header>
+<nav>
+  <div class="nav-inner">
+    <a href="#voice">Voice Coach</a><a href="#mission">Mission</a><a href="#concepts">Concepts</a><a href="#flow">Flow</a><a href="#commands">Commands</a><a href="#simulator">Simulator</a><a href="#lab">Main Lab</a><a href="#evolution">Script Evolution</a><a href="#errors">Errors</a><a href="#boss">Boss Lab</a><a href="#quiz">Quiz</a><a href="#trainer">Trainer Notes</a>
+  </div>
+</nav>
+<main>
+
+<div class="voice-toolbar" aria-label="voice narration controls">
+  <span id="voiceDot" class="voice-dot" aria-hidden="true"></span>
+  <small id="voiceStatus">Voice narration is off. Click “Voice On” or any 🔊 explanation button.</small>
+  <button class="secondary" onclick="toggleVoice()" id="voiceToggleBtn2">🔇 Voice Off</button>
+  <button class="secondary" onclick="pauseVoice()">⏸ Pause</button>
+  <button class="secondary" onclick="resumeVoice()">▶ Resume</button>
+  <button class="secondary" onclick="stopVoice()">⏹ Stop</button>
+  <select id="voiceSelect" class="voice-select" aria-label="Choose narration voice"><option value="">Browser default voice</option></select>
+  <span id="voiceWave" class="wave paused" aria-hidden="true"><span></span><span></span><span></span></span>
+</div>
+<section id="voice">
+  <h2>Voice Coach Mode 🔊</h2>
+  <div class="voice-panel">
+    <div class="mini-title">Optional narration</div>
+    <h3>Let the browser explain concepts while learners interact</h3>
+    <p>Use the voice buttons when teaching live, or switch <strong>Voice On</strong> so the page explains what happened after animations, terminal steps, and quiz answers.</p>
+    <div class="voice-controls">
+      <button onclick="speakText(narrations.intro,true)">🔊 Explain shell scripting</button>
+      <button onclick="speakText(narrations.lab,true)">🔊 Explain the main lab</button>
+      <button onclick="speakText(narrations.exit,true)">🔊 Explain exit status</button>
+      <button class="secondary" onclick="stopVoice()">Stop narration</button>
+    </div>
+    <p class="voice-tip">Note: most browsers require a learner click before audio starts. Voice quality depends on the browser and operating system voices.</p>
+  </div>
+</section>
+
+<section id="mission">
+  <h2>Mission Brief: Teach the Server to Help Itself 🤖 <button class="narrate-btn" onclick="speakText(narrations.mission,true)">🔊 Explain</button></h2>
+  <div class="grid">
+    <div class="card wide">
+      <div class="mini-title">Story mode</div>
+      <p>The server is bored of repeated manual commands. Your job is to become a <strong>Linux Automation Cadet</strong> and give the server small scripts it can run again and again.</p>
+      <div class="callout"><strong>Core idea:</strong> A shell script is simply a text file containing Linux commands, written in the order you want them to run.</div>
+      <ul class="checklist">
+        <li>Write commands in a file.</li>
+        <li>Add a shebang: <code>#!/bin/bash</code>.</li>
+        <li>Make the file executable using <code>chmod +x</code>.</li>
+        <li>Run it using <code>./script_name.sh</code>.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="mini-title">Learning outcome</div>
+      <p>By the end, learners can read and create beginner shell scripts using variables, input, conditions, loops, and exit status.</p>
+      <div class="badge-row">
+        <span id="badgeConcept" class="achievement">🧠 Concepts</span>
+        <span id="badgeLab" class="achievement">🧪 Lab</span>
+        <span id="badgeQuiz" class="achievement">🏆 Quiz</span>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="concepts">
+  <h2>Concept Cards: Shell Scripting Made Simple <button class="narrate-btn" onclick="speakText(narrations.concepts,true)">🔊 Explain</button></h2>
+  <div class="grid">
+    <div class="card"><div class="mini-title">Shell script</div><h3>📜 Recipe for Linux</h3><p>A script is like a recipe. Each line is one instruction for the shell to follow.</p><span class="pill">Example: backup files</span><span class="pill">Example: check disk</span></div>
+    <div class="card"><div class="mini-title">Variable</div><h3>📦 Storage box</h3><p>A variable stores a value so the script can reuse it later.</p><div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>name="JP"
+echo "Hello $name"</pre></div></div>
+    <div class="card"><div class="mini-title">echo</div><h3>📢 Speaker</h3><p><code>echo</code> prints text or variable values on screen.</p><div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>echo "Welcome to shell scripting"</pre></div></div>
+    <div class="card"><div class="mini-title">read</div><h3>🎙️ Microphone</h3><p><code>read</code> takes input from the user and stores it in a variable.</p><div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>read -p "Enter name: " name
+echo "Hello $name"</pre></div></div>
+    <div class="card"><div class="mini-title">if condition</div><h3>🚦 Decision gate</h3><p><code>if</code> lets a script choose what to do depending on a condition.</p><div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>if [ "$user" = "root" ]; then
+  echo "Admin user"
+else
+  echo "Normal user"
+fi</pre></div></div>
+    <div class="card"><div class="mini-title">for loop</div><h3>🔁 Repeat machine</h3><p><code>for</code> repeats commands for each item in a list.</p><div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>for item in disk memory users
+do
+  echo "Checking $item"
+done</pre></div></div>
+    <div class="card"><div class="mini-title">Exit status</div><h3>✅ Result checker</h3><p><code>$?</code> stores whether the previous command succeeded. <code>0</code> usually means success. Non-zero usually means failure.</p><div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>df -h
+if [ $? -eq 0 ]; then
+  echo "Success"
+else
+  echo "Failed"
+fi</pre></div></div>
+    <div class="card wide"><div class="mini-title">Basic automation</div><h3>🛠️ Why scripting matters</h3><p>Automation is useful when the same task is done many times: checking disk space, collecting logs, backing up files, validating services, or generating reports.</p><table class="table"><tr><th>Manual work</th><th>Scripted work</th></tr><tr><td>Type commands every time.</td><td>Run one script whenever needed.</td></tr><tr><td>Easy to forget steps.</td><td>Same steps run consistently.</td></tr><tr><td>Hard to repeat for many servers.</td><td>Can be reused and scheduled.</td></tr></table></div>
+  </div>
+</section>
+<section id="flow">
+  <h2>Animated Flow: What Happens When a Script Runs?</h2>
+  <p>Click the button and watch the script travel from text file to command output.</p>
+  <button onclick="playFlow()">▶ Play Script Flow</button>
+  <div class="flow" id="flowNodes">
+    <div class="flow-node">1<br>Script file<br><code>check_disk.sh</code></div><div class="arrow">→</div>
+    <div class="flow-node">2<br>Shebang<br><code>#!/bin/bash</code></div><div class="arrow">→</div>
+    <div class="flow-node">3<br>Bash reads lines</div><div class="arrow">→</div>
+    <div class="flow-node">4<br><code>df -h</code> runs</div><div class="arrow">→</div>
+    <div class="flow-node">5<br>Disk output appears</div>
+  </div>
+</section>
+<section id="commands">
+  <h2>Command Playground: Predict, Run, Understand</h2>
+  <div class="grid">
+    <div class="card half">
+      <div class="mini-title">Variables + echo</div>
+      <h3>Try the name box</h3>
+      <p>Enter a name and see how a variable is reused inside <code>echo</code>.</p>
+      <div class="input-row"><input id="nameInput" placeholder="Enter name, e.g. JP" /><button onclick="demoEcho()">Run echo</button></div>
+      <div class="result-box" id="echoResult">Output appears here.</div>
+    </div>
+    <div class="card half">
+      <div class="mini-title">if condition</div>
+      <h3>Disk warning simulator</h3>
+      <p>Set disk usage and let the script decide whether to warn you.</p>
+      <div class="input-row"><input id="diskInput" type="number" min="0" max="100" value="45" /><button onclick="demoIf()">Check disk</button></div>
+      <div class="result-box" id="ifResult">Try 45, 82, or 95.</div>
+    </div>
+    <div class="card half">
+      <div class="mini-title">for loop</div>
+      <h3>Loop through services</h3>
+      <p>Click to simulate a loop checking common Linux services.</p>
+      <button onclick="demoLoop()">Run loop</button>
+      <div class="result-box" id="loopResult">Loop output appears here.</div>
+    </div>
+    <div class="card half">
+      <div class="mini-title">Exit status</div>
+      <h3>Success or failure?</h3>
+      <p>Choose a command result and watch <code>$?</code> decide the next message.</p>
+      <div class="input-row"><select id="statusSelect"><option value="0">Command succeeds: exit 0</option><option value="1">Command fails: exit 1</option><option value="127">Command not found: exit 127</option></select><button onclick="demoStatus()">Check $?</button></div>
+      <div class="status-lights"><div id="okLight" class="light ok">OK</div><div id="failLight" class="light fail">FAIL</div></div>
+      <div class="result-box" id="statusResult">Exit status result appears here.</div>
+    </div>
+  </div>
+</section>
+<section id="simulator">
+  <h2>Interactive Terminal Simulator</h2>
+  <p>This does not change your computer. It simulates the training lab so learners can understand the sequence before running it on Linux.</p>
+  <div class="terminal">
+    <div class="term-top"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="term-title">student@linux-lab:~</span></div>
+    <pre id="simTerm"><span class="prompt">$</span> Ready. Click a mission command below.<span class="cursor"></span></pre>
+  </div>
+  <div class="hero-actions">
+    <button onclick="termStep(1)">1 Create script</button>
+    <button onclick="termStep(2)">2 Make executable</button>
+    <button onclick="termStep(3)">3 Run script</button>
+    <button class="secondary" onclick="termStep(0)">Reset</button>
+  </div>
+</section>
+<section id="lab">
+  <h2>Main Lab: Create Your First Disk Check Script 🧪</h2>
+  <div class="grid">
+    <div class="card wide">
+      <div class="mini-title">Hands-on lab</div>
+      <p>Run these commands on Ubuntu, Rocky Linux, RHEL, or most Linux distributions with Bash available.</p>
+      <div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>cat > check_disk.sh &lt;&lt;'EOF'
+#!/bin/bash
+df -h
+EOF
+
+chmod +x check_disk.sh
+./check_disk.sh</pre></div>
+      <div class="callout"><strong>Why <code>./check_disk.sh</code>?</strong> The current directory is usually not searched automatically for commands. <code>./</code> means “run the script from this directory.”</div>
+      <button onclick="completeLab()">✅ Mark Lab Complete</button>
+    </div>
+    <div class="card">
+      <div class="mini-title">Expected output</div>
+      <div class="terminal"><div class="term-top"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="term-title">output</span></div><pre>Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        40G   18G   22G  45% /
+tmpfs           3.9G     0  3.9G   0% /dev/shm
+...</pre></div>
+      <p style="margin-top:10px">The exact filesystem names and sizes will differ on every machine.</p>
+    </div>
+  </div>
+</section>
+<section id="evolution">
+  <h2>Script Evolution: From Tiny Script to Useful Automation</h2>
+  <p>Beginners often understand single commands but struggle to combine them. This section shows the same script growing step-by-step.</p>
+  <div class="timeline">
+    <div class="step"><h3>Version 1: Basic disk check</h3><div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>#!/bin/bash
+df -h</pre></div></div>
+    <div class="step"><h3>Version 2: Add a heading</h3><div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>#!/bin/bash
+echo "Disk usage report:"
+df -h</pre></div></div>
+    <div class="step"><h3>Version 3: Save report to a file</h3><div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>#!/bin/bash
+df -h > disk_report.txt
+echo "Report saved to disk_report.txt"</pre></div></div>
+    <div class="step"><h3>Version 4: Check exit status</h3><div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>#!/bin/bash
+df -h > disk_report.txt
+
+if [ $? -eq 0 ]; then
+  echo "Disk report created successfully."
+else
+  echo "Disk report failed."
+fi</pre></div></div>
+    <div class="step"><h3>Version 5: Ask user before running</h3><div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>#!/bin/bash
+
+read -p "Do you want to check disk usage? yes/no: " answer
+
+if [ "$answer" = "yes" ]; then
+  df -h
+else
+  echo "Okay, skipping disk check."
+fi</pre></div></div>
+  </div>
+</section>
+<section id="errors">
+  <h2>Common Beginner Errors and Fixes 🧯</h2>
+  <table class="table">
+    <tr><th>Error / Symptom</th><th>Likely Cause</th><th>Fix</th></tr>
+    <tr><td><code>Permission denied</code></td><td>Script is not executable.</td><td><code>chmod +x check_disk.sh</code></td></tr>
+    <tr><td><code>command not found</code></td><td>Wrong script path or missing <code>./</code>.</td><td><code>./check_disk.sh</code></td></tr>
+    <tr><td>Variable does not expand</td><td>Used single quotes around variable.</td><td>Use <code>"Hello $name"</code>, not <code>'Hello $name'</code>.</td></tr>
+    <tr><td><code>[: missing `]'</code></td><td>Missing spaces inside test brackets.</td><td>Use <code>[ "$x" -gt 10 ]</code>.</td></tr>
+    <tr><td>Script uses wrong shell</td><td>Missing or incorrect shebang.</td><td>Add <code>#!/bin/bash</code> as the first line.</td></tr>
+  </table>
+</section>
+<section id="boss">
+  <h2>Boss Lab: Server Health Checker 🐲</h2>
+  <p>This final challenge combines <code>echo</code>, commands, simple structure, and automation thinking.</p>
+  <div class="grid">
+    <div class="card wide">
+      <div class="code-box"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre>cat > health_check.sh &lt;&lt;'EOF'
+#!/bin/bash
+
+echo "=============================="
+echo " Simple Server Health Checker "
+echo "=============================="
+
+echo
+echo "Disk Usage:"
+df -h
+
+echo
+echo "Memory Usage:"
+free -h
+
+echo
+echo "Logged-in Users:"
+who
+
+echo
+echo "System Uptime:"
+uptime
+EOF
+
+chmod +x health_check.sh
+./health_check.sh</pre></div>
+    </div>
+    <div class="card">
+      <div class="mini-title">Trainer discussion</div>
+      <ul class="checklist">
+        <li>Which command checks disk usage?</li>
+        <li>Which command checks memory?</li>
+        <li>Which command shows logged-in users?</li>
+        <li>How can we save this report to a file?</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section id="quiz">
+  <h2>Knowledge Check Quiz 🎯 <button class="narrate-btn" onclick="speakText(narrations.quiz,true)">🔊 Explain</button></h2>
+  <div class="quiz-item" data-answer="b"><strong>1. What does <code>#!/bin/bash</code> do?</strong><div class="quiz-options"><button onclick="answerQuiz(this,'a')">It comments out the whole script.</button><button onclick="answerQuiz(this,'b')">It tells Linux to run the script using Bash.</button><button onclick="answerQuiz(this,'c')">It creates a new user.</button></div></div>
+  <div class="quiz-item" data-answer="a"><strong>2. What does <code>chmod +x script.sh</code> do?</strong><div class="quiz-options"><button onclick="answerQuiz(this,'a')">Makes the script executable.</button><button onclick="answerQuiz(this,'b')">Deletes the script.</button><button onclick="answerQuiz(this,'c')">Opens the script in Vim.</button></div></div>
+  <div class="quiz-item" data-answer="c"><strong>3. What does exit status <code>0</code> usually mean?</strong><div class="quiz-options"><button onclick="answerQuiz(this,'a')">The command was skipped.</button><button onclick="answerQuiz(this,'b')">The command was not found.</button><button onclick="answerQuiz(this,'c')">The command succeeded.</button></div></div>
+  <div class="quiz-item" data-answer="b"><strong>4. Which command accepts user input?</strong><div class="quiz-options"><button onclick="answerQuiz(this,'a')"><code>echo</code></button><button onclick="answerQuiz(this,'b')"><code>read</code></button><button onclick="answerQuiz(this,'c')"><code>df</code></button></div></div>
+  <button onclick="finishQuiz()">🏁 Finish Quiz</button>
+  <div class="result-box" id="quizScore">Score appears here.</div>
+</section>
+<section id="trainer">
+  <h2>Trainer Notes: Make the Session Fun and Sticky</h2>
+  <div class="grid">
+    <div class="card half"><div class="mini-title">Warm-up</div><h3>Ask this first</h3><p>“Which Linux task do you repeat often?” Then show how a script can turn that repeated task into one file.</p></div>
+    <div class="card half"><div class="mini-title">Live demo</div><h3>Use mistakes deliberately</h3><p>Run the script before <code>chmod +x</code> so learners see <code>Permission denied</code>, then fix it. This makes troubleshooting memorable.</p></div>
+    <div class="card half"><div class="mini-title">Pair lab</div><h3>Driver and navigator</h3><p>One learner types, the other explains each command. Swap roles after the first script.</p></div>
+    <div class="card half"><div class="mini-title">Extension</div><h3>Take-home task</h3><p>Ask learners to create <code>my_report.sh</code> that prints date, hostname, disk usage, memory usage, and uptime.</p></div>
+  </div>
+</section>
+</main>
+<footer>Module 12 · Shell Scripting Basics · Single-file interactive HTML reference</footer>
+<script>
+let progress=0;let quizCorrect=0;let answered=new Set();
+let voiceEnabled=false;let selectedVoiceName='';
+const narrations={
+  intro:'Welcome to Shell Scripting Basics. A shell script is a text file containing Linux commands. Instead of typing the same commands again and again, you save them in one file and run that file whenever needed.',
+  mission:'In this mission, the server is tired of repeated manual commands. You will teach it small scripts so it can check disk usage, print messages, ask questions, make decisions, repeat tasks, and report success or failure.',
+  concepts:'Think of shell scripting like giving Linux a recipe. Variables are storage boxes. Echo is the speaker. Read is the microphone. If is a decision gate. For loop is a repeat machine. Exit status tells whether the last command worked.',
+  flow:'When you run a shell script, Linux reads the file, checks the shebang line, opens Bash, runs commands from top to bottom, and finally prints output or errors in the terminal.',
+  simulator:'The simulator lets you practice the lab without fear. First create the script file. Then make it executable. Then run it using dot slash check disk dot sh.',
+  lab:'The main lab creates a script named check disk dot sh. The first line says use Bash. The df dash h command shows disk usage in human readable format. Chmod plus x makes the file executable.',
+  exit:'Exit status is the result code of the last command. Zero usually means success. Non-zero usually means failure or some kind of error.',
+  quiz:'Answer each question once. If you get it wrong, the correct answer will be highlighted so you can learn immediately.',
+  boss:'The boss lab combines multiple Linux admin commands into one useful health check script. This is basic automation in real life.'
+};
+function syncVoiceUi(){
+  const dot=document.getElementById('voiceDot');const status=document.getElementById('voiceStatus');const wave=document.getElementById('voiceWave');
+  const labels=[document.getElementById('voiceToggleBtn'),document.getElementById('voiceToggleBtn2')].filter(Boolean);
+  labels.forEach(b=>b.textContent=voiceEnabled?'🔊 Voice On':'🔇 Voice Off');
+  if(dot)dot.classList.toggle('on',voiceEnabled);
+  if(status)status.textContent=voiceEnabled?'Voice narration is on. Interactions will be explained.':'Voice narration is off. Click “Voice On” or any 🔊 explanation button.';
+  if(wave)wave.classList.toggle('paused',!window.speechSynthesis || !speechSynthesis.speaking);
+}
+function toggleVoice(){voiceEnabled=!voiceEnabled;syncVoiceUi();if(voiceEnabled)speakText('Voice narration is now on. I will explain animations, simulator steps, and quiz feedback.',true);else stopVoice();}
+function getSelectedVoice(){const voices=window.speechSynthesis?speechSynthesis.getVoices():[];return voices.find(v=>v.name===selectedVoiceName)||voices.find(v=>/en/i.test(v.lang))||voices[0]||null;}
+function loadVoices(){
+  if(!('speechSynthesis' in window))return;
+  const select=document.getElementById('voiceSelect');if(!select)return;
+  const current=select.value;const voices=speechSynthesis.getVoices();
+  select.innerHTML='<option value="">Browser default voice</option>';
+  voices.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=v.name+' · '+v.lang+(v.default?' · default':'');select.appendChild(o);});
+  select.value=current||'';selectedVoiceName=select.value;
+  select.onchange=()=>{selectedVoiceName=select.value;speakText('Voice changed. This is how the selected narration voice sounds.',true);};
+}
+function speakText(text,force=false){
+  if(!('speechSynthesis' in window)){alert('Voice narration is not supported in this browser. Try Chrome, Edge, or Safari.');return;}
+  if(!force && !voiceEnabled)return;
+  const clean=String(text||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();if(!clean)return;
+  speechSynthesis.cancel();
+  const speech=new SpeechSynthesisUtterance(clean);const voice=getSelectedVoice();if(voice)speech.voice=voice;
+  speech.rate=0.88;speech.pitch=1;speech.volume=1;
+  speech.onstart=()=>syncVoiceUi();speech.onend=()=>syncVoiceUi();speech.onerror=()=>syncVoiceUi();
+  speechSynthesis.speak(speech);syncVoiceUi();
+}
+function pauseVoice(){if('speechSynthesis' in window)speechSynthesis.pause();syncVoiceUi();}
+function resumeVoice(){if('speechSynthesis' in window)speechSynthesis.resume();syncVoiceUi();}
+function stopVoice(){if('speechSynthesis' in window)speechSynthesis.cancel();syncVoiceUi();}
+function setProgress(v){progress=Math.max(progress,v);document.getElementById('progressBar').style.width=progress+'%';document.getElementById('progressText').textContent='Progress: '+progress+'% — '+(progress>=100?'Module complete!':'keep going, cadet.');}
+function unlock(id){document.getElementById(id).classList.add('unlocked');}
+function toggleTheme(){const root=document.documentElement;root.dataset.theme=root.dataset.theme==='light'?'dark':'light';}
+function copyCode(btn){const pre=btn.parentElement.querySelector('pre');navigator.clipboard.writeText(pre.innerText).then(()=>{btn.textContent='Copied';speakText('Command copied to clipboard. Paste it carefully in your terminal.',false);setTimeout(()=>btn.textContent='Copy',1100);});}
+function playFlow(){
+  const nodes=[...document.querySelectorAll('#flowNodes .flow-node')];
+  const explain=['Step one. You run the script using dot slash script name.','Step two. Linux checks the shebang line to know which interpreter to use.','Step three. Bash reads and executes each command line by line.','Step four. The command output appears in the terminal.'];
+  nodes.forEach(n=>n.classList.remove('active'));
+  speakText('Starting the script execution flow animation.',false);
+  nodes.forEach((n,i)=>setTimeout(()=>{nodes.forEach(x=>x.classList.remove('active'));n.classList.add('active');speakText(explain[i],false);if(i===nodes.length-1){setProgress(30);unlock('badgeConcept')}},i*950));
+}
+function demoEcho(){const name=document.getElementById('nameInput').value.trim()||'student';document.getElementById('echoResult').innerHTML='<code>$ name="'+name+'"</code><br><code>$ echo "Hello $name"</code><br><br>Hello '+name;setProgress(35);speakText('The variable stores the name '+name+'. Echo prints Hello '+name+' on the screen.',false)}
+function demoIf(){const n=Number(document.getElementById('diskInput').value);let msg=n>=90?'CRITICAL: Disk usage is very high.':n>=80?'WARNING: Disk usage is high.':'OK: Disk usage looks safe.';document.getElementById('ifResult').innerHTML='<code>usage='+n+'</code><br>'+msg;setProgress(45);speakText('The if condition checked the disk usage number. Result: '+msg,false)}
+function demoLoop(){const services=['ssh','cron','NetworkManager'];let out='';services.forEach(s=>out+='Checking '+s+'<br>');document.getElementById('loopResult').innerHTML=out;setProgress(55);speakText('The for loop repeats the same action for ssh, cron, and Network Manager. This is useful when checking many items.',false)}
+function demoStatus(){const v=document.getElementById('statusSelect').value;document.getElementById('okLight').classList.toggle('active',v==='0');document.getElementById('failLight').classList.toggle('active',v!=='0');document.getElementById('statusResult').innerHTML=v==='0'?'Exit status is <code>0</code>: command succeeded.':'Exit status is <code>'+v+'</code>: command failed or had an error.';setProgress(60);speakText(v==='0'?'Exit status zero means the previous command succeeded.':'A non-zero exit status means the command failed or returned an error.',false)}
+function termStep(n){
+  let t=document.getElementById('simTerm');
+  if(n===0){t.innerHTML='<span class="prompt">$</span> Ready. Click a mission command below.<span class="cursor"></span>';speakText('Simulator reset. Start again by creating the script file.',false);return}
+  if(n===1){t.textContent="$ cat > check_disk.sh <<'EOF'\n#!/bin/bash\ndf -h\nEOF\n\nScript file created: check_disk.sh";setProgress(65);speakText('Step one complete. You created check disk dot sh. It contains the Bash shebang and the df dash h command.',false)}
+  if(n===2){t.textContent='$ chmod +x check_disk.sh\n\nExecutable permission added.';setProgress(70);speakText('Step two complete. Chmod plus x added executable permission, so Linux can run the file as a script.',false)}
+  if(n===3){t.textContent='$ ./check_disk.sh\nFilesystem      Size  Used Avail Use% Mounted on\n/dev/sda1        40G   18G   22G  45% /\ntmpfs           3.9G     0  3.9G   0% /dev/shm';speakText('Step three complete. Dot slash runs the script from the current directory. The output shows disk usage in human readable format.',false);completeLab()}
+}
+function completeLab(){setProgress(80);unlock('badgeLab')}
+function answerQuiz(btn,choice){
+  const item=btn.closest('.quiz-item');const ix=[...document.querySelectorAll('.quiz-item')].indexOf(item);if(answered.has(ix))return;answered.add(ix);const correct=item.dataset.answer;
+  const correctText=[...item.querySelectorAll('button')].find(b=>b.getAttribute('onclick').includes("'"+correct+"'"))?.innerText||'the highlighted answer';
+  btn.classList.add(choice===correct?'correct':'wrong');if(choice===correct)quizCorrect++;
+  [...item.querySelectorAll('button')].forEach(b=>{if(b.getAttribute('onclick').includes("'"+correct+"'"))b.classList.add('correct')});
+  speakText(choice===correct?'Correct. '+correctText:'Not quite. The correct answer is '+correctText,false);
+}
+function finishQuiz(){const total=document.querySelectorAll('.quiz-item').length;document.getElementById('quizScore').innerHTML='You scored <strong>'+quizCorrect+'/'+total+'</strong>. '+(quizCorrect===total?'Perfect. Automation badge unlocked!':'Review the highlighted answers and try again in class.');setProgress(100);unlock('badgeQuiz');speakText('Quiz complete. You scored '+quizCorrect+' out of '+total+'. '+(quizCorrect===total?'Perfect score. Automation badge unlocked.':'Review the highlighted answers and try again.'),false)}
+window.addEventListener('DOMContentLoaded',()=>{syncVoiceUi();loadVoices();if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=loadVoices;}else{const status=document.getElementById('voiceStatus');if(status)status.textContent='Voice narration is not supported in this browser.';}});
+window.addEventListener('beforeunload',()=>stopVoice());
+</script>
+</body>
+</html>
