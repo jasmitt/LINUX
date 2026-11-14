@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Module 3: Linux File Management</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg2: #101c30;
+      --card: rgba(255,255,255,0.08);
+      --card2: rgba(255,255,255,0.12);
+      --text: #eef6ff;
+      --muted: #b7c7d9;
+      --accent: #64d2ff;
+      --accent2: #8bffb0;
+      --warn: #ffd36b;
+      --danger: #ff7676;
+      --cmd: #050914;
+      --border: rgba(255,255,255,0.16);
+      --shadow: 0 24px 70px rgba(0,0,0,0.32);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(100,210,255,0.18), transparent 28%),
+        radial-gradient(circle at 82% 12%, rgba(139,255,176,0.14), transparent 24%),
+        linear-gradient(135deg, var(--bg), #0a1324 48%, #050813);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .float-dot {
+      position: fixed;
+      width: 220px;
+      height: 220px;
+      border-radius: 999px;
+      background: rgba(100,210,255,0.07);
+      filter: blur(5px);
+      pointer-events: none;
+      animation: drift 14s ease-in-out infinite alternate;
+      z-index: -1;
+    }
+
+    .dot-1 { left: -80px; top: 200px; }
+    .dot-2 { right: -90px; bottom: 110px; animation-delay: -4s; background: rgba(139,255,176,0.07); }
+
+    @keyframes drift {
+      from { transform: translateY(0) translateX(0) scale(1); }
+      to { transform: translateY(-50px) translateX(35px) scale(1.18); }
+    }
+
+    header {
+      padding: 56px 24px 32px;
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .hero {
+      animation: rise 700ms ease both;
+    }
+
+    .badge {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      color: var(--accent2);
+      font-size: 14px;
+      letter-spacing: 0.2px;
+    }
+
+    h1 {
+      margin: 18px 0 12px;
+      font-size: clamp(38px, 6vw, 72px);
+      line-height: 0.94;
+      letter-spacing: -2.2px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: clamp(17px, 2vw, 21px);
+      line-height: 1.65;
+      max-width: 760px;
+    }
+
+    .hero-panel {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      animation: rise 850ms ease 120ms both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-panel::before {
+      content: "";
+      position: absolute;
+      inset: -80px -70px auto auto;
+      width: 190px;
+      height: 190px;
+      background: rgba(100,210,255,0.2);
+      border-radius: 50%;
+      filter: blur(22px);
+    }
+
+    .terminal-mini {
+      background: #050914;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .term-top {
+      height: 42px;
+      background: rgba(255,255,255,0.07);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 14px;
+    }
+
+    .light {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ff6b6b;
+    }
+    .light:nth-child(2) { background: #ffd36b; }
+    .light:nth-child(3) { background: #8bffb0; }
+
+    .term-body {
+      padding: 20px;
+      font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+      font-size: 15px;
+      line-height: 1.8;
+      color: #d6f3ff;
+      min-height: 210px;
+    }
+
+    .typing span {
+      display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid var(--accent);
+      width: 0;
+      animation: typing 2.6s steps(32, end) forwards, blink 800ms step-end infinite;
+    }
+
+    .typing:nth-child(2) span { animation-delay: 600ms; }
+    .typing:nth-child(3) span { animation-delay: 1200ms; }
+    .typing:nth-child(4) span { animation-delay: 1800ms; }
+
+    @keyframes typing { to { width: 100%; } }
+    @keyframes blink { 50% { border-color: transparent; } }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(20px);
+      background: rgba(5,9,20,0.72);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .nav-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 20px;
+    }
+
+    .nav-inner a {
+      color: var(--text);
+      text-decoration: none;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      transition: 180ms ease;
+    }
+
+    .nav-inner a:hover {
+      border-color: var(--border);
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-1px);
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 34px 20px 70px;
+    }
+
+    section { margin: 40px 0 56px; }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .section-title .num {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(100,210,255,0.25), rgba(139,255,176,0.18));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      font-weight: 800;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(26px, 3vw, 38px);
+      letter-spacing: -0.8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 16px 45px rgba(0,0,0,0.18);
+      transform: translateY(18px);
+      opacity: 0;
+      animation: reveal 650ms ease forwards;
+    }
+
+    .card:nth-child(2) { animation-delay: 80ms; }
+    .card:nth-child(3) { animation-delay: 160ms; }
+    .card:nth-child(4) { animation-delay: 240ms; }
+    .card:nth-child(5) { animation-delay: 320ms; }
+    .card:nth-child(6) { animation-delay: 400ms; }
+
+    .card:hover {
+      background: var(--card2);
+      transform: translateY(-4px) !important;
+      transition: 220ms ease;
+    }
+
+    .icon {
+      font-size: 34px;
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: rgba(100,210,255,0.12);
+      border: 1px solid rgba(100,210,255,0.24);
+      margin-bottom: 14px;
+    }
+
+    h3 {
+      margin: 8px 0 8px;
+      font-size: 21px;
+    }
+
+    p, li {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 15.5px;
+    }
+
+    .cmd-box {
+      position: relative;
+      margin: 14px 0 0;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.13);
+      background: var(--cmd);
+    }
+
+    .cmd-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #e7fbff;
+      font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+      font-size: 14.5px;
+      line-height: 1.6;
+    }
+
+    button.copy {
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--text);
+      background: rgba(255,255,255,0.07);
+      padding: 7px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: 180ms ease;
+    }
+
+    button.copy:hover { background: rgba(100,210,255,0.18); }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .callout {
+      border: 1px solid rgba(255,211,107,0.35);
+      background: rgba(255,211,107,0.09);
+      border-radius: 22px;
+      padding: 20px;
+    }
+
+    .callout strong { color: var(--warn); }
+
+    .danger {
+      border-color: rgba(255,118,118,0.35);
+      background: rgba(255,118,118,0.08);
+    }
+    .danger strong { color: var(--danger); }
+
+    .steps {
+      counter-reset: step;
+      display: grid;
+      gap: 14px;
+    }
+
+    .step {
+      counter-increment: step;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      align-items: start;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.07);
+      border-radius: 20px;
+      padding: 18px;
+      animation: reveal 600ms ease both;
+    }
+
+    .step::before {
+      content: counter(step);
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: rgba(139,255,176,0.15);
+      border: 1px solid rgba(139,255,176,0.28);
+      color: var(--accent2);
+      font-weight: 800;
+    }
+
+    .step h4 { margin: 0 0 8px; font-size: 18px; }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: rgba(255,255,255,0.06);
+    }
+
+    th, td {
+      padding: 15px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      color: var(--accent);
+      background: rgba(255,255,255,0.07);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    td code, li code, p code {
+      color: #d9ffe5;
+      background: rgba(139,255,176,0.1);
+      border: 1px solid rgba(139,255,176,0.18);
+      border-radius: 7px;
+      padding: 2px 6px;
+      font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+    }
+
+    .quiz {
+      display: grid;
+      gap: 14px;
+    }
+
+    details {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.07);
+      border-radius: 18px;
+      padding: 16px 18px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .footer {
+      color: var(--muted);
+      text-align: center;
+      padding: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes reveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+      header, .two-col { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .grid { grid-template-columns: 1fr; }
+      h1 { letter-spacing: -1.2px; }
+      header { padding-top: 36px; }
+      .term-body { font-size: 13.5px; }
+    }
+  </style>
+
+
+
+<!-- GNU-UNIX-AI-TUTOR-V2.1:BEGIN -->
+<link rel="stylesheet" href="/_platform/ai-tutor/ai-tutor-v2.css">
+<script src="/_platform/config/learning-platform.js"></script>
+<script src="/_platform/profiles/linux-operations-profiles.js"></script>
+<script src="/_platform/profiles/freebsd-operations-profiles.js"></script>
+<script>window.GNU_LEARNING_DOC={"id":"linux-beginner-linux-training-01-linux-start-module-3-file-management-html","title":"Module 3: Linux File Management","osFamily":"Linux","domain":"linux-fundamentals","level":"beginner","aiLevel":"concept","profile":"generic","capabilities":["concept-tutor","voice-coach"],"topics":["Linux fundamentals"],"safetyRules":["Never execute generated commands automatically","Separate observation commands from state-changing commands","Mark destructive commands clearly and require verification first"]};</script>
+<script defer src="/_platform/ai-tutor/ai-tutor-v2.js"></script>
+<!-- GNU-UNIX-AI-TUTOR-V2.1:END -->
+</head>
+<body>
+  <div class="float-dot dot-1"></div>
+  <div class="float-dot dot-2"></div>
+
+  <header>
+    <div class="hero">
+      <div class="badge">🐧 Beginner Linux Training · Module 3</div>
+      <h1>File Management</h1>
+      <p class="subtitle">
+        Learn how to create, copy, move, rename, delete, view, and search files using simple Linux commands. This module is designed for first-time Linux users and classroom demonstrations.
+      </p>
+    </div>
+
+    <div class="hero-panel">
+      <div class="terminal-mini">
+        <div class="term-top"><span class="light"></span><span class="light"></span><span class="light"></span></div>
+        <div class="term-body">
+          <div class="typing"><span>$ mkdir project</span></div>
+          <div class="typing"><span>$ touch app.log</span></div>
+          <div class="typing"><span>$ echo "Linux training" &gt; app.log</span></div>
+          <div class="typing"><span>$ cat app.log</span></div>
+          <div style="color:#8bffb0; margin-top:8px;">Linux training</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="#objectives">Objectives</a>
+      <a href="#concepts">Concepts</a>
+      <a href="#commands">Commands</a>
+      <a href="#lab">Hands-on Lab</a>
+      <a href="#checks">Practice Checks</a>
+      <a href="#summary">Summary</a>
+    </div>
+  </nav>
+
+  <main>
+    <section id="objectives">
+      <div class="section-title"><span class="num">1</span><h2>Learning Objectives</h2></div>
+      <div class="grid">
+        <div class="card"><div class="icon">📝</div><h3>Create files</h3><p>Use commands like <code>touch</code> and <code>echo</code> to create files and add basic content.</p></div>
+        <div class="card"><div class="icon">📋</div><h3>Copy files</h3><p>Use <code>cp</code> to create another copy of a file without changing the original.</p></div>
+        <div class="card"><div class="icon">🚚</div><h3>Move and rename</h3><p>Use <code>mv</code> both for moving files between directories and renaming files.</p></div>
+        <div class="card"><div class="icon">🗑️</div><h3>Delete files</h3><p>Use <code>rm</code> carefully because deleted files are usually not moved to a recycle bin.</p></div>
+        <div class="card"><div class="icon">👀</div><h3>View content</h3><p>Use <code>cat</code>, <code>less</code>, <code>head</code>, and <code>tail</code> to read file content.</p></div>
+        <div class="card"><div class="icon">🔎</div><h3>Search inside files</h3><p>Use <code>grep</code> to find matching words or lines inside text files.</p></div>
+      </div>
+    </section>
+
+    <section id="concepts">
+      <div class="section-title"><span class="num">2</span><h2>Core Concepts</h2></div>
+      <div class="two-col">
+        <div class="callout">
+          <strong>Beginner idea:</strong>
+          <p>In Linux, most work is done with files and directories. A directory is like a folder. A file can contain text, logs, configuration, scripts, or application data.</p>
+          <p>File management means controlling files: creating, reading, copying, moving, renaming, searching, and deleting them.</p>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Action</th><th>Command</th><th>Simple meaning</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Create empty file</td><td><code>touch file.txt</code></td><td>Create a new blank file or update timestamp.</td></tr>
+            <tr><td>Add text</td><td><code>echo "text" &gt; file.txt</code></td><td>Write text into a file.</td></tr>
+            <tr><td>Copy</td><td><code>cp source target</code></td><td>Make a duplicate file.</td></tr>
+            <tr><td>Move / Rename</td><td><code>mv old new</code></td><td>Move or rename a file.</td></tr>
+            <tr><td>Delete</td><td><code>rm file.txt</code></td><td>Remove a file permanently.</td></tr>
+            <tr><td>Search</td><td><code>grep "word" file.txt</code></td><td>Find lines containing a word.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="commands">
+      <div class="section-title"><span class="num">3</span><h2>Command Reference</h2></div>
+      <div class="grid">
+        <div class="card">
+          <div class="icon">📁</div>
+          <h3>Create a directory</h3>
+          <p><code>mkdir</code> creates a new directory.</p>
+          <div class="cmd-box"><div class="cmd-label">Command <button class="copy">Copy</button></div><pre>mkdir project</pre></div>
+        </div>
+
+        <div class="card">
+          <div class="icon">📄</div>
+          <h3>Create an empty file</h3>
+          <p><code>touch</code> creates a file if it does not exist.</p>
+          <div class="cmd-box"><div class="cmd-label">Command <button class="copy">Copy</button></div><pre>touch app.log</pre></div>
+        </div>
+
+        <div class="card">
+          <div class="icon">✍️</div>
+          <h3>Write text to a file</h3>
+          <p><code>&gt;</code> writes output into a file. It replaces old content.</p>
+          <div class="cmd-box"><div class="cmd-label">Command <button class="copy">Copy</button></div><pre>echo "Linux training" &gt; app.log</pre></div>
+        </div>
+
+        <div class="card">
+          <div class="icon">👁️</div>
+          <h3>View file content</h3>
+          <p><code>cat</code> prints the complete file content on screen.</p>
+          <div class="cmd-box"><div class="cmd-label">Command <button class="copy">Copy</button></div><pre>cat app.log</pre></div>
+        </div>
+
+        <div class="card">
+          <div class="icon">🧬</div>
+          <h3>Copy a file</h3>
+          <p><code>cp</code> copies content from source file to destination file.</p>
+          <div class="cmd-box"><div class="cmd-label">Command <button class="copy">Copy</button></div><pre>cp app.log backup.log</pre></div>
+        </div>
+
+        <div class="card">
+          <div class="icon">🏷️</div>
+          <h3>Rename a file</h3>
+          <p><code>mv</code> can rename a file when source and destination are in the same directory.</p>
+          <div class="cmd-box"><div class="cmd-label">Command <button class="copy">Copy</button></div><pre>mv backup.log old.log</pre></div>
+        </div>
+
+        <div class="card">
+          <div class="icon">🧭</div>
+          <h3>Move a file</h3>
+          <p><code>mv</code> can also move a file into another directory.</p>
+          <div class="cmd-box"><div class="cmd-label">Command <button class="copy">Copy</button></div><pre>mv app.log project/</pre></div>
+        </div>
+
+        <div class="card">
+          <div class="icon">🧹</div>
+          <h3>Delete a file</h3>
+          <p><code>rm</code> deletes a file. Use it carefully.</p>
+          <div class="cmd-box"><div class="cmd-label">Command <button class="copy">Copy</button></div><pre>rm old.log</pre></div>
+        </div>
+
+        <div class="card">
+          <div class="icon">🔍</div>
+          <h3>Search inside a file</h3>
+          <p><code>grep</code> prints lines that match a search word or pattern.</p>
+          <div class="cmd-box"><div class="cmd-label">Command <button class="copy">Copy</button></div><pre>grep "Linux" app.log</pre></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title"><span class="num">4</span><h2>Important Notes for Beginners</h2></div>
+      <div class="two-col">
+        <div class="callout danger">
+          <strong>Be careful with delete commands</strong>
+          <p><code>rm file</code> usually deletes the file permanently from the command line. There may be no recycle bin.</p>
+          <p>Avoid running <code>rm -rf</code> unless you clearly understand the path and impact.</p>
+        </div>
+        <div class="callout">
+          <strong>Redirection symbols</strong>
+          <p><code>&gt;</code> overwrites file content.</p>
+          <p><code>&gt;&gt;</code> appends new content at the end of the file without removing existing content.</p>
+          <div class="cmd-box"><div class="cmd-label">Example <button class="copy">Copy</button></div><pre>echo "Second line" &gt;&gt; app.log</pre></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="lab">
+      <div class="section-title"><span class="num">5</span><h2>Hands-on Lab: File Management</h2></div>
+      <p>Run the following commands in a Linux terminal. The goal is to create a project folder, create a log file, add text, view it, copy it, rename the copy, and delete the renamed file.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div>
+            <h4>Create a project directory</h4>
+            <p>This creates a folder named <code>project</code>.</p>
+            <div class="cmd-box"><div class="cmd-label">Lab command <button class="copy">Copy</button></div><pre>mkdir project</pre></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div>
+            <h4>Create an empty log file</h4>
+            <p>This creates <code>app.log</code> in the current directory.</p>
+            <div class="cmd-box"><div class="cmd-label">Lab command <button class="copy">Copy</button></div><pre>touch app.log</pre></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div>
+            <h4>Write text into the file</h4>
+            <p>This writes <code>Linux training</code> into <code>app.log</code>.</p>
+            <div class="cmd-box"><div class="cmd-label">Lab command <button class="copy">Copy</button></div><pre>echo "Linux training" &gt; app.log</pre></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div>
+            <h4>View file content</h4>
+            <p>This displays the content of <code>app.log</code>.</p>
+            <div class="cmd-box"><div class="cmd-label">Lab command <button class="copy">Copy</button></div><pre>cat app.log</pre></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div>
+            <h4>Copy the file</h4>
+            <p>This creates a second file named <code>backup.log</code> with the same content.</p>
+            <div class="cmd-box"><div class="cmd-label">Lab command <button class="copy">Copy</button></div><pre>cp app.log backup.log</pre></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div>
+            <h4>Rename the copied file</h4>
+            <p>This renames <code>backup.log</code> to <code>old.log</code>.</p>
+            <div class="cmd-box"><div class="cmd-label">Lab command <button class="copy">Copy</button></div><pre>mv backup.log old.log</pre></div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div>
+            <h4>Delete the renamed file</h4>
+            <p>This removes <code>old.log</code>.</p>
+            <div class="cmd-box"><div class="cmd-label">Lab command <button class="copy">Copy</button></div><pre>rm old.log</pre></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cmd-box" style="margin-top:22px;">
+        <div class="cmd-label">Complete lab script <button class="copy">Copy</button></div>
+        <pre>mkdir project
+touch app.log
+echo "Linux training" &gt; app.log
+cat app.log
+cp app.log backup.log
+mv backup.log old.log
+rm old.log</pre>
+      </div>
+    </section>
+
+    <section id="checks">
+      <div class="section-title"><span class="num">6</span><h2>Practice Checks</h2></div>
+      <div class="quiz">
+        <details>
+          <summary>What command creates an empty file named notes.txt?</summary>
+          <p><code>touch notes.txt</code></p>
+        </details>
+        <details>
+          <summary>Which command copies app.log to backup.log?</summary>
+          <p><code>cp app.log backup.log</code></p>
+        </details>
+        <details>
+          <summary>Which command renames backup.log to old.log?</summary>
+          <p><code>mv backup.log old.log</code></p>
+        </details>
+        <details>
+          <summary>Which command searches for the word Linux inside app.log?</summary>
+          <p><code>grep "Linux" app.log</code></p>
+        </details>
+        <details>
+          <summary>What is the difference between &gt; and &gt;&gt;?</summary>
+          <p><code>&gt;</code> overwrites file content. <code>&gt;&gt;</code> appends content to the end of the file.</p>
+        </details>
+      </div>
+    </section>
+
+    <section id="summary">
+      <div class="section-title"><span class="num">7</span><h2>Module Summary</h2></div>
+      <table>
+        <thead><tr><th>Need</th><th>Use this command</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td>Create directory</td><td><code>mkdir</code></td><td><code>mkdir project</code></td></tr>
+          <tr><td>Create file</td><td><code>touch</code></td><td><code>touch app.log</code></td></tr>
+          <tr><td>Add text</td><td><code>echo</code> with <code>&gt;</code></td><td><code>echo "Linux training" &gt; app.log</code></td></tr>
+          <tr><td>View file</td><td><code>cat</code></td><td><code>cat app.log</code></td></tr>
+          <tr><td>Copy file</td><td><code>cp</code></td><td><code>cp app.log backup.log</code></td></tr>
+          <tr><td>Rename file</td><td><code>mv</code></td><td><code>mv backup.log old.log</code></td></tr>
+          <tr><td>Delete file</td><td><code>rm</code></td><td><code>rm old.log</code></td></tr>
+          <tr><td>Search text</td><td><code>grep</code></td><td><code>grep "Linux" app.log</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <div class="footer">Module 3 · Linux File Management · Beginner Training Reference</div>
+
+  <script>
+    document.querySelectorAll('.copy').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const pre = button.closest('.cmd-box').querySelector('pre');
+        try {
+          await navigator.clipboard.writeText(pre.innerText);
+          const oldText = button.innerText;
+          button.innerText = 'Copied';
+          setTimeout(() => button.innerText = oldText, 1200);
+        } catch (e) {
+          button.innerText = 'Select text';
+        }
+      });
+    });
+
+    const cards = document.querySelectorAll('.card, .step, table, .callout');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationPlayState = 'running';
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.14 });
+
+    cards.forEach((el) => observer.observe(el));
+  </script>
+</body>
+</html>
